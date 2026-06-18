@@ -1,0 +1,871 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>MooMe — IoT-AI Livestock Intelligence Platform | Full Pitch & Budget</title>
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=DM+Serif+Display:ital@0;1&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  @page { size: A2 portrait; margin: 0; }
+  @media print {
+    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+
+  *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --midnight: #0a1628;
+    --deep: #0f2035;
+    --ocean: #133a5c;
+    --teal: #0cb8a0;
+    --teal-glow: #0ef5d4;
+    --amber: #f5a623;
+    --amber-light: #ffd97a;
+    --coral: #ff6b6b;
+    --white: #f0f4f8;
+    --muted: #8a9bb5;
+    --card-bg: rgba(15, 32, 53, 0.7);
+    --glass: rgba(255, 255, 255, 0.04);
+    --green: #34d399;
+    --purple: #a78bfa;
+  }
+
+  html { font-size: 10.5px; }
+
+  body {
+    font-family: 'Outfit', sans-serif;
+    background: var(--midnight);
+    color: var(--white);
+    width: 1200px;
+    margin: 0 auto;
+    position: relative;
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    top: -200px; right: -200px;
+    width: 800px; height: 800px;
+    background: radial-gradient(circle, rgba(12,184,160,0.10) 0%, transparent 70%);
+    z-index: 0;
+    pointer-events: none;
+  }
+
+  .poster {
+    position: relative;
+    z-index: 1;
+    padding: 32px 36px 28px;
+  }
+
+  /* GRID PATTERN */
+  .grid-pattern {
+    position: fixed; inset: 0;
+    background-image:
+      linear-gradient(rgba(255,255,255,0.01) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,0.01) 1px, transparent 1px);
+    background-size: 40px 40px;
+    z-index: 0; pointer-events: none;
+  }
+
+  /* === HEADER === */
+  .header {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: start;
+    gap: 20px;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .brand { display: flex; align-items: center; gap: 14px; }
+
+  .logo-mark {
+    width: 58px; height: 58px;
+    background: linear-gradient(135deg, var(--teal), var(--teal-glow));
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 26px; font-weight: 900; color: var(--midnight);
+    letter-spacing: -1px;
+    box-shadow: 0 8px 32px rgba(12,184,160,0.3);
+    position: relative;
+  }
+
+  .logo-mark::after {
+    content: ''; position: absolute; inset: -3px; border-radius: 17px;
+    background: linear-gradient(135deg, var(--teal-glow), transparent, var(--amber));
+    z-index: -1; opacity: 0.4;
+  }
+
+  .brand-text h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 36px; letter-spacing: -0.5px; line-height: 1;
+    background: linear-gradient(135deg, var(--white), var(--teal-glow));
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+
+  .brand-text .tagline {
+    font-size: 12px; color: var(--teal); font-weight: 500;
+    letter-spacing: 3px; text-transform: uppercase; margin-top: 3px;
+  }
+
+  .partner-logos { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+
+  .partner-badge {
+    background: var(--glass);
+    border: 1px solid rgba(255,255,255,0.08);
+    border-radius: 8px; padding: 6px 12px;
+    font-size: 8.5px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: 1.2px;
+    color: var(--muted); text-align: center; line-height: 1.4;
+  }
+  .partner-badge span { display: block; color: var(--white); font-size: 11px; }
+
+  /* === HERO === */
+  .hero-strip {
+    background: linear-gradient(135deg, var(--ocean), var(--deep));
+    border: 1px solid rgba(12,184,160,0.15);
+    border-radius: 14px; padding: 16px 24px; margin-bottom: 16px;
+    display: grid; grid-template-columns: 1fr auto; gap: 24px; align-items: center;
+  }
+
+  .hero-strip p {
+    font-size: 13.5px; line-height: 1.6; color: rgba(240,244,248,0.88); font-weight: 300;
+  }
+  .hero-strip p strong { color: var(--teal-glow); font-weight: 600; }
+
+  .hero-kpi { display: flex; gap: 14px; }
+
+  .kpi-box {
+    text-align: center; padding: 10px 14px;
+    background: rgba(0,0,0,0.25); border-radius: 10px; min-width: 80px;
+  }
+  .kpi-box .num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 24px; font-weight: 700; color: var(--teal-glow); line-height: 1;
+  }
+  .kpi-box .num.amber { color: var(--amber); }
+  .kpi-box .label {
+    font-size: 8px; text-transform: uppercase; letter-spacing: 1px;
+    color: var(--muted); margin-top: 3px; font-weight: 500;
+  }
+
+  /* === CARDS === */
+  .card {
+    background: var(--card-bg);
+    border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 12px; padding: 14px 16px;
+    position: relative; overflow: hidden;
+  }
+  .card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px;
+    background: linear-gradient(90deg, var(--teal), var(--teal-glow), transparent);
+  }
+  .card.amber-accent::before { background: linear-gradient(90deg, var(--amber), var(--amber-light), transparent); }
+  .card.coral-accent::before { background: linear-gradient(90deg, var(--coral), #ff9a9a, transparent); }
+  .card.green-accent::before { background: linear-gradient(90deg, var(--green), #6ee7b7, transparent); }
+  .card.purple-accent::before { background: linear-gradient(90deg, var(--purple), #c4b5fd, transparent); }
+
+  .card-title {
+    font-size: 11.5px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 2px; color: var(--teal); margin-bottom: 10px;
+    display: flex; align-items: center; gap: 7px;
+  }
+  .card.amber-accent .card-title { color: var(--amber); }
+  .card.coral-accent .card-title { color: var(--coral); }
+  .card.green-accent .card-title { color: var(--green); }
+  .card.purple-accent .card-title { color: var(--purple); }
+
+  .card-title .icon {
+    width: 20px; height: 20px; border-radius: 5px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; background: rgba(12,184,160,0.15);
+  }
+  .card.amber-accent .card-title .icon { background: rgba(245,166,35,0.15); }
+  .card.coral-accent .card-title .icon { background: rgba(255,107,107,0.15); }
+  .card.green-accent .card-title .icon { background: rgba(52,211,153,0.15); }
+  .card.purple-accent .card-title .icon { background: rgba(167,139,250,0.15); }
+
+  /* === GRIDS === */
+  .main-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+  .three-col { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px; margin-bottom: 14px; }
+
+  /* === PROBLEM LIST === */
+  .problem-list { list-style: none; display: flex; flex-direction: column; gap: 4px; }
+  .problem-list li {
+    font-size: 10.5px; color: rgba(240,244,248,0.75);
+    padding-left: 14px; position: relative; line-height: 1.45;
+  }
+  .problem-list li::before {
+    content: ''; position: absolute; left: 0; top: 5px;
+    width: 5px; height: 5px; border-radius: 50%; background: var(--coral);
+  }
+
+  /* === SOLUTION GRID === */
+  .solution-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .sol-item {
+    background: rgba(12,184,160,0.06); border: 1px solid rgba(12,184,160,0.1);
+    border-radius: 6px; padding: 7px 9px;
+  }
+  .sol-item .sol-title { font-size: 9.5px; font-weight: 700; color: var(--teal-glow); margin-bottom: 2px; }
+  .sol-item .sol-desc { font-size: 9px; color: var(--muted); line-height: 1.4; }
+
+  /* === IMPACT === */
+  .impact-row { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 6px; }
+  .impact-row:last-child { margin-bottom: 0; }
+  .impact-item {
+    display: flex; align-items: center; gap: 8px; padding: 6px 8px;
+    background: rgba(245,166,35,0.05); border-radius: 6px;
+    border: 1px solid rgba(245,166,35,0.1);
+  }
+  .impact-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 16px; font-weight: 700; color: var(--amber); white-space: nowrap; line-height: 1;
+  }
+  .impact-text { font-size: 9px; color: rgba(240,244,248,0.7); line-height: 1.3; }
+
+  /* === PILOT === */
+  .pilot-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .pilot-region {
+    padding: 10px; background: rgba(0,0,0,0.2); border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.05);
+  }
+  .pilot-region h4 { font-size: 10px; font-weight: 700; color: var(--teal); margin-bottom: 4px; letter-spacing: 1px; text-transform: uppercase; }
+  .pilot-region .districts { font-size: 10px; color: rgba(240,244,248,0.7); line-height: 1.45; }
+  .pilot-region .system-type { font-size: 8.5px; color: var(--amber); font-weight: 600; margin-top: 3px; text-transform: uppercase; letter-spacing: 0.5px; }
+
+  /* === TRAINING === */
+  .training-tiers { display: flex; flex-direction: column; gap: 6px; }
+  .tier { display: grid; grid-template-columns: 64px 1fr; gap: 10px; align-items: center; }
+  .tier-num { font-family: 'JetBrains Mono', monospace; font-size: 18px; font-weight: 700; color: var(--teal-glow); text-align: right; white-space: nowrap; }
+  .tier-info .tier-title { font-size: 10px; font-weight: 700; color: var(--white); }
+  .tier-info .tier-desc { font-size: 8.5px; color: var(--muted); line-height: 1.35; }
+  .tier-bar { grid-column: 1 / -1; height: 2px; background: rgba(255,255,255,0.04); border-radius: 2px; overflow: hidden; }
+  .tier-bar-fill { height: 100%; border-radius: 2px; }
+
+  /* === BUDGET TABLE === */
+  .budget-table {
+    width: 100%; border-collapse: collapse; font-size: 9.5px;
+  }
+  .budget-table thead th {
+    text-align: left; padding: 6px 8px;
+    font-size: 8.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;
+    color: var(--teal); border-bottom: 1px solid rgba(12,184,160,0.2);
+    background: rgba(0,0,0,0.2);
+  }
+  .budget-table thead th:last-child,
+  .budget-table thead th:nth-child(3),
+  .budget-table thead th:nth-child(4),
+  .budget-table thead th:nth-child(5) { text-align: right; }
+
+  .budget-table tbody td {
+    padding: 5px 8px; border-bottom: 1px solid rgba(255,255,255,0.03);
+    color: rgba(240,244,248,0.8); vertical-align: top;
+  }
+  .budget-table tbody td:last-child,
+  .budget-table tbody td:nth-child(3),
+  .budget-table tbody td:nth-child(4),
+  .budget-table tbody td:nth-child(5) {
+    text-align: right; font-family: 'JetBrains Mono', monospace; font-size: 9px;
+  }
+
+  .budget-table .cat-row td {
+    background: rgba(12,184,160,0.06);
+    font-weight: 700; color: var(--teal-glow);
+    border-bottom: 1px solid rgba(12,184,160,0.1);
+    padding: 7px 8px;
+  }
+
+  .budget-table .subtotal-row td {
+    font-weight: 700; color: var(--amber-light);
+    background: rgba(245,166,35,0.04);
+    border-top: 1px solid rgba(245,166,35,0.15);
+    border-bottom: 1px solid rgba(245,166,35,0.15);
+  }
+
+  .budget-table .grand-total td {
+    font-weight: 800; color: var(--teal-glow);
+    font-size: 11px;
+    background: rgba(12,184,160,0.08);
+    border-top: 2px solid var(--teal);
+    padding: 8px;
+  }
+
+  /* === TIMELINE === */
+  .timeline { display: flex; gap: 0; position: relative; }
+  .timeline::before {
+    content: ''; position: absolute; top: 20px; left: 0; right: 0;
+    height: 2px; background: rgba(255,255,255,0.06);
+  }
+  .phase {
+    flex: 1; padding: 0 10px; position: relative; text-align: center;
+  }
+  .phase-dot {
+    width: 12px; height: 12px; border-radius: 50%;
+    background: var(--teal); margin: 14px auto 8px;
+    position: relative; z-index: 1;
+    box-shadow: 0 0 12px rgba(12,184,160,0.4);
+  }
+  .phase:nth-child(2) .phase-dot { background: var(--amber); box-shadow: 0 0 12px rgba(245,166,35,0.4); }
+  .phase:nth-child(3) .phase-dot { background: var(--green); box-shadow: 0 0 12px rgba(52,211,153,0.4); }
+  .phase:nth-child(4) .phase-dot { background: var(--purple); box-shadow: 0 0 12px rgba(167,139,250,0.4); }
+  .phase:nth-child(5) .phase-dot { background: var(--coral); box-shadow: 0 0 12px rgba(255,107,107,0.4); }
+
+  .phase-label {
+    font-size: 9px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 1px; color: var(--white); margin-bottom: 3px;
+  }
+  .phase-time { font-size: 8px; color: var(--muted); font-weight: 500; margin-bottom: 4px; }
+  .phase-desc { font-size: 8px; color: rgba(240,244,248,0.6); line-height: 1.4; }
+
+  /* === CHAIN FLOW === */
+  .chain-flow { display: flex; flex-wrap: wrap; gap: 4px; align-items: center; }
+  .chain-node {
+    background: rgba(12,184,160,0.08); border: 1px solid rgba(12,184,160,0.15);
+    border-radius: 5px; padding: 4px 8px; font-size: 9px; font-weight: 500; color: var(--teal-glow);
+  }
+  .chain-arrow { color: rgba(255,255,255,0.2); font-size: 10px; }
+
+  /* === GENDER === */
+  .gender-bar { height: 18px; border-radius: 5px; overflow: hidden; display: flex; margin: 8px 0 5px; }
+  .gender-bar .women {
+    background: linear-gradient(90deg, var(--teal), var(--teal-glow));
+    width: 80%; display: flex; align-items: center; justify-content: center;
+    font-size: 8px; font-weight: 700; color: var(--midnight);
+  }
+  .gender-bar .other {
+    background: rgba(255,255,255,0.1); width: 20%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 8px; font-weight: 600; color: var(--muted);
+  }
+
+  /* === PARTNERS === */
+  .partners-strip { display: flex; gap: 6px; flex-wrap: wrap; }
+  .partner-chip {
+    background: var(--glass); border: 1px solid rgba(255,255,255,0.06);
+    border-radius: 5px; padding: 4px 9px; font-size: 9px; font-weight: 600;
+    color: var(--muted); letter-spacing: 0.5px;
+  }
+  .partner-chip.lead { border-color: rgba(12,184,160,0.25); color: var(--teal-glow); background: rgba(12,184,160,0.06); }
+
+  /* === SDG TAGS === */
+  .sdg-tags { display: flex; gap: 5px; margin-bottom: 6px; flex-wrap: wrap; }
+  .sdg-tag { font-size: 8px; font-weight: 700; padding: 2px 7px; border-radius: 3px; letter-spacing: 0.5px; }
+  .sdg-2 { background: #D4A029; color: #000; }
+  .sdg-5 { background: #EF4023; color: #fff; }
+  .sdg-8 { background: #A21942; color: #fff; }
+  .sdg-9 { background: #FD6925; color: #000; }
+  .sdg-13 { background: #3F7E44; color: #fff; }
+
+  /* === FOOTER === */
+  .footer {
+    display: grid; grid-template-columns: 1fr auto;
+    align-items: end; padding-top: 12px;
+    border-top: 1px solid rgba(255,255,255,0.06); gap: 20px;
+  }
+  .footer-contact { font-size: 9px; color: var(--muted); line-height: 1.5; }
+  .footer-contact strong { color: var(--white); }
+  .footer-right { text-align: right; }
+  .footer-right .cta {
+    background: linear-gradient(135deg, var(--teal), var(--teal-glow));
+    color: var(--midnight); font-size: 10px; font-weight: 800;
+    padding: 9px 22px; border-radius: 7px; letter-spacing: 1px;
+    text-transform: uppercase; display: inline-block;
+    box-shadow: 0 6px 24px rgba(12,184,160,0.3);
+  }
+  .footer-right .invest-note { font-size: 8px; color: var(--muted); margin-top: 5px; }
+
+  /* DEVICES ROW */
+  .devices-row { display: flex; gap: 8px; margin-top: 8px; }
+  .device-tag {
+    display: flex; align-items: center; gap: 5px;
+    background: rgba(245,166,35,0.06); border: 1px solid rgba(245,166,35,0.12);
+    border-radius: 5px; padding: 5px 8px; font-size: 9px; color: var(--amber-light); font-weight: 500;
+  }
+  .device-tag .d-count { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 11px; color: var(--amber); }
+
+  /* SECTION DIVIDER */
+  .section-divider {
+    display: flex; align-items: center; gap: 12px;
+    margin: 20px 0 14px; padding: 0 4px;
+  }
+  .section-divider .divider-line { flex: 1; height: 1px; background: rgba(255,255,255,0.06); }
+  .section-divider .divider-text {
+    font-family: 'DM Serif Display', serif;
+    font-size: 18px; color: var(--white); letter-spacing: 0.5px;
+  }
+
+  /* BUDGET ITEMS VERTICAL */
+  .budget-items { display: flex; flex-direction: column; gap: 4px; }
+  .budget-item {
+    display: grid; grid-template-columns: 16px 1fr auto; gap: 6px;
+    align-items: center; font-size: 9.5px; color: rgba(240,244,248,0.75);
+    padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.03);
+  }
+  .budget-item:last-child { border-bottom: none; }
+  .budget-item .b-num {
+    font-family: 'JetBrains Mono', monospace; font-size: 8px; font-weight: 600;
+    color: var(--teal); background: rgba(12,184,160,0.1);
+    width: 16px; height: 16px; border-radius: 3px;
+    display: flex; align-items: center; justify-content: center;
+  }
+
+  /* PIE CHART VISUAL */
+  .pie-legend { display: flex; flex-direction: column; gap: 4px; }
+  .pie-item { display: flex; align-items: center; gap: 6px; font-size: 9px; color: var(--muted); }
+  .pie-dot { width: 8px; height: 8px; border-radius: 2px; flex-shrink: 0; }
+  .pie-item .pie-pct { font-family: 'JetBrains Mono', monospace; font-weight: 600; color: var(--white); min-width: 32px; }
+
+  /* REVENUE MODEL */
+  .rev-item {
+    background: rgba(52,211,153,0.05); border: 1px solid rgba(52,211,153,0.1);
+    border-radius: 6px; padding: 8px 10px; margin-bottom: 5px;
+  }
+  .rev-item:last-child { margin-bottom: 0; }
+  .rev-item .rev-title { font-size: 10px; font-weight: 700; color: var(--green); margin-bottom: 2px; }
+  .rev-item .rev-desc { font-size: 8.5px; color: var(--muted); line-height: 1.4; }
+</style>
+</head>
+<body>
+<div class="grid-pattern"></div>
+<div class="poster">
+
+  <!-- ====== HEADER ====== -->
+  <header class="header">
+    <div class="brand">
+      <div class="logo-mark">Mm</div>
+      <div class="brand-text">
+        <h1>MooMe</h1>
+        <div class="tagline">IoT &bull; AI &bull; Livestock Intelligence Platform</div>
+      </div>
+    </div>
+    <div class="partner-logos">
+      <div class="partner-badge"><span>WOREX Ltd</span>Principal Investigator</div>
+      <div class="partner-badge"><span>FAO Rwanda</span>Capacity Building</div>
+      <div class="partner-badge"><span>RAB</span>Research Partner</div>
+      <div class="partner-badge"><span>Univ. of Kigali</span>Academic Partner</div>
+      <div class="partner-badge"><span>MINAGRI</span>Policy Alignment</div>
+    </div>
+  </header>
+
+  <!-- ====== HERO ====== -->
+  <div class="hero-strip">
+    <p>
+      <strong>MooMe</strong> is a mobile monitoring & measurement IoT-AI platform transforming Rwanda's dairy sector.
+      Piloted across <strong>6 districts</strong> in two milk sheds — Nyagatare (extensive) & Burera (intensive) —
+      it equips <strong>1,200 dairy farmers</strong> with smart collars, sensors, and an AI-powered app in
+      <strong>Kinyarwanda & English</strong> for real-time disease detection, heat monitoring, feed optimization & data-driven decisions.
+    </p>
+    <div class="hero-kpi">
+      <div class="kpi-box"><div class="num">6</div><div class="label">Districts</div></div>
+      <div class="kpi-box"><div class="num">1,200</div><div class="label">Farmers</div></div>
+      <div class="kpi-box"><div class="num">132</div><div class="label">Trainers</div></div>
+      <div class="kpi-box"><div class="num amber">12</div><div class="label">Challenges</div></div>
+    </div>
+  </div>
+
+  <!-- ====== ROW 1: PROBLEM / SOLUTION / IMPACT ====== -->
+  <div class="main-grid">
+    <div class="card coral-accent">
+      <div class="card-title"><span class="icon">!</span> Problem</div>
+      <ul class="problem-list">
+        <li>Low milk yields: 5–10L/day vs 25–35L potential</li>
+        <li>Late disease detection — high vet costs & mortality</li>
+        <li>Feed costs = 60–70% of production expenses</li>
+        <li>Missed heat detection & long calving intervals</li>
+        <li>Livestock theft in extensive grazing systems</li>
+        <li>No farm data — decisions based on guesswork</li>
+        <li>Weak value chain (farmers ↔ processors)</li>
+        <li>Limited extension access — no digital tools</li>
+        <li>Climate stress with no adaptive systems</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="icon">⚡</span> MooMe IoT-AI Solution</div>
+      <div class="solution-grid">
+        <div class="sol-item"><div class="sol-title">Disease Detection</div><div class="sol-desc">Temp & movement sensors flag illness to farmer + vet</div></div>
+        <div class="sol-item"><div class="sol-title">Heat & Oestrus</div><div class="sol-desc">Activity sensors detect heat; AI predicts insemination</div></div>
+        <div class="sol-item"><div class="sol-title">Feed Optimization</div><div class="sol-desc">AI ration formulation + intake sensors cut costs 20–40%</div></div>
+        <div class="sol-item"><div class="sol-title">GPS Tracking</div><div class="sol-desc">Real-time location, geo-fencing alerts against theft</div></div>
+        <div class="sol-item"><div class="sol-title">Water Monitoring</div><div class="sol-desc">Smart meters track herd intake, alert on drops</div></div>
+        <div class="sol-item"><div class="sol-title">Farm Dashboard</div><div class="sol-desc">Yield, health, breeding — all in one app</div></div>
+        <div class="sol-item"><div class="sol-title">AI Advisory</div><div class="sol-desc">Chatbot + Kinyarwanda tips & video tutorials</div></div>
+        <div class="sol-item"><div class="sol-title">Credit Scoring</div><div class="sol-desc">Farm data enables loans & insurance access</div></div>
+      </div>
+    </div>
+
+    <div class="card amber-accent">
+      <div class="card-title"><span class="icon">↑</span> Projected Impact</div>
+      <div class="impact-row">
+        <div class="impact-item"><div class="impact-num">+50%</div><div class="impact-text">Milk yield<br>increase</div></div>
+        <div class="impact-item"><div class="impact-num">-40%</div><div class="impact-text">Feed cost<br>reduction</div></div>
+      </div>
+      <div class="impact-row">
+        <div class="impact-item"><div class="impact-num">+30%</div><div class="impact-text">Farmer<br>income</div></div>
+        <div class="impact-item"><div class="impact-num">-35%</div><div class="impact-text">Waste<br>reduction</div></div>
+      </div>
+      <div class="impact-row">
+        <div class="impact-item"><div class="impact-num" style="font-size:13px">Early</div><div class="impact-text">Disease detection<br>lowers mortality</div></div>
+        <div class="impact-item"><div class="impact-num" style="font-size:13px">Real-time</div><div class="impact-text">Data-driven<br>decisions</div></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== ROW 2: PILOT / TRAINING / DEVICES ====== -->
+  <div class="main-grid">
+    <div class="card">
+      <div class="card-title"><span class="icon">📍</span> Pilot Regions</div>
+      <div class="pilot-grid">
+        <div class="pilot-region">
+          <h4>Northern Milk Shed</h4>
+          <div class="districts">Burera, Musanze, Gicumbi</div>
+          <div class="system-type">Intensive dairy farming</div>
+        </div>
+        <div class="pilot-region">
+          <h4>Eastern Milk Shed</h4>
+          <div class="districts">Nyagatare, Gatsibo, Kayonza</div>
+          <div class="system-type">Extensive dairy farming</div>
+        </div>
+      </div>
+      <p style="font-size:9px; color:var(--muted); margin-top:8px; line-height:1.45;">
+        Two contrasting ecosystems with different farming systems, cultures, and technology adoption mindsets — enabling robust platform validation.
+      </p>
+    </div>
+
+    <div class="card">
+      <div class="card-title"><span class="icon">🎓</span> Training Cascade (ToT)</div>
+      <div class="training-tiers">
+        <div class="tier">
+          <div class="tier-num">12</div>
+          <div class="tier-info">
+            <div class="tier-title">Master Trainers</div>
+            <div class="tier-desc">Data analysis, reporting & coaching. 1 per district → 12 facilitators + 100 farmers</div>
+          </div>
+          <div class="tier-bar"><div class="tier-bar-fill" style="width:8%; background:var(--teal-glow)"></div></div>
+        </div>
+        <div class="tier">
+          <div class="tier-num">120</div>
+          <div class="tier-info">
+            <div class="tier-title">Facilitators (Animal Scientists)</div>
+            <div class="tier-desc">ToT program — 20/district. Field training, app handling, reporting</div>
+          </div>
+          <div class="tier-bar"><div class="tier-bar-fill" style="width:30%; background:var(--amber)"></div></div>
+        </div>
+        <div class="tier">
+          <div class="tier-num">1,200</div>
+          <div class="tier-info">
+            <div class="tier-title">Model Dairy Farmers</div>
+            <div class="tier-desc">Smartphone-equipped. Trained in Kinyarwanda & English on MooMe app</div>
+          </div>
+          <div class="tier-bar"><div class="tier-bar-fill" style="width:100%; background: linear-gradient(90deg, var(--teal), var(--teal-glow))"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card amber-accent">
+      <div class="card-title"><span class="icon">📦</span> Deliverables</div>
+      <div class="budget-items">
+        <div class="budget-item"><div class="b-num">1</div><div>Baseline survey — AI-IoT perception & adoption</div></div>
+        <div class="budget-item"><div class="b-num">2</div><div>Trainer & farmer selection process</div></div>
+        <div class="budget-item"><div class="b-num">3</div><div>Device & sensor KIT procurement</div></div>
+        <div class="budget-item"><div class="b-num">4</div><div>Web & mobile app customization for Rwanda</div></div>
+        <div class="budget-item"><div class="b-num">5</div><div>Field testing, ToT validation & farm deploy</div></div>
+        <div class="budget-item"><div class="b-num">6</div><div>Data analysis, reporting & farmer feedback</div></div>
+        <div class="budget-item"><div class="b-num">7</div><div>Publication of research findings</div></div>
+        <div class="budget-item"><div class="b-num">8</div><div>Stakeholder workshop</div></div>
+      </div>
+      <div class="devices-row">
+        <div class="device-tag"><span class="d-count">18</span> Tablets</div>
+        <div class="device-tag"><span class="d-count">1,200</span> Collar KITs</div>
+        <div class="device-tag"><span class="d-count">1</span> Laptop</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ====== SECTION DIVIDER: BUSINESS PLAN ====== -->
+  <div class="section-divider">
+    <div class="divider-line"></div>
+    <div class="divider-text">Business Plan & Implementation Strategy</div>
+    <div class="divider-line"></div>
+  </div>
+
+  <!-- ====== BUSINESS PLAN ROW: TIMELINE + REVENUE + VALUE CHAIN ====== -->
+  <div class="main-grid">
+
+    <!-- TIMELINE -->
+    <div class="card green-accent" style="grid-column: span 2;">
+      <div class="card-title"><span class="icon">📅</span> Project Timeline — 24 Months</div>
+      <div class="timeline">
+        <div class="phase">
+          <div class="phase-dot"></div>
+          <div class="phase-label">Phase 1</div>
+          <div class="phase-time">Months 1–3</div>
+          <div class="phase-desc">Baseline survey, stakeholder workshop, trainer & farmer selection, ethics approval, procurement planning</div>
+        </div>
+        <div class="phase">
+          <div class="phase-dot"></div>
+          <div class="phase-label">Phase 2</div>
+          <div class="phase-time">Months 4–6</div>
+          <div class="phase-desc">Device & KIT procurement, web/mobile app design, AI model customization, platform setup for Rwanda</div>
+        </div>
+        <div class="phase">
+          <div class="phase-dot"></div>
+          <div class="phase-label">Phase 3</div>
+          <div class="phase-time">Months 7–12</div>
+          <div class="phase-desc">ToT training (12 Master + 120 Facilitators), field testing, validation, sensor calibration, app piloting</div>
+        </div>
+        <div class="phase">
+          <div class="phase-dot"></div>
+          <div class="phase-label">Phase 4</div>
+          <div class="phase-time">Months 13–20</div>
+          <div class="phase-desc">Full deployment to 1,200 farmers, ongoing mentoring, data collection, farm-level implementation</div>
+        </div>
+        <div class="phase">
+          <div class="phase-dot"></div>
+          <div class="phase-label">Phase 5</div>
+          <div class="phase-time">Months 21–24</div>
+          <div class="phase-desc">Data analysis, reporting, farmer feedback, publication, final stakeholder workshop, Phase 2 planning</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- REVENUE MODEL -->
+    <div class="card green-accent">
+      <div class="card-title"><span class="icon">💰</span> Revenue & Sustainability</div>
+      <div class="rev-item"><div class="rev-title">Farmer Subscriptions</div><div class="rev-desc">Monthly app subscription: $2–5/farmer. Phase 2: FAO funds nationwide rollout subscriptions.</div></div>
+      <div class="rev-item"><div class="rev-title">Device Sales & Leasing</div><div class="rev-desc">Collar + sensor KIT sales to cooperatives & farmers with installment plans.</div></div>
+      <div class="rev-item"><div class="rev-title">Data Analytics Services</div><div class="rev-desc">Premium dashboards for processors (Inyange), vets & government agencies.</div></div>
+      <div class="rev-item"><div class="rev-title">Training & Consulting</div><div class="rev-desc">ToT programs licensed to other countries. Knowledge transfer services.</div></div>
+      <div class="rev-item"><div class="rev-title">SmartFeed Integration</div><div class="rev-desc">Bundled with WOREX feed plant — feed + monitoring as a package.</div></div>
+    </div>
+
+  </div>
+
+  <!-- ====== SECTION DIVIDER: DETAILED BUDGET ====== -->
+  <div class="section-divider">
+    <div class="divider-line"></div>
+    <div class="divider-text">Detailed Budget Plan</div>
+    <div class="divider-line"></div>
+  </div>
+
+  <!-- ====== FULL BUDGET TABLE ====== -->
+  <div class="card" style="padding: 16px 20px;">
+    <table class="budget-table">
+      <thead>
+        <tr>
+          <th style="width:30px">#</th>
+          <th>Budget Line Item</th>
+          <th>Unit/Qty</th>
+          <th>Unit Cost (USD)</th>
+          <th>Total (USD)</th>
+        </tr>
+      </thead>
+      <tbody>
+
+        <!-- A. PERSONNEL -->
+        <tr class="cat-row"><td colspan="5">A. Personnel & Human Resources</td></tr>
+        <tr><td>A1</td><td>Project Manager (full-time, 24 months)</td><td>24 months</td><td>$1,500/mo</td><td>$36,000</td></tr>
+        <tr><td>A2</td><td>Principal Investigator — Senior Animal Scientist</td><td>24 months</td><td>$2,000/mo</td><td>$48,000</td></tr>
+        <tr><td>A3</td><td>IoT/AI Technical Lead</td><td>18 months</td><td>$1,800/mo</td><td>$32,400</td></tr>
+        <tr><td>A4</td><td>Software Developer (Mobile & Web)</td><td>12 months</td><td>$1,500/mo</td><td>$18,000</td></tr>
+        <tr><td>A5</td><td>Data Analyst / AI Specialist</td><td>12 months</td><td>$1,400/mo</td><td>$16,800</td></tr>
+        <tr><td>A6</td><td>Livestock / Environment Expert</td><td>80 days</td><td>$130/day</td><td>$10,400</td></tr>
+        <tr><td>A7</td><td>Veterinarian Consultant (field support)</td><td>60 days</td><td>$100/day</td><td>$6,000</td></tr>
+        <tr><td>A8</td><td>MSc Research Student (stipend + research)</td><td>24 months</td><td>$350/mo</td><td>$8,400</td></tr>
+        <tr><td>A9</td><td>12 Master Trainers (training & coaching days)</td><td>12 × 40 days</td><td>$150/day</td><td>$72,000</td></tr>
+        <tr><td>A10</td><td>120 Facilitators/Animal Scientists (ToT + field)</td><td>120 × 20 days</td><td>$80/day</td><td>$192,000</td></tr>
+        <tr><td>A11</td><td>Administrative & Finance Officer</td><td>24 months</td><td>$800/mo</td><td>$19,200</td></tr>
+        <tr><td>A12</td><td>M&E Officer (Monitoring & Evaluation)</td><td>18 months</td><td>$1,000/mo</td><td>$18,000</td></tr>
+        <tr class="subtotal-row"><td></td><td colspan="3">Subtotal A — Personnel</td><td>$477,200</td></tr>
+
+        <!-- B. DEVICES & HARDWARE -->
+        <tr class="cat-row"><td colspan="5">B. Devices, Hardware & Equipment</td></tr>
+        <tr><td>B1</td><td>IoT Smart Collars (GPS + temp + activity sensor)</td><td>1,200 units</td><td>$95/unit</td><td>$114,000</td></tr>
+        <tr><td>B2</td><td>Sensor KIT per farmer (ear tag + gateway share)</td><td>1,200 kits</td><td>$130/kit</td><td>$156,000</td></tr>
+        <tr><td>B3</td><td>Android Tablets for Master Trainers</td><td>18 units</td><td>$200/unit</td><td>$3,600</td></tr>
+        <tr><td>B4</td><td>Laptop for MSc Student</td><td>1 unit</td><td>$600</td><td>$600</td></tr>
+        <tr><td>B5</td><td>Smart Water Meters (per pilot site)</td><td>12 units</td><td>$220/unit</td><td>$2,640</td></tr>
+        <tr><td>B6</td><td>Milk Quality Sensors (temperature + pH)</td><td>6 units</td><td>$300/unit</td><td>$1,800</td></tr>
+        <tr><td>B7</td><td>IoT Gateways / Connectivity Hubs (per sector)</td><td>18 units</td><td>$280/unit</td><td>$5,040</td></tr>
+        <tr><td>B8</td><td>Solar Charging Stations for devices</td><td>36 units</td><td>$80/unit</td><td>$2,880</td></tr>
+        <tr><td>B9</td><td>Spare parts, cables, protective cases</td><td>Lump sum</td><td>—</td><td>$3,500</td></tr>
+        <tr><td>B10</td><td>Shipping, customs & import duties (18% VAT)</td><td>Lump sum</td><td>—</td><td>$32,000</td></tr>
+        <tr class="subtotal-row"><td></td><td colspan="3">Subtotal B — Devices & Hardware</td><td>$322,060</td></tr>
+
+        <!-- C. SOFTWARE & DIGITAL -->
+        <tr class="cat-row"><td colspan="5">C. Software & Digital Platform Development</td></tr>
+        <tr><td>C1</td><td>MooMe Mobile App development (Android + iOS, bilingual)</td><td>1 app</td><td>—</td><td>$22,000</td></tr>
+        <tr><td>C2</td><td>Web Dashboard & Admin Portal development</td><td>1 platform</td><td>—</td><td>$14,000</td></tr>
+        <tr><td>C3</td><td>AI Model development (disease, heat, feed, climate)</td><td>4 models</td><td>$6,000/model</td><td>$24,000</td></tr>
+        <tr><td>C4</td><td>AI Chatbot (Kinyarwanda NLP + English)</td><td>1 system</td><td>—</td><td>$8,000</td></tr>
+        <tr><td>C5</td><td>Dataset collection, labeling & training data</td><td>Lump sum</td><td>—</td><td>$5,000</td></tr>
+        <tr><td>C6</td><td>Cloud hosting & data storage (AWS/Azure, 24 months)</td><td>24 months</td><td>$200/mo</td><td>$4,800</td></tr>
+        <tr><td>C7</td><td>SMS/USSD gateway for farmer alerts</td><td>24 months</td><td>$120/mo</td><td>$2,880</td></tr>
+        <tr><td>C8</td><td>App maintenance & updates (Year 1 + 2)</td><td>24 months</td><td>$250/mo</td><td>$6,000</td></tr>
+        <tr><td>C9</td><td>Cybersecurity audit & data protection compliance</td><td>1 audit</td><td>$3,000</td><td>$3,000</td></tr>
+        <tr class="subtotal-row"><td></td><td colspan="3">Subtotal C — Software & Digital</td><td>$89,680</td></tr>
+
+        <!-- D. TRAINING & CAPACITY BUILDING -->
+        <tr class="cat-row"><td colspan="5">D. Training & Capacity Building</td></tr>
+        <tr><td>D1</td><td>Master Trainer ToT Workshop (5 days × 12 trainers)</td><td>12 pax × 5 days</td><td>$80/day p.p.</td><td>$4,800</td></tr>
+        <tr><td>D2</td><td>Facilitator ToT Training (7 days × 120 facilitators, 6 districts)</td><td>120 pax × 7 days</td><td>$60/day p.p.</td><td>$50,400</td></tr>
+        <tr><td>D3</td><td>Farmer Training Sessions (3 days × 1,200 farmers, per district)</td><td>1,200 pax × 3 days</td><td>$10/day p.p.</td><td>$36,000</td></tr>
+        <tr><td>D4</td><td>Training venue rental (rural district halls, 48 sessions)</td><td>48 days</td><td>$80/day</td><td>$3,840</td></tr>
+        <tr><td>D5</td><td>Training materials (manuals, handouts, folders per trainee)</td><td>1,332 sets</td><td>$8/set</td><td>$10,656</td></tr>
+        <tr><td>D6</td><td>Refreshments for training (tea + lunch)</td><td>1,332 pax × avg 4 days</td><td>$4/day</td><td>$21,312</td></tr>
+        <tr><td>D7</td><td>Farmer transport allowance (to/from training)</td><td>1,200 pax × 3 days</td><td>$4/day</td><td>$14,400</td></tr>
+        <tr><td>D8</td><td>Trainer per diem (accommodation + meals, rural)</td><td>132 pax × avg 12 days</td><td>$60/day</td><td>$95,040</td></tr>
+        <tr><td>D9</td><td>Video tutorial production (Kinyarwanda + English)</td><td>15 videos</td><td>$400/video</td><td>$6,000</td></tr>
+        <tr class="subtotal-row"><td></td><td colspan="3">Subtotal D — Training & Capacity Building</td><td>$242,448</td></tr>
+
+        <!-- E. RESEARCH, M&E, SURVEYS -->
+        <tr class="cat-row"><td colspan="5">E. Research, Monitoring & Evaluation</td></tr>
+        <tr><td>E1</td><td>Baseline survey design & ethics approval</td><td>1 survey</td><td>—</td><td>$2,000</td></tr>
+        <tr><td>E2</td><td>Baseline survey — enumerators, data collection (1,200 farmers)</td><td>1,200 respondents</td><td>$10/resp</td><td>$12,000</td></tr>
+        <tr><td>E3</td><td>Endline survey (same scope as baseline)</td><td>1,200 respondents</td><td>$10/resp</td><td>$12,000</td></tr>
+        <tr><td>E4</td><td>Midterm evaluation & field data validation</td><td>6 districts × 3 days</td><td>$250/day</td><td>$4,500</td></tr>
+        <tr><td>E5</td><td>Data analysis software (STATA + Python tools)</td><td>Lump sum</td><td>—</td><td>$1,200</td></tr>
+        <tr><td>E6</td><td>Farmer feedback exercise (6 district sessions)</td><td>6 sessions</td><td>$600/session</td><td>$3,600</td></tr>
+        <tr><td>E7</td><td>Research publication fees (2 peer-reviewed papers)</td><td>2 papers</td><td>$1,500/paper</td><td>$3,000</td></tr>
+        <tr><td>E8</td><td>Conference presentation & dissemination</td><td>2 conferences</td><td>$1,500</td><td>$3,000</td></tr>
+        <tr class="subtotal-row"><td></td><td colspan="3">Subtotal E — Research & M&E</td><td>$41,300</td></tr>
+
+        <!-- F. LOGISTICS & TRANSPORT -->
+        <tr class="cat-row"><td colspan="5">F. Logistics, Transport & Field Operations</td></tr>
+        <tr><td>F1</td><td>Vehicle hire — 4×4 for field visits (24 months)</td><td>24 months</td><td>$900/mo</td><td>$21,600</td></tr>
+        <tr><td>F2</td><td>Fuel & vehicle maintenance</td><td>24 months</td><td>$300/mo</td><td>$7,200</td></tr>
+        <tr><td>F3</td><td>Motorcycle hire for facilitators (district level)</td><td>6 motos × 10 months</td><td>$180/mo</td><td>$10,800</td></tr>
+        <tr><td>F4</td><td>Field visit per diem — project staff (district visits)</td><td>100 days</td><td>$70/day</td><td>$7,000</td></tr>
+        <tr><td>F5</td><td>Communication & airtime (staff + farmer data bundles)</td><td>24 months</td><td>$250/mo</td><td>$6,000</td></tr>
+        <tr class="subtotal-row"><td></td><td colspan="3">Subtotal F — Logistics & Transport</td><td>$52,600</td></tr>
+
+        <!-- G. WORKSHOPS & STAKEHOLDER EVENTS -->
+        <tr class="cat-row"><td colspan="5">G. Workshops & Stakeholder Engagement</td></tr>
+        <tr><td>G1</td><td>Inception Workshop — Kigali (RAB, UK, MINAGRI, FAO, RYAF, Co-ops, Districts)</td><td>1 day × 50 pax</td><td>$45/pax + venue</td><td>$3,500</td></tr>
+        <tr><td>G2</td><td>Conference venue rental — Kigali hotel</td><td>2 days</td><td>$500/day</td><td>$1,000</td></tr>
+        <tr><td>G3</td><td>Midterm Review Workshop</td><td>1 day × 35 pax</td><td>$45/pax + venue</td><td>$2,500</td></tr>
+        <tr><td>G4</td><td>Final Stakeholder Workshop & Results Dissemination</td><td>1 day × 60 pax</td><td>$45/pax + venue</td><td>$4,200</td></tr>
+        <tr><td>G5</td><td>District-level stakeholder meetings (6 districts × 2)</td><td>12 meetings</td><td>$350/meeting</td><td>$4,200</td></tr>
+        <tr><td>G6</td><td>Farmer cooperative engagement sessions</td><td>12 sessions</td><td>$250/session</td><td>$3,000</td></tr>
+        <tr class="subtotal-row"><td></td><td colspan="3">Subtotal G — Workshops & Stakeholder</td><td>$18,400</td></tr>
+
+        <!-- H. ADMIN & OVERHEAD -->
+        <tr class="cat-row"><td colspan="5">H. Administration & Overhead</td></tr>
+        <tr><td>H1</td><td>Office rent & utilities (WOREX project office)</td><td>24 months</td><td>$250/mo</td><td>$6,000</td></tr>
+        <tr><td>H2</td><td>Office supplies & stationery</td><td>24 months</td><td>$80/mo</td><td>$1,920</td></tr>
+        <tr><td>H3</td><td>Financial audit (annual, external)</td><td>2 audits</td><td>$2,500</td><td>$5,000</td></tr>
+        <tr><td>H4</td><td>Insurance — devices, equipment & liability</td><td>24 months</td><td>$350/mo</td><td>$8,400</td></tr>
+        <tr><td>H5</td><td>Banking, legal & regulatory fees</td><td>Lump sum</td><td>—</td><td>$2,500</td></tr>
+        <tr><td>H6</td><td>Branding, printing & visibility materials</td><td>Lump sum</td><td>—</td><td>$3,500</td></tr>
+        <tr class="subtotal-row"><td></td><td colspan="3">Subtotal H — Administration</td><td>$27,320</td></tr>
+
+        <!-- I. CONTINGENCY -->
+        <tr class="cat-row"><td colspan="5">I. Contingency & Risk Mitigation</td></tr>
+        <tr><td>I1</td><td>Contingency fund (10% of subtotal A–H)</td><td>10%</td><td>—</td><td>$128,992</td></tr>
+        <tr class="subtotal-row"><td></td><td colspan="3">Subtotal I — Contingency</td><td>$128,992</td></tr>
+
+        <!-- GRAND TOTAL -->
+        <tr class="grand-total">
+          <td></td>
+          <td colspan="3">GRAND TOTAL — MooMe IoT-AI Platform Project (24 Months)</td>
+          <td>$1,400,000</td>
+        </tr>
+
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ====== BUDGET SUMMARY + GENDER + PARTNERS ====== -->
+  <div class="main-grid" style="margin-top:14px;">
+
+    <!-- BUDGET ALLOCATION VISUAL -->
+    <div class="card purple-accent">
+      <div class="card-title"><span class="icon">📊</span> Budget Allocation</div>
+      <div class="pie-legend">
+        <div class="pie-item"><div class="pie-dot" style="background:var(--teal)"></div><div class="pie-pct">34.1%</div>Personnel & HR ($477,200)</div>
+        <div class="pie-item"><div class="pie-dot" style="background:var(--amber)"></div><div class="pie-pct">23.0%</div>Devices & Hardware ($322,060)</div>
+        <div class="pie-item"><div class="pie-dot" style="background:var(--coral)"></div><div class="pie-pct">17.3%</div>Training & Capacity ($242,448)</div>
+        <div class="pie-item"><div class="pie-dot" style="background:var(--green)"></div><div class="pie-pct">6.4%</div>Software & Digital ($89,680)</div>
+        <div class="pie-item"><div class="pie-dot" style="background:var(--purple)"></div><div class="pie-pct">3.0%</div>Research & M&E ($41,300)</div>
+        <div class="pie-item"><div class="pie-dot" style="background:#60a5fa"></div><div class="pie-pct">3.8%</div>Logistics & Transport ($52,600)</div>
+        <div class="pie-item"><div class="pie-dot" style="background:#f9a8d4"></div><div class="pie-pct">1.3%</div>Workshops ($18,400)</div>
+        <div class="pie-item"><div class="pie-dot" style="background:#fbbf24"></div><div class="pie-pct">2.0%</div>Administration ($27,320)</div>
+        <div class="pie-item"><div class="pie-dot" style="background:#94a3b8"></div><div class="pie-pct">9.2%</div>Contingency ($128,992)</div>
+      </div>
+    </div>
+
+    <!-- DIGITAL ECOSYSTEM -->
+    <div class="card">
+      <div class="card-title"><span class="icon">🔗</span> Digital Ecosystem</div>
+      <div class="chain-flow">
+        <span class="chain-node">Farmers</span><span class="chain-arrow">→</span>
+        <span class="chain-node">Vets</span><span class="chain-arrow">→</span>
+        <span class="chain-node">Feed Suppliers</span><span class="chain-arrow">→</span>
+        <span class="chain-node">Milk Processors</span><span class="chain-arrow">→</span>
+        <span class="chain-node">Finance</span>
+      </div>
+      <p style="font-size:9px; color:var(--muted); margin-top:8px; line-height:1.5;">
+        Real-time data sharing across the value chain. Integrated with <strong style="color:var(--teal-glow)">SmartFeed Rwanda</strong> for feed-to-milk optimization. Phase 2: FAO funds nationwide rollout.
+      </p>
+      <div style="margin-top:10px;">
+        <div style="font-size:8.5px; font-weight:700; color:var(--amber); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">Phase 2 — National Scale-Up</div>
+        <p style="font-size:9px; color:var(--muted); line-height:1.45;">FAO funds capacity building, farmer subscriptions & digital solution implementation to <strong style="color:var(--white)">all districts nationwide</strong>.</p>
+      </div>
+    </div>
+
+    <!-- GENDER & PARTNERS -->
+    <div class="card" style="display:flex; flex-direction:column; justify-content:space-between;">
+      <div>
+        <div class="card-title"><span class="icon">♀</span> Gender & Youth Inclusion</div>
+        <div class="gender-bar">
+          <div class="women">80% WOMEN & YOUTH</div>
+          <div class="other">20%</div>
+        </div>
+        <div style="font-size:9px; color:var(--muted); line-height:1.4;">
+          Women and youth are primary targets — 80% of all 1,332 trainees. Building digital literacy and livestock management capacity across 6 districts.
+        </div>
+      </div>
+      <div style="margin-top:8px;">
+        <div style="font-size:8px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:1px; margin-bottom:4px;">Partners</div>
+        <div class="partners-strip">
+          <span class="partner-chip lead">WOREX Ltd</span>
+          <span class="partner-chip lead">FAO Rwanda</span>
+          <span class="partner-chip">RAB</span>
+          <span class="partner-chip">Univ. of Kigali</span>
+          <span class="partner-chip">MINAGRI</span>
+          <span class="partner-chip">RYAF</span>
+          <span class="partner-chip">Co-ops</span>
+          <span class="partner-chip">Districts</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ====== FOOTER ====== -->
+  <footer class="footer">
+    <div class="footer-left">
+      <div class="sdg-tags">
+        <span class="sdg-tag sdg-2">SDG 2 — Zero Hunger</span>
+        <span class="sdg-tag sdg-5">SDG 5 — Gender Equality</span>
+        <span class="sdg-tag sdg-8">SDG 8 — Decent Work</span>
+        <span class="sdg-tag sdg-9">SDG 9 — Innovation</span>
+        <span class="sdg-tag sdg-13">SDG 13 — Climate Action</span>
+      </div>
+      <div class="footer-contact">
+        <strong>WOREX Ltd</strong> — Garuka Animal Feeds &nbsp;|&nbsp; TIN: 102167877 &nbsp;|&nbsp; Nyagatare Industrial Area, Rwanda<br>
+        <strong>Mr. Remy Titien Niyireba</strong> (Animal Scientist & Principal Investigator) &nbsp;|&nbsp; Tel: +250 788 300 975 / 0788 587 010 &nbsp;|&nbsp; worexltd2010@gmail.com
+      </div>
+    </div>
+    <div class="footer-right">
+      <div class="cta">Total Investment: $1,400,000</div>
+      <div class="invest-note">24-Month Project &bull; Smart &bull; Predictive &bull; Connected Farming</div>
+    </div>
+  </footer>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,2021 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WOREX — World Resources Exchange Ltd</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Source+Sans+3:wght@300;400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --forest: #0D3B1E;
+    --forest-mid: #1B5E20;
+    --forest-light: #2E7D32;
+    --gold: #D4A017;
+    --gold-light: #E8C547;
+    --gold-pale: #F5E6B8;
+    --cream: #FDF8EE;
+    --cream-dark: #F0E6D3;
+    --charcoal: #1A1A1A;
+    --slate: #4A4A4A;
+    --mist: #8A9A8A;
+    --white: #FFFFFF;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 80px;
+  }
+
+  body {
+    font-family: 'Source Sans 3', sans-serif;
+    color: var(--charcoal);
+    background: var(--cream);
+    overflow-x: hidden;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* ─── NAVIGATION ─── */
+  nav {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
+    background: rgba(13, 59, 30, 0.95);
+    backdrop-filter: blur(20px);
+    border-bottom: 1px solid rgba(212, 160, 23, 0.3);
+    transition: all 0.4s ease;
+  }
+
+  nav.scrolled {
+    box-shadow: 0 4px 30px rgba(0,0,0,0.2);
+  }
+
+  .nav-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 40px;
+    height: 72px;
+  }
+
+  .nav-logo {
+    font-family: 'Playfair Display', serif;
+    font-weight: 900;
+    font-size: 1.4rem;
+    color: var(--gold);
+    letter-spacing: 3px;
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 8px;
+    list-style: none;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+  }
+
+  .nav-links a {
+    color: rgba(255,255,255,0.7);
+    text-decoration: none;
+    font-size: 0.72rem;
+    font-weight: 600;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 6px 12px;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+  }
+
+  .nav-links a:hover, .nav-links a.active {
+    color: var(--gold);
+    background: rgba(212, 160, 23, 0.1);
+  }
+
+  /* ─── HERO ─── */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    background: var(--forest);
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(ellipse 80% 60% at 20% 80%, rgba(46, 125, 50, 0.4) 0%, transparent 60%),
+      radial-gradient(ellipse 60% 80% at 80% 20%, rgba(212, 160, 23, 0.15) 0%, transparent 50%),
+      radial-gradient(ellipse 100% 100% at 50% 50%, rgba(13, 59, 30, 0.8) 0%, transparent 100%);
+  }
+
+  .hero-pattern {
+    position: absolute;
+    inset: 0;
+    opacity: 0.04;
+    background-image:
+      repeating-linear-gradient(0deg, transparent, transparent 60px, rgba(255,255,255,0.5) 60px, rgba(255,255,255,0.5) 61px),
+      repeating-linear-gradient(90deg, transparent, transparent 60px, rgba(255,255,255,0.5) 60px, rgba(255,255,255,0.5) 61px);
+  }
+
+  .hero-content {
+    position: relative;
+    text-align: center;
+    padding: 40px;
+    max-width: 900px;
+  }
+
+  .hero-badge {
+    display: inline-block;
+    border: 1px solid var(--gold);
+    color: var(--gold);
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    padding: 8px 24px;
+    margin-bottom: 40px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease 0.3s forwards;
+  }
+
+  .hero-title {
+    font-family: 'Playfair Display', serif;
+    font-weight: 900;
+    font-size: clamp(2.8rem, 6vw, 5.5rem);
+    color: var(--white);
+    line-height: 1.05;
+    margin-bottom: 8px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease 0.5s forwards;
+  }
+
+  .hero-title .gold { color: var(--gold); }
+
+  .hero-acronym {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(1rem, 2vw, 1.5rem);
+    color: var(--gold-light);
+    letter-spacing: 12px;
+    font-weight: 400;
+    margin-bottom: 48px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease 0.7s forwards;
+  }
+
+  .hero-philosophy {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: clamp(1.1rem, 2vw, 1.5rem);
+    color: rgba(255,255,255,0.75);
+    line-height: 1.6;
+    max-width: 600px;
+    margin: 0 auto 48px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease 0.9s forwards;
+  }
+
+  .hero-cta {
+    display: inline-flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--gold);
+    color: var(--forest);
+    font-weight: 700;
+    font-size: 0.8rem;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 16px 40px;
+    text-decoration: none;
+    transition: all 0.4s ease;
+    opacity: 0;
+    animation: fadeUp 0.8s ease 1.1s forwards;
+  }
+
+  .hero-cta:hover {
+    background: var(--gold-light);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 40px rgba(212, 160, 23, 0.3);
+  }
+
+  .hero-scroll {
+    position: absolute;
+    bottom: 40px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    opacity: 0;
+    animation: fadeUp 0.8s ease 1.3s forwards;
+  }
+
+  .hero-scroll span {
+    color: rgba(255,255,255,0.4);
+    font-size: 0.65rem;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+  }
+
+  .scroll-line {
+    width: 1px;
+    height: 40px;
+    background: linear-gradient(to bottom, var(--gold), transparent);
+    animation: scrollPulse 2s ease infinite;
+  }
+
+  /* ─── SECTIONS ─── */
+  section {
+    padding: 100px 40px;
+    position: relative;
+  }
+
+  .section-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .section-label {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 12px;
+  }
+
+  .section-title {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(2rem, 4vw, 3.2rem);
+    font-weight: 900;
+    color: var(--forest);
+    line-height: 1.15;
+    margin-bottom: 48px;
+  }
+
+  .section-title.light { color: var(--white); }
+
+  /* ─── OVERVIEW ─── */
+  .overview {
+    background: var(--cream);
+  }
+
+  .overview-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    align-items: start;
+  }
+
+  .overview-details {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .detail-item {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+  }
+
+  .detail-icon {
+    width: 44px;
+    height: 44px;
+    min-width: 44px;
+    background: var(--forest);
+    color: var(--gold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    border-radius: 4px;
+  }
+
+  .detail-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--mist);
+    margin-bottom: 4px;
+  }
+
+  .detail-value {
+    font-size: 1.05rem;
+    color: var(--charcoal);
+    line-height: 1.5;
+  }
+
+  .founders-card {
+    background: var(--white);
+    padding: 40px;
+    border: 1px solid rgba(13, 59, 30, 0.1);
+    position: relative;
+  }
+
+  .founders-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(90deg, var(--forest), var(--gold));
+  }
+
+  .founder {
+    margin-bottom: 28px;
+    padding-bottom: 28px;
+    border-bottom: 1px solid var(--cream-dark);
+  }
+
+  .founder:last-of-type {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+
+  .founder-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--forest);
+    margin-bottom: 4px;
+  }
+
+  .founder-role {
+    font-size: 0.9rem;
+    color: var(--slate);
+    font-weight: 300;
+  }
+
+  /* ─── CONTEXT ─── */
+  .context {
+    background: var(--forest);
+    color: var(--white);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .context::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -20%;
+    width: 600px;
+    height: 600px;
+    background: radial-gradient(circle, rgba(212, 160, 23, 0.08), transparent 70%);
+    border-radius: 50%;
+  }
+
+  .context-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 2px;
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.08);
+  }
+
+  .context-item {
+    background: var(--forest);
+    padding: 32px;
+    position: relative;
+    transition: all 0.3s ease;
+  }
+
+  .context-item:hover {
+    background: rgba(255,255,255,0.03);
+  }
+
+  .context-item-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 10px;
+  }
+
+  .context-item-value {
+    font-size: 1rem;
+    color: rgba(255,255,255,0.8);
+    line-height: 1.5;
+  }
+
+  /* ─── COMPONENTS ─── */
+  .components { background: var(--cream); }
+
+  .components-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+
+  .component-card {
+    background: var(--white);
+    padding: 36px;
+    border: 1px solid rgba(0,0,0,0.06);
+    position: relative;
+    transition: all 0.4s ease;
+    overflow: hidden;
+  }
+
+  .component-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: var(--gold);
+    transform: scaleX(0);
+    transition: transform 0.4s ease;
+  }
+
+  .component-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.08);
+  }
+
+  .component-card:hover::after {
+    transform: scaleX(1);
+  }
+
+  .component-icon {
+    font-size: 2rem;
+    margin-bottom: 16px;
+  }
+
+  .component-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: var(--forest);
+    margin-bottom: 8px;
+  }
+
+  .component-desc {
+    font-size: 0.9rem;
+    color: var(--slate);
+    line-height: 1.5;
+  }
+
+  /* ─── MOOME ─── */
+  .moome {
+    background: linear-gradient(135deg, #0A2E15 0%, var(--forest) 50%, #0D3B1E 100%);
+    color: var(--white);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .moome::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at 80% 20%, rgba(212, 160, 23, 0.1), transparent 50%),
+      radial-gradient(circle at 20% 80%, rgba(46, 125, 50, 0.2), transparent 50%);
+  }
+
+  .moome .section-inner { position: relative; }
+
+  .moome-hero-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    margin-bottom: 80px;
+  }
+
+  .moome-description {
+    font-size: 1.15rem;
+    color: rgba(255,255,255,0.8);
+    line-height: 1.7;
+    margin-bottom: 32px;
+  }
+
+  .moome-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+  }
+
+  .moome-stat {
+    background: rgba(255,255,255,0.05);
+    border: 1px solid rgba(255,255,255,0.1);
+    padding: 24px;
+    text-align: center;
+    transition: all 0.3s ease;
+  }
+
+  .moome-stat:hover {
+    background: rgba(212, 160, 23, 0.1);
+    border-color: rgba(212, 160, 23, 0.3);
+  }
+
+  .moome-stat-number {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.2rem;
+    font-weight: 900;
+    color: var(--gold);
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+
+  .moome-stat-label {
+    font-size: 0.72rem;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.5);
+    font-weight: 600;
+  }
+
+  .tech-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 16px;
+  }
+
+  .tech-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    padding: 24px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.06);
+    transition: all 0.3s ease;
+  }
+
+  .tech-item:hover {
+    background: rgba(255,255,255,0.06);
+    border-color: rgba(212, 160, 23, 0.2);
+  }
+
+  .tech-dot {
+    width: 10px;
+    height: 10px;
+    min-width: 10px;
+    background: var(--gold);
+    border-radius: 50%;
+    margin-top: 6px;
+  }
+
+  .tech-name {
+    font-weight: 700;
+    font-size: 0.95rem;
+    color: var(--white);
+    margin-bottom: 4px;
+  }
+
+  .tech-desc {
+    font-size: 0.85rem;
+    color: rgba(255,255,255,0.5);
+  }
+
+  /* ─── BUDGET ─── */
+  .budget { background: var(--cream); }
+
+  .budget-header {
+    display: flex;
+    align-items: baseline;
+    gap: 20px;
+    margin-bottom: 48px;
+  }
+
+  .budget-total {
+    font-family: 'Playfair Display', serif;
+    font-size: 3.5rem;
+    font-weight: 900;
+    color: var(--forest);
+  }
+
+  .budget-total-label {
+    font-size: 0.9rem;
+    color: var(--slate);
+    font-weight: 300;
+  }
+
+  .budget-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    align-items: start;
+  }
+
+  .budget-bars {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .budget-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .budget-row-label {
+    width: 180px;
+    min-width: 180px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--charcoal);
+    text-align: right;
+  }
+
+  .budget-bar-wrap {
+    flex: 1;
+    height: 28px;
+    background: var(--cream-dark);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .budget-bar {
+    height: 100%;
+    background: linear-gradient(90deg, var(--forest), var(--forest-light));
+    transition: width 1.5s ease;
+    position: relative;
+  }
+
+  .budget-bar-amount {
+    position: absolute;
+    right: 8px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: var(--white);
+    white-space: nowrap;
+  }
+
+  .budget-bar-amount.outside {
+    right: auto;
+    left: calc(100% + 8px);
+    color: var(--charcoal);
+  }
+
+  .budget-chart {
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .donut-svg {
+    width: 300px;
+    height: 300px;
+    transform: rotate(-90deg);
+  }
+
+  .donut-segment {
+    fill: none;
+    stroke-width: 40;
+    transition: all 0.3s ease;
+    cursor: pointer;
+  }
+
+  .donut-segment:hover {
+    stroke-width: 46;
+    filter: brightness(1.2);
+  }
+
+  /* ─── RESULTS ─── */
+  .results {
+    background: var(--white);
+    border-top: 1px solid var(--cream-dark);
+    border-bottom: 1px solid var(--cream-dark);
+  }
+
+  .results-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 32px;
+  }
+
+  .result-card {
+    text-align: center;
+    padding: 32px 16px;
+    position: relative;
+  }
+
+  .result-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 40px;
+    height: 3px;
+    background: var(--gold);
+  }
+
+  .result-number {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.5rem;
+    font-weight: 900;
+    color: var(--forest);
+    line-height: 1;
+    margin-top: 16px;
+    margin-bottom: 8px;
+  }
+
+  .result-label {
+    font-size: 0.85rem;
+    color: var(--slate);
+    line-height: 1.4;
+  }
+
+  /* ─── FRAMEWORK ─── */
+  .framework {
+    background: var(--cream);
+  }
+
+  .framework-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+  }
+
+  .framework-table thead th {
+    background: var(--forest);
+    color: var(--gold);
+    padding: 16px 20px;
+    text-align: left;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  .framework-table tbody td {
+    padding: 18px 20px;
+    border-bottom: 1px solid var(--cream-dark);
+    color: var(--charcoal);
+    line-height: 1.5;
+  }
+
+  .framework-table tbody tr:hover {
+    background: rgba(212, 160, 23, 0.05);
+  }
+
+  .framework-table .level-badge {
+    display: inline-block;
+    background: var(--forest);
+    color: var(--gold);
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    border-radius: 2px;
+  }
+
+  /* ─── RISK ─── */
+  .risk {
+    background: var(--forest);
+    color: var(--white);
+  }
+
+  .risk-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+  }
+
+  .risk-card {
+    background: rgba(255,255,255,0.04);
+    border: 1px solid rgba(255,255,255,0.08);
+    padding: 32px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .risk-level {
+    display: inline-block;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    padding: 4px 12px;
+    margin-bottom: 16px;
+    border-radius: 2px;
+  }
+
+  .risk-level.high { background: rgba(211, 47, 47, 0.3); color: #FF8A80; border: 1px solid rgba(211, 47, 47, 0.5); }
+  .risk-level.medium { background: rgba(212, 160, 23, 0.3); color: var(--gold-light); border: 1px solid rgba(212, 160, 23, 0.5); }
+  .risk-level.low { background: rgba(46, 125, 50, 0.3); color: #A5D6A7; border: 1px solid rgba(46, 125, 50, 0.5); }
+
+  .risk-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    margin-bottom: 10px;
+  }
+
+  .risk-mitigation {
+    font-size: 0.85rem;
+    color: rgba(255,255,255,0.6);
+    line-height: 1.5;
+  }
+
+  .risk-mitigation strong {
+    color: var(--gold);
+    font-weight: 600;
+  }
+
+  /* ─── M&E, GENDER, PARTNERSHIPS ─── */
+  .me-plan { background: var(--cream); }
+  .gender { background: var(--white); border-top: 1px solid var(--cream-dark); }
+  .partnerships { background: var(--cream); }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 60px;
+    align-items: start;
+  }
+
+  .list-styled {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .list-styled li {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    color: var(--charcoal);
+  }
+
+  .list-styled li::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    min-width: 8px;
+    background: var(--gold);
+    border-radius: 50%;
+    margin-top: 7px;
+  }
+
+  .list-styled .highlight {
+    font-weight: 700;
+    color: var(--forest);
+  }
+
+  .partner-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 16px;
+  }
+
+  .partner-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px 24px;
+    background: var(--white);
+    border: 1px solid rgba(0,0,0,0.06);
+    transition: all 0.3s ease;
+  }
+
+  .partner-item:hover {
+    border-color: var(--gold);
+    transform: translateX(4px);
+  }
+
+  .partner-status {
+    display: inline-block;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    padding: 3px 10px;
+    border-radius: 2px;
+    white-space: nowrap;
+  }
+
+  .partner-status.active { background: rgba(46, 125, 50, 0.1); color: var(--forest-light); }
+  .partner-status.engaged { background: rgba(212, 160, 23, 0.1); color: var(--gold); }
+  .partner-status.pending { background: rgba(0,0,0,0.05); color: var(--slate); }
+
+  .partner-info { flex: 1; }
+  .partner-name { font-weight: 700; color: var(--forest); font-size: 0.95rem; }
+  .partner-role { font-size: 0.8rem; color: var(--slate); margin-top: 2px; }
+
+  /* ─── TIMELINE ─── */
+  .timeline-section {
+    background: var(--forest);
+    color: var(--white);
+    position: relative;
+  }
+
+  .timeline-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+  }
+
+  .timeline-col-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: var(--gold);
+    margin-bottom: 32px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid rgba(212, 160, 23, 0.3);
+  }
+
+  .timeline {
+    position: relative;
+    padding-left: 32px;
+  }
+
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 6px;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: rgba(255,255,255,0.15);
+  }
+
+  .timeline-item {
+    position: relative;
+    margin-bottom: 32px;
+    padding-bottom: 32px;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+  }
+
+  .timeline-item:last-child {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: -29px;
+    top: 6px;
+    width: 11px;
+    height: 11px;
+    background: var(--gold);
+    border-radius: 50%;
+    border: 2px solid var(--forest);
+  }
+
+  .timeline-phase {
+    font-size: 0.65rem;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 4px;
+  }
+
+  .timeline-duration {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: var(--white);
+    margin-bottom: 6px;
+  }
+
+  .timeline-activities {
+    font-size: 0.85rem;
+    color: rgba(255,255,255,0.6);
+    line-height: 1.5;
+  }
+
+  /* ─── SUSTAINABILITY ─── */
+  .sustainability { background: var(--cream); }
+
+  .revenue-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 24px;
+  }
+
+  .revenue-card {
+    background: var(--white);
+    padding: 32px 24px;
+    text-align: center;
+    border: 1px solid rgba(0,0,0,0.06);
+    position: relative;
+    transition: all 0.4s ease;
+  }
+
+  .revenue-card:hover {
+    transform: translateY(-6px);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.08);
+    border-color: var(--gold);
+  }
+
+  .revenue-icon {
+    font-size: 2.2rem;
+    margin-bottom: 16px;
+  }
+
+  .revenue-name {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--forest);
+    margin-bottom: 8px;
+  }
+
+  .revenue-desc {
+    font-size: 0.8rem;
+    color: var(--slate);
+    line-height: 1.4;
+  }
+
+  /* ─── GENDER STATS ─── */
+  .gender-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 24px;
+  }
+
+  .gender-stat {
+    text-align: center;
+    padding: 32px 16px;
+    background: var(--cream);
+    border: 1px solid var(--cream-dark);
+    transition: all 0.3s ease;
+  }
+
+  .gender-stat:hover {
+    border-color: var(--gold);
+  }
+
+  .gender-stat-number {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.2rem;
+    font-weight: 900;
+    color: var(--forest);
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+
+  .gender-stat-label {
+    font-size: 0.8rem;
+    color: var(--slate);
+    line-height: 1.4;
+  }
+
+  /* ─── CTA / FUNDING ─── */
+  .funding {
+    background: linear-gradient(135deg, var(--forest) 0%, #0A2E15 100%);
+    color: var(--white);
+    text-align: center;
+    padding: 120px 40px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .funding::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      radial-gradient(circle at 30% 50%, rgba(212, 160, 23, 0.1), transparent 50%),
+      radial-gradient(circle at 70% 50%, rgba(46, 125, 50, 0.15), transparent 50%);
+  }
+
+  .funding .section-inner { position: relative; }
+
+  .funding-amount {
+    font-family: 'Playfair Display', serif;
+    font-size: clamp(3rem, 6vw, 5rem);
+    font-weight: 900;
+    color: var(--gold);
+    margin-bottom: 8px;
+  }
+
+  .funding-subtitle {
+    font-size: 1.1rem;
+    color: rgba(255,255,255,0.6);
+    margin-bottom: 60px;
+  }
+
+  .funding-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    max-width: 700px;
+    margin: 0 auto 60px;
+    text-align: left;
+  }
+
+  .funding-card {
+    padding: 32px;
+    border: 1px solid rgba(255,255,255,0.15);
+    background: rgba(255,255,255,0.03);
+    transition: all 0.3s ease;
+  }
+
+  .funding-card:hover {
+    border-color: var(--gold);
+    background: rgba(212, 160, 23, 0.05);
+  }
+
+  .funding-card-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: var(--gold);
+    margin-bottom: 8px;
+  }
+
+  .funding-card-amount {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 1.4rem;
+    font-weight: 600;
+    color: var(--white);
+    margin-bottom: 8px;
+  }
+
+  .funding-card-status {
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.5);
+  }
+
+  .funding-contact {
+    font-family: 'Playfair Display', serif;
+    font-style: italic;
+    font-size: 1.3rem;
+    color: rgba(255,255,255,0.7);
+    max-width: 500px;
+    margin: 0 auto;
+    line-height: 1.6;
+  }
+
+  /* ─── FOOTER ─── */
+  footer {
+    background: #060F09;
+    padding: 40px;
+    text-align: center;
+  }
+
+  .footer-text {
+    font-size: 0.75rem;
+    color: rgba(255,255,255,0.3);
+    letter-spacing: 2px;
+    text-transform: uppercase;
+  }
+
+  /* ─── ANIMATIONS ─── */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(30px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes scrollPulse {
+    0%, 100% { opacity: 0.4; transform: scaleY(1); }
+    50% { opacity: 1; transform: scaleY(1.2); }
+  }
+
+  .reveal {
+    opacity: 0;
+    transform: translateY(40px);
+    transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* ─── RESPONSIVE ─── */
+  @media (max-width: 1024px) {
+    .overview-grid, .two-col, .moome-hero-grid, .budget-grid, .timeline-columns {
+      grid-template-columns: 1fr;
+    }
+    .components-grid { grid-template-columns: repeat(2, 1fr); }
+    .results-grid { grid-template-columns: repeat(2, 1fr); }
+    .risk-grid { grid-template-columns: repeat(2, 1fr); }
+    .revenue-grid { grid-template-columns: repeat(3, 1fr); }
+    .gender-stats { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  @media (max-width: 768px) {
+    section { padding: 60px 20px; }
+    .nav-links { display: none; }
+    .components-grid { grid-template-columns: 1fr; }
+    .results-grid { grid-template-columns: repeat(2, 1fr); }
+    .risk-grid { grid-template-columns: 1fr; }
+    .revenue-grid { grid-template-columns: 1fr 1fr; }
+    .partner-grid { grid-template-columns: 1fr; }
+    .funding-cards { grid-template-columns: 1fr; }
+    .budget-row-label { width: 120px; min-width: 120px; font-size: 0.75rem; }
+  }
+
+  @media print {
+    nav { display: none; }
+    .hero { min-height: auto; padding: 80px 40px; }
+    section { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAVIGATION -->
+<nav id="mainNav">
+  <div class="nav-inner">
+    <div class="nav-logo">WOREX</div>
+    <ul class="nav-links">
+      <li><a href="#overview">Overview</a></li>
+      <li><a href="#context">Context</a></li>
+      <li><a href="#components">Components</a></li>
+      <li><a href="#moome">MooMe</a></li>
+      <li><a href="#budget">Budget</a></li>
+      <li><a href="#results">Results</a></li>
+      <li><a href="#risk">Risk</a></li>
+      <li><a href="#timeline">Timeline</a></li>
+      <li><a href="#partnerships">Partners</a></li>
+      <li><a href="#funding">Funding</a></li>
+    </ul>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero" id="hero">
+  <div class="hero-pattern"></div>
+  <div class="hero-content">
+    <div class="hero-badge">Nyagatare, Rwanda</div>
+    <h1 class="hero-title">World Resources<br><span class="gold">Exchange</span> Ltd</h1>
+    <p class="hero-acronym">WOREX</p>
+    <p class="hero-philosophy">"Resources are meant to be shared.<br>When shared, they become catalysts for development."</p>
+    <a href="#overview" class="hero-cta">Explore Our Vision &darr;</a>
+  </div>
+  <div class="hero-scroll">
+    <span>Scroll</span>
+    <div class="scroll-line"></div>
+  </div>
+</section>
+
+<!-- COMPANY OVERVIEW -->
+<section class="overview" id="overview">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="section-label">Company Overview</div>
+      <h2 class="section-title">Building Rwanda's<br>Agricultural Future</h2>
+    </div>
+    <div class="overview-grid reveal">
+      <div class="overview-details">
+        <div class="detail-item">
+          <div class="detail-icon">&#9878;</div>
+          <div>
+            <div class="detail-label">Registration</div>
+            <div class="detail-value">RDB (TIN: 102167877) &mdash; Rwanda</div>
+          </div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-icon">&#9906;</div>
+          <div>
+            <div class="detail-label">Location</div>
+            <div class="detail-value">Nyagatare Industrial Area, Eastern Province</div>
+          </div>
+        </div>
+        <div class="detail-item">
+          <div class="detail-icon">&#9733;</div>
+          <div>
+            <div class="detail-label">Focus Areas</div>
+            <div class="detail-value">Animal Feed Production &bull; Horticulture &bull; Dairy Processing &bull; IoT-AI Smart Agriculture</div>
+          </div>
+        </div>
+      </div>
+      <div class="founders-card">
+        <div class="section-label" style="margin-bottom: 24px;">Leadership</div>
+        <div class="founder">
+          <div class="founder-name">Mr. Remy Titien Niyireba</div>
+          <div class="founder-role">Co-Founder &mdash; Animal Scientist specializing in livestock nutrition &amp; feedlot management</div>
+        </div>
+        <div class="founder">
+          <div class="founder-name">Mr. Eug&egrave;ne Rusekampunzi</div>
+          <div class="founder-role">Co-Founder &mdash; Agricultural Development specialist in exotic fruit cultivation</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- OPERATING CONTEXT -->
+<section class="context" id="context">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="section-label">Operating Context</div>
+      <h2 class="section-title light">Nyagatare District &mdash;<br>Challenges &amp; Opportunities</h2>
+    </div>
+    <div class="context-grid reveal">
+      <div class="context-item">
+        <div class="context-item-label">Land &amp; Livestock</div>
+        <div class="context-item-value">Available &mdash; strong foundation for scaling agricultural operations</div>
+      </div>
+      <div class="context-item">
+        <div class="context-item-label">Milk Yields</div>
+        <div class="context-item-value">Below potential &mdash; significant room for improvement with proper nutrition</div>
+      </div>
+      <div class="context-item">
+        <div class="context-item-label">Animal Feed</div>
+        <div class="context-item-value">Heavy reliance on costly imported concentrates</div>
+      </div>
+      <div class="context-item">
+        <div class="context-item-label">Climate</div>
+        <div class="context-item-value">Dry spells affecting productivity across the district</div>
+      </div>
+      <div class="context-item">
+        <div class="context-item-label">Digital Extension</div>
+        <div class="context-item-value">Limited real-time data available to farmers for decision-making</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PROPOSED COMPONENTS -->
+<section class="components" id="components">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="section-label">Proposed Components</div>
+      <h2 class="section-title">An Integrated Agri-Hub<br>for Nyagatare</h2>
+    </div>
+    <div class="components-grid reveal">
+      <div class="component-card">
+        <div class="component-icon">&#127805;</div>
+        <div class="component-name">Feed Plant</div>
+        <div class="component-desc">12,000 tons/year capacity to eliminate dependency on costly imported concentrates</div>
+      </div>
+      <div class="component-card">
+        <div class="component-icon">&#127806;</div>
+        <div class="component-name">Crop Production</div>
+        <div class="component-desc">300 hectares of maize, soy, sunflower, beans &amp; sweet potatoes</div>
+      </div>
+      <div class="component-card">
+        <div class="component-icon">&#129381;</div>
+        <div class="component-name">Horticulture</div>
+        <div class="component-desc">200 hectares of avocado, passion fruit, apple banana, olive &amp; pomegranate</div>
+      </div>
+      <div class="component-card">
+        <div class="component-icon">&#129472;</div>
+        <div class="component-name">Dairy Processing</div>
+        <div class="component-desc">Cooperative-led production of cheese, ghee &amp; butter</div>
+      </div>
+      <div class="component-card">
+        <div class="component-icon">&#9728;&#65039;</div>
+        <div class="component-name">Renewable Energy</div>
+        <div class="component-desc">Solar panels and biogas systems powering operations sustainably</div>
+      </div>
+      <div class="component-card">
+        <div class="component-icon">&#128225;</div>
+        <div class="component-name">MooMe IoT-AI Platform</div>
+        <div class="component-desc">Smart collars, sensors &amp; mobile app &mdash; piloted in Nyagatare district</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- MOOME PLATFORM -->
+<section class="moome" id="moome">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="section-label">Flagship Technology</div>
+      <h2 class="section-title light">MooMe IoT-AI Platform</h2>
+    </div>
+    <div class="moome-hero-grid reveal">
+      <div>
+        <p class="moome-description">A mobile monitoring &amp; measurement IoT-AI platform purpose-built for Rwanda's dairy sector. MooMe equips smallholder farmers with smart livestock technology, delivering real-time health and productivity insights via mobile devices.</p>
+        <div class="moome-stats">
+          <div class="moome-stat">
+            <div class="moome-stat-number">200</div>
+            <div class="moome-stat-label">Farmers Equipped</div>
+          </div>
+          <div class="moome-stat">
+            <div class="moome-stat-number">60</div>
+            <div class="moome-stat-label">Facilitators Trained</div>
+          </div>
+          <div class="moome-stat">
+            <div class="moome-stat-number">2</div>
+            <div class="moome-stat-label">Master Trainers</div>
+          </div>
+          <div class="moome-stat">
+            <div class="moome-stat-number">80%</div>
+            <div class="moome-stat-label">Women &amp; Youth Target</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="section-label" style="margin-bottom: 20px;">Technical Components</div>
+        <div class="tech-grid" style="grid-template-columns: 1fr;">
+          <div class="tech-item">
+            <div class="tech-dot"></div>
+            <div>
+              <div class="tech-name">Smart Collars (GPS + Temp + Activity)</div>
+              <div class="tech-desc">Location, health &amp; behavior monitoring</div>
+            </div>
+          </div>
+          <div class="tech-item">
+            <div class="tech-dot"></div>
+            <div>
+              <div class="tech-name">Rumen / Ear Tag Sensors</div>
+              <div class="tech-desc">Heat detection &amp; rumination tracking</div>
+            </div>
+          </div>
+          <div class="tech-item">
+            <div class="tech-dot"></div>
+            <div>
+              <div class="tech-name">IoT Gateways + Android Tablets</div>
+              <div class="tech-desc">Data transmission &amp; master trainer interface</div>
+            </div>
+          </div>
+          <div class="tech-item">
+            <div class="tech-dot"></div>
+            <div>
+              <div class="tech-name">Mobile App (Kinyarwanda + English)</div>
+              <div class="tech-desc">Farmer alerts &amp; AI recommendations</div>
+            </div>
+          </div>
+          <div class="tech-item">
+            <div class="tech-dot"></div>
+            <div>
+              <div class="tech-name">Web Dashboard + SMS/USSD Gateway</div>
+              <div class="tech-desc">Cooperative management &amp; text alerts for non-smartphone users</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- BUDGET -->
+<section class="budget" id="budget">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="section-label">MooMe Pilot Budget &mdash; Nyagatare</div>
+      <div class="budget-header">
+        <div class="budget-total">$620,000</div>
+        <div class="budget-total-label">Total Investment (USD)</div>
+      </div>
+    </div>
+    <div class="budget-grid reveal">
+      <div class="budget-bars">
+        <div class="budget-row">
+          <div class="budget-row-label">Personnel &amp; HR</div>
+          <div class="budget-bar-wrap">
+            <div class="budget-bar" data-width="100" style="width: 0%;">
+              <span class="budget-bar-amount">$160,000 &mdash; 26%</span>
+            </div>
+          </div>
+        </div>
+        <div class="budget-row">
+          <div class="budget-row-label">Software &amp; Digital</div>
+          <div class="budget-bar-wrap">
+            <div class="budget-bar" data-width="66" style="width: 0%;">
+              <span class="budget-bar-amount">$105,000 &mdash; 17%</span>
+            </div>
+          </div>
+        </div>
+        <div class="budget-row">
+          <div class="budget-row-label">Devices &amp; Hardware</div>
+          <div class="budget-bar-wrap">
+            <div class="budget-bar" data-width="56" style="width: 0%;">
+              <span class="budget-bar-amount">$90,000 &mdash; 15%</span>
+            </div>
+          </div>
+        </div>
+        <div class="budget-row">
+          <div class="budget-row-label">Training &amp; Capacity</div>
+          <div class="budget-bar-wrap">
+            <div class="budget-bar" data-width="56" style="width: 0%;">
+              <span class="budget-bar-amount">$90,000 &mdash; 15%</span>
+            </div>
+          </div>
+        </div>
+        <div class="budget-row">
+          <div class="budget-row-label">Contingency</div>
+          <div class="budget-bar-wrap">
+            <div class="budget-bar" data-width="69" style="width: 0%;">
+              <span class="budget-bar-amount">$110,000 &mdash; 17%</span>
+            </div>
+          </div>
+        </div>
+        <div class="budget-row">
+          <div class="budget-row-label">Research &amp; M&amp;E</div>
+          <div class="budget-bar-wrap">
+            <div class="budget-bar" data-width="13" style="width: 0%;">
+              <span class="budget-bar-amount outside">$20,000 &mdash; 3%</span>
+            </div>
+          </div>
+        </div>
+        <div class="budget-row">
+          <div class="budget-row-label">Logistics &amp; Transport</div>
+          <div class="budget-bar-wrap">
+            <div class="budget-bar" data-width="13" style="width: 0%;">
+              <span class="budget-bar-amount outside">$20,000 &mdash; 3%</span>
+            </div>
+          </div>
+        </div>
+        <div class="budget-row">
+          <div class="budget-row-label">Admin &amp; Workshops</div>
+          <div class="budget-bar-wrap">
+            <div class="budget-bar" data-width="16" style="width: 0%;">
+              <span class="budget-bar-amount outside">$25,000 &mdash; 4%</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="budget-chart">
+        <svg class="donut-svg" viewBox="0 0 200 200">
+          <circle class="donut-segment" cx="100" cy="100" r="70" stroke="#1B5E20" stroke-dasharray="114.3 325.5" stroke-dashoffset="0"/>
+          <circle class="donut-segment" cx="100" cy="100" r="70" stroke="#2E7D32" stroke-dasharray="74.8 365" stroke-dashoffset="-114.3"/>
+          <circle class="donut-segment" cx="100" cy="100" r="70" stroke="#4CAF50" stroke-dasharray="66 373.8" stroke-dashoffset="-189.1"/>
+          <circle class="donut-segment" cx="100" cy="100" r="70" stroke="#D4A017" stroke-dasharray="66 373.8" stroke-dashoffset="-255.1"/>
+          <circle class="donut-segment" cx="100" cy="100" r="70" stroke="#E8C547" stroke-dasharray="74.8 365" stroke-dashoffset="-321.1"/>
+          <circle class="donut-segment" cx="100" cy="100" r="70" stroke="#8A9A8A" stroke-dasharray="43.96 395.84" stroke-dashoffset="-395.9"/>
+          <text x="100" y="92" text-anchor="middle" font-family="Playfair Display, serif" font-size="22" font-weight="900" fill="#1B5E20" transform="rotate(90 100 100)">$620K</text>
+          <text x="100" y="112" text-anchor="middle" font-family="Source Sans 3, sans-serif" font-size="8" fill="#4A4A4A" letter-spacing="2" transform="rotate(90 100 100)">TOTAL</text>
+        </svg>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- EXPECTED RESULTS -->
+<section class="results" id="results">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="section-label">Expected Results</div>
+      <h2 class="section-title">Measurable Impact<br>at Scale</h2>
+    </div>
+    <div class="results-grid reveal">
+      <div class="result-card">
+        <div class="result-number">12,000</div>
+        <div class="result-label">Metric tons of feed<br>produced annually</div>
+      </div>
+      <div class="result-card">
+        <div class="result-number">30-50%</div>
+        <div class="result-label">Increase in<br>milk yield</div>
+      </div>
+      <div class="result-card">
+        <div class="result-number">20-40%</div>
+        <div class="result-label">Reduction in<br>feed costs</div>
+      </div>
+      <div class="result-card">
+        <div class="result-number">750</div>
+        <div class="result-label">Farmers with 30%+<br>income growth</div>
+      </div>
+      <div class="result-card">
+        <div class="result-number">35</div>
+        <div class="result-label">New jobs<br>created</div>
+      </div>
+      <div class="result-card">
+        <div class="result-number">42M</div>
+        <div class="result-label">RWF fruit exports<br>by Year 3</div>
+      </div>
+      <div class="result-card">
+        <div class="result-number">80%</div>
+        <div class="result-label">Women &amp; youth<br>beneficiaries</div>
+      </div>
+      <div class="result-card">
+        <div class="result-number">35%</div>
+        <div class="result-label">Waste<br>reduction</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- LOGICAL FRAMEWORK -->
+<section class="framework" id="framework">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="section-label">Logical Framework</div>
+      <h2 class="section-title">Results Framework<br>for 200 Farmers</h2>
+    </div>
+    <div class="reveal">
+      <table class="framework-table">
+        <thead>
+          <tr>
+            <th style="width:14%">Level</th>
+            <th style="width:28%">Indicator</th>
+            <th style="width:30%">Means of Verification</th>
+            <th style="width:28%">Assumption</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><span class="level-badge">Impact</span></td>
+            <td>Milk yield +30%</td>
+            <td>National dairy statistics</td>
+            <td>Stable policy support</td>
+          </tr>
+          <tr>
+            <td><span class="level-badge">Outcome</span></td>
+            <td>Adoption rate 80%</td>
+            <td>App usage data</td>
+            <td>Farmer willingness</td>
+          </tr>
+          <tr>
+            <td><span class="level-badge">Output</span></td>
+            <td>200 farmers trained</td>
+            <td>Training reports</td>
+            <td>Active participation</td>
+          </tr>
+          <tr>
+            <td><span class="level-badge">Activities</span></td>
+            <td>Deploy IoT devices</td>
+            <td>Field reports</td>
+            <td>Timely procurement</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- RISK ANALYSIS -->
+<section class="risk" id="risk">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="section-label">Risk Analysis</div>
+      <h2 class="section-title light">Risks &amp; Mitigation<br>Strategies</h2>
+    </div>
+    <div class="risk-grid reveal">
+      <div class="risk-card">
+        <span class="risk-level medium">Medium</span>
+        <div class="risk-name">Low Tech Adoption</div>
+        <div class="risk-mitigation"><strong>Mitigation:</strong> Comprehensive training programs &amp; ongoing farmer support</div>
+      </div>
+      <div class="risk-card">
+        <span class="risk-level medium">Medium</span>
+        <div class="risk-name">Device Failure</div>
+        <div class="risk-mitigation"><strong>Mitigation:</strong> Robust maintenance plan with local technician network</div>
+      </div>
+      <div class="risk-card">
+        <span class="risk-level low">Low</span>
+        <div class="risk-name">Data Privacy</div>
+        <div class="risk-mitigation"><strong>Mitigation:</strong> Secure systems with encrypted data storage &amp; transmission</div>
+      </div>
+      <div class="risk-card">
+        <span class="risk-level high">High</span>
+        <div class="risk-name">Climate Shocks</div>
+        <div class="risk-mitigation"><strong>Mitigation:</strong> Adaptive AI-powered alerts &amp; early warning systems</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- M&E PLAN -->
+<section class="me-plan" id="me-plan">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="section-label">Monitoring &amp; Evaluation</div>
+      <h2 class="section-title">Continuous Learning<br>&amp; Accountability</h2>
+    </div>
+    <div class="two-col reveal">
+      <ul class="list-styled">
+        <li><span><span class="highlight">Baseline Survey</span> &mdash; Data collection before intervention across 200 farmers</span></li>
+        <li><span><span class="highlight">Midline Survey</span> &mdash; Mid-term progress assessment and course correction</span></li>
+        <li><span><span class="highlight">Endline Survey</span> &mdash; Comprehensive final evaluation of all outcomes</span></li>
+        <li><span><span class="highlight">Real-time IoT Tracking</span> &mdash; Continuous automated monitoring via platform</span></li>
+      </ul>
+      <ul class="list-styled">
+        <li><span><span class="highlight">Monthly Reviews</span> &mdash; Internal performance assessments by management team</span></li>
+        <li><span><span class="highlight">KPI Dashboards</span> &mdash; Milk yield, health alerts, and adoption rate tracking</span></li>
+        <li><span><span class="highlight">Quarterly Reporting</span> &mdash; Formal reports submitted to FAO and all partners</span></li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- GENDER & YOUTH -->
+<section class="gender" id="gender">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="section-label">Social Impact</div>
+      <h2 class="section-title">Gender &amp; Youth<br>Inclusion</h2>
+    </div>
+    <div class="gender-stats reveal">
+      <div class="gender-stat">
+        <div class="gender-stat-number">80%</div>
+        <div class="gender-stat-label">Women &amp; youth<br>in MooMe training</div>
+      </div>
+      <div class="gender-stat">
+        <div class="gender-stat-number">40%</div>
+        <div class="gender-stat-label">Minimum women &amp; youth<br>among WOREX beneficiaries</div>
+      </div>
+      <div class="gender-stat">
+        <div class="gender-stat-number">20%</div>
+        <div class="gender-stat-label">Exports from women-led<br>fruit cooperatives</div>
+      </div>
+      <div class="gender-stat">
+        <div class="gender-stat-number">&#10003;</div>
+        <div class="gender-stat-label">Guaranteed leadership<br>roles for women in ToT</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PARTNERSHIPS -->
+<section class="partnerships" id="partnerships">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="section-label">Strategic Partnerships</div>
+      <h2 class="section-title">Building a Coalition<br>for Impact</h2>
+    </div>
+    <div class="partner-grid reveal">
+      <div class="partner-item">
+        <div class="partner-info">
+          <div class="partner-name">FAO Rwanda</div>
+          <div class="partner-role">Technical &amp; funding support</div>
+        </div>
+        <span class="partner-status pending">Proposal Pending</span>
+      </div>
+      <div class="partner-item">
+        <div class="partner-info">
+          <div class="partner-name">RAB</div>
+          <div class="partner-role">Policy alignment</div>
+        </div>
+        <span class="partner-status engaged">Engaged</span>
+      </div>
+      <div class="partner-item">
+        <div class="partner-info">
+          <div class="partner-name">MINAGRI</div>
+          <div class="partner-role">National dairy strategy alignment</div>
+        </div>
+        <span class="partner-status engaged">Consultation</span>
+      </div>
+      <div class="partner-item">
+        <div class="partner-info">
+          <div class="partner-name">Nyagatare District</div>
+          <div class="partner-role">Local government partnership</div>
+        </div>
+        <span class="partner-status engaged">Engaged</span>
+      </div>
+      <div class="partner-item">
+        <div class="partner-info">
+          <div class="partner-name">University of Kigali</div>
+          <div class="partner-role">Research collaboration</div>
+        </div>
+        <span class="partner-status pending">MOU Pending</span>
+      </div>
+      <div class="partner-item">
+        <div class="partner-info">
+          <div class="partner-name">Farmer Cooperatives</div>
+          <div class="partner-role">On-ground implementation</div>
+        </div>
+        <span class="partner-status active">Active</span>
+      </div>
+      <div class="partner-item">
+        <div class="partner-info">
+          <div class="partner-name">Women's Agribusiness Assoc.</div>
+          <div class="partner-role">Gender inclusion advisory</div>
+        </div>
+        <span class="partner-status engaged">Consultation</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- IMPLEMENTATION TIMELINE -->
+<section class="timeline-section" id="timeline">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="section-label">Implementation Plan</div>
+      <h2 class="section-title light">Dual-Track<br>Implementation</h2>
+    </div>
+    <div class="timeline-columns reveal">
+      <div>
+        <div class="timeline-col-title">MooMe Platform &mdash; 12 Months</div>
+        <div class="timeline">
+          <div class="timeline-item">
+            <div class="timeline-phase">Phase 1 &mdash; Months 1-2</div>
+            <div class="timeline-duration">Foundation</div>
+            <div class="timeline-activities">Baseline survey (200 farmers), needs assessment, ethics approval</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-phase">Phase 2 &mdash; Months 3-5</div>
+            <div class="timeline-duration">Development</div>
+            <div class="timeline-activities">IoT procurement (200 units), app development, ToT training (2 master trainers, 20 facilitators)</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-phase">Phase 3 &mdash; Months 6-9</div>
+            <div class="timeline-duration">Deployment</div>
+            <div class="timeline-activities">Farmer training (200 farmers), device deployment, field testing</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-phase">Phase 4 &mdash; Months 10-12</div>
+            <div class="timeline-duration">Evaluation</div>
+            <div class="timeline-activities">Data analysis, validation, reporting, dissemination</div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="timeline-col-title">WOREX Hub &mdash; Multi-Year</div>
+        <div class="timeline">
+          <div class="timeline-item">
+            <div class="timeline-phase">Phase 1 &mdash; 6 Months</div>
+            <div class="timeline-duration">Preparation</div>
+            <div class="timeline-activities">Feasibility study, stakeholder engagement, site preparation</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-phase">Phase 2 &mdash; 12 Months</div>
+            <div class="timeline-duration">Construction</div>
+            <div class="timeline-activities">Feed plant construction, equipment installation, renewable energy setup</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-phase">Phase 3 &mdash; Ongoing</div>
+            <div class="timeline-duration">Capacity Building</div>
+            <div class="timeline-activities">Farmer training programs, cooperative development</div>
+          </div>
+          <div class="timeline-item">
+            <div class="timeline-phase">Phase 4 &mdash; Year 2-3</div>
+            <div class="timeline-duration">Scale</div>
+            <div class="timeline-activities">Scaling production, distribution networks, export readiness</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SUSTAINABILITY -->
+<section class="sustainability" id="sustainability">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="section-label">Sustainability</div>
+      <h2 class="section-title">Revenue Streams &amp;<br>Long-term Viability</h2>
+    </div>
+    <div class="revenue-grid reveal">
+      <div class="revenue-card">
+        <div class="revenue-icon">&#127805;</div>
+        <div class="revenue-name">Feed Sales</div>
+        <div class="revenue-desc">Direct purchases by local farmers</div>
+      </div>
+      <div class="revenue-card">
+        <div class="revenue-icon">&#129472;</div>
+        <div class="revenue-name">Dairy Products</div>
+        <div class="revenue-desc">Cheese, ghee &amp; butter sales</div>
+      </div>
+      <div class="revenue-card">
+        <div class="revenue-icon">&#127818;</div>
+        <div class="revenue-name">Fruit Exports</div>
+        <div class="revenue-desc">Regional &amp; international markets</div>
+      </div>
+      <div class="revenue-card">
+        <div class="revenue-icon">&#128241;</div>
+        <div class="revenue-name">MooMe Platform</div>
+        <div class="revenue-desc">Subscription-based SaaS model</div>
+      </div>
+      <div class="revenue-card">
+        <div class="revenue-icon">&#127793;</div>
+        <div class="revenue-name">Carbon Credits</div>
+        <div class="revenue-desc">Future potential from biogas &amp; pasture</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FUNDING REQUEST -->
+<section class="funding" id="funding">
+  <div class="section-inner">
+    <div class="reveal">
+      <div class="section-label" style="color: rgba(255,255,255,0.5);">Funding Request</div>
+      <div class="funding-amount">USD $620,000</div>
+      <div class="funding-subtitle">Seeking investment to launch the MooMe Nyagatare pilot</div>
+    </div>
+    <div class="funding-cards reveal">
+      <div class="funding-card">
+        <div class="funding-card-title">MooMe Pilot</div>
+        <div class="funding-card-amount">$620,000</div>
+        <div class="funding-card-status">&#9679; Seeking Funding</div>
+      </div>
+      <div class="funding-card">
+        <div class="funding-card-title">WOREX Integrated Hub</div>
+        <div class="funding-card-amount">TBD</div>
+        <div class="funding-card-status">&#9675; Under Development</div>
+      </div>
+    </div>
+    <div class="reveal">
+      <p class="funding-contact">"Resources are meant to be shared.<br>Let us build Rwanda's agricultural future &mdash; together."</p>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <p class="footer-text">&copy; 2026 World Resources Exchange Ltd (WOREX) &mdash; Nyagatare, Rwanda</p>
+</footer>
+
+<script>
+  // ─── SCROLL REVEAL ───
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach((entry, i) => {
+      if (entry.isIntersecting) {
+        entry.target.style.transitionDelay = `${i * 0.05}s`;
+        entry.target.classList.add('visible');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+
+  reveals.forEach(el => observer.observe(el));
+
+  // ─── NAV SCROLL EFFECT ───
+  const nav = document.getElementById('mainNav');
+  window.addEventListener('scroll', () => {
+    nav.classList.toggle('scrolled', window.scrollY > 50);
+  });
+
+  // ─── ACTIVE NAV LINK ───
+  const sections = document.querySelectorAll('section[id]');
+  const navLinks = document.querySelectorAll('.nav-links a');
+
+  window.addEventListener('scroll', () => {
+    let current = '';
+    sections.forEach(section => {
+      const sectionTop = section.offsetTop - 120;
+      if (window.scrollY >= sectionTop) {
+        current = section.getAttribute('id');
+      }
+    });
+    navLinks.forEach(link => {
+      link.classList.toggle('active', link.getAttribute('href') === `#${current}`);
+    });
+  });
+
+  // ─── BUDGET BAR ANIMATION ───
+  const budgetBars = document.querySelectorAll('.budget-bar');
+  const budgetObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (entry.isIntersecting) {
+        const bars = entry.target.querySelectorAll('.budget-bar');
+        bars.forEach((bar, i) => {
+          setTimeout(() => {
+            bar.style.width = bar.dataset.width + '%';
+          }, i * 100);
+        });
+        budgetObserver.unobserve(entry.target);
+      }
+    });
+  }, { threshold: 0.3 });
+
+  const budgetSection = document.querySelector('.budget-bars');
+  if (budgetSection) budgetObserver.observe(budgetSection);
+
+  // ─── COUNTER ANIMATION ───
+  function animateCounters() {
+    const counters = document.querySelectorAll('.result-number, .moome-stat-number, .gender-stat-number');
+    const counterObserver = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          const el = entry.target;
+          const text = el.textContent;
+          const match = text.match(/^([\d,]+)/);
+          if (match) {
+            const target = parseInt(match[1].replace(/,/g, ''));
+            const suffix = text.slice(match[1].length);
+            const duration = 1500;
+            const start = performance.now();
+            function update(now) {
+              const elapsed = now - start;
+              const progress = Math.min(elapsed / duration, 1);
+              const eased = 1 - Math.pow(1 - progress, 3);
+              const current = Math.round(target * eased);
+              el.textContent = current.toLocaleString() + suffix;
+              if (progress < 1) requestAnimationFrame(update);
+            }
+            requestAnimationFrame(update);
+          }
+          counterObserver.unobserve(el);
+        }
+      });
+    }, { threshold: 0.5 });
+
+    counters.forEach(c => counterObserver.observe(c));
+  }
+
+  animateCounters();
+</script>
+</body>
+</html>

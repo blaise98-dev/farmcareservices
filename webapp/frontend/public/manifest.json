@@ -1,0 +1,38 @@
+{
+  "name": "MooMe — Smart Livestock Platform",
+  "short_name": "MooMe",
+  "description": "IoT-AI Livestock Intelligence Platform for Rwanda dairy farmers",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#4CAF50",
+  "theme_color": "#4CAF50",
+  "lang": "en",
+  "categories": ["agriculture", "productivity"],
+  "icons": [
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Dashboard",
+      "url": "/",
+      "description": "Farm overview dashboard"
+    },
+    {
+      "name": "Herd",
+      "url": "/herd",
+      "description": "Manage your cow herd"
+    },
+    {
+      "name": "Alerts",
+      "url": "/alerts",
+      "description": "View active alerts"
+    }
+  ]
+}

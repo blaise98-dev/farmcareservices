@@ -1,0 +1,1068 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MooMe - IoT-AI Livestock Monitoring Platform</title>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --earth: #1a1a0e;
+            --meadow: #2d5016;
+            --meadow-light: #4a7a2e;
+            --leaf: #7cb342;
+            --sun: #f9a825;
+            --sun-glow: #ffca28;
+            --cream: #faf6e9;
+            --warm-white: #f5f0e1;
+            --bark: #5d4037;
+            --bark-light: #8d6e63;
+            --sky: #0d47a1;
+            --sky-light: #1976d2;
+            --alert: #e65100;
+            --gas-red: #c62828;
+            --gas-orange: #ef6c00;
+            --bio-green: #2e7d32;
+            --bio-teal: #00695c;
+            --text-dark: #1a1a0e;
+            --text-mid: #4e4e3a;
+            --text-light: #7a7a62;
+            --border: rgba(45,80,22,0.15);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        html { scroll-behavior: smooth; }
+
+        body {
+            font-family: 'DM Sans', sans-serif;
+            background: var(--cream);
+            color: var(--text-dark);
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 9999;
+        }
+
+        /* === NAV === */
+        nav {
+            position: fixed; top: 0; width: 100%; z-index: 1000;
+            padding: 1rem 2rem;
+            display: flex; justify-content: space-between; align-items: center;
+            backdrop-filter: blur(20px);
+            background: rgba(250,246,233,0.85);
+            border-bottom: 1px solid var(--border);
+            transition: all 0.4s ease;
+        }
+        nav.scrolled { padding: 0.6rem 2rem; box-shadow: 0 2px 20px rgba(0,0,0,0.06); }
+        .nav-logo { font-family: 'Instrument Serif', serif; font-size: 1.6rem; color: var(--meadow); text-decoration: none; letter-spacing: -0.02em; }
+        .nav-logo span { color: var(--sun); }
+        .nav-links { display: flex; gap: 2rem; list-style: none; }
+        .nav-links a { text-decoration: none; color: var(--text-mid); font-size: 0.85rem; font-weight: 500; letter-spacing: 0.04em; text-transform: uppercase; transition: color 0.3s; position: relative; }
+        .nav-links a::after { content: ''; position: absolute; bottom: -4px; left: 0; width: 0; height: 2px; background: var(--meadow); transition: width 0.3s; }
+        .nav-links a:hover { color: var(--meadow); }
+        .nav-links a:hover::after { width: 100%; }
+
+        /* === HERO === */
+        .hero {
+            min-height: 100vh; display: flex; flex-direction: column; justify-content: center;
+            padding: 8rem 4rem 4rem; position: relative; overflow: hidden;
+        }
+        .hero-bg {
+            position: absolute; inset: 0;
+            background: radial-gradient(ellipse 80% 60% at 70% 30%, rgba(124,179,66,0.08) 0%, transparent 70%),
+                        radial-gradient(ellipse 60% 50% at 20% 70%, rgba(249,168,37,0.06) 0%, transparent 70%),
+                        radial-gradient(ellipse 40% 40% at 90% 80%, rgba(45,80,22,0.05) 0%, transparent 70%);
+        }
+        .hero-badge { display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(45,80,22,0.08); border: 1px solid rgba(45,80,22,0.15); padding: 0.4rem 1rem; border-radius: 100px; font-size: 0.78rem; font-weight: 600; color: var(--meadow); text-transform: uppercase; letter-spacing: 0.08em; margin-bottom: 2rem; animation: fadeSlideUp 0.8s ease-out; width: fit-content; }
+        .hero-badge .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--leaf); animation: pulse 2s infinite; }
+        .hero h1 { font-family: 'Instrument Serif', serif; font-size: clamp(3rem, 7vw, 6.5rem); line-height: 1.05; color: var(--earth); letter-spacing: -0.03em; max-width: 900px; animation: fadeSlideUp 0.8s ease-out 0.1s both; }
+        .hero h1 em { font-style: italic; color: var(--meadow); }
+        .hero-sub { font-size: 1.2rem; color: var(--text-mid); max-width: 620px; margin-top: 1.5rem; line-height: 1.7; animation: fadeSlideUp 0.8s ease-out 0.25s both; }
+        .hero-stats { display: flex; gap: 3rem; margin-top: 3rem; animation: fadeSlideUp 0.8s ease-out 0.4s both; flex-wrap: wrap; }
+        .hero-stat { display: flex; flex-direction: column; }
+        .hero-stat .number { font-family: 'JetBrains Mono', monospace; font-size: 2rem; font-weight: 500; color: var(--meadow); }
+        .hero-stat .label { font-size: 0.8rem; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 0.25rem; }
+        .hero-cta { display: flex; gap: 1rem; margin-top: 3rem; animation: fadeSlideUp 0.8s ease-out 0.5s both; flex-wrap: wrap; }
+        .btn-primary { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.9rem 2rem; background: var(--meadow); color: white; border: none; border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.3s; text-decoration: none; }
+        .btn-primary:hover { background: var(--meadow-light); transform: translateY(-2px); box-shadow: 0 8px 25px rgba(45,80,22,0.25); }
+        .btn-secondary { display: inline-flex; align-items: center; gap: 0.5rem; padding: 0.9rem 2rem; background: transparent; color: var(--meadow); border: 1.5px solid var(--meadow); border-radius: 8px; font-family: 'DM Sans', sans-serif; font-size: 0.9rem; font-weight: 600; cursor: pointer; transition: all 0.3s; text-decoration: none; }
+        .btn-secondary:hover { background: rgba(45,80,22,0.06); transform: translateY(-2px); }
+
+        /* === SECTIONS === */
+        section { padding: 6rem 4rem; }
+        .section-label { font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.14em; color: var(--meadow); margin-bottom: 0.75rem; display: flex; align-items: center; gap: 0.75rem; }
+        .section-label::before { content: ''; width: 24px; height: 1.5px; background: var(--meadow); }
+        .section-title { font-family: 'Instrument Serif', serif; font-size: clamp(2rem, 4vw, 3.2rem); color: var(--earth); letter-spacing: -0.02em; line-height: 1.15; max-width: 700px; }
+        .section-desc { font-size: 1.05rem; color: var(--text-mid); line-height: 1.75; max-width: 650px; margin-top: 1rem; }
+
+        /* === YEAR BUDGET BANNER === */
+        .year-budget-banner {
+            background: white; border: 1px solid var(--border); border-radius: 16px;
+            padding: 2rem 3rem; margin-top: 2.5rem;
+            display: flex; justify-content: space-between; align-items: center; gap: 2rem; flex-wrap: wrap;
+        }
+        .yb-item { text-align: center; flex: 1; min-width: 120px; }
+        .yb-item .yb-label { font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-light); margin-bottom: 0.3rem; }
+        .yb-item .yb-value { font-family: 'JetBrains Mono', monospace; font-size: 1.5rem; font-weight: 500; color: var(--meadow); }
+        .yb-item.yb-total .yb-value { color: var(--sun); font-size: 1.8rem; }
+        .yb-divider { width: 1px; height: 50px; background: var(--border); }
+
+        /* === ENVIRONMENTAL MISSION === */
+        .env-mission { background: linear-gradient(135deg, #0a1f0a 0%, #1a3a1a 40%, #0d2b1a 100%); color: white; position: relative; overflow: hidden; }
+        .env-mission::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 50% 50% at 80% 20%, rgba(46,125,50,0.2) 0%, transparent 70%), radial-gradient(ellipse 40% 40% at 10% 80%, rgba(0,105,92,0.15) 0%, transparent 70%); }
+        .env-mission .section-label { color: var(--sun-glow); }
+        .env-mission .section-label::before { background: var(--sun-glow); }
+        .env-mission .section-title { color: white; }
+        .env-mission .section-desc { color: rgba(255,255,255,0.75); }
+
+        .env-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 3rem; position: relative; }
+        .env-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 2rem; backdrop-filter: blur(10px); transition: all 0.4s; }
+        .env-card:hover { background: rgba(255,255,255,0.07); border-color: rgba(255,255,255,0.15); transform: translateY(-4px); }
+        .env-card-icon { width: 48px; height: 48px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; margin-bottom: 1.2rem; }
+        .env-card h3 { font-family: 'DM Sans', sans-serif; font-size: 1.1rem; font-weight: 600; margin-bottom: 0.6rem; color: white; }
+        .env-card p { font-size: 0.88rem; line-height: 1.65; color: rgba(255,255,255,0.65); }
+        .env-card .gas-tag { display: inline-block; padding: 0.2rem 0.6rem; border-radius: 4px; font-family: 'JetBrains Mono', monospace; font-size: 0.72rem; font-weight: 500; margin-right: 0.4rem; margin-top: 0.5rem; }
+        .gas-ch4 { background: rgba(198,40,40,0.2); color: #ef9a9a; }
+        .gas-no3 { background: rgba(239,108,0,0.2); color: #ffcc80; }
+        .gas-co2 { background: rgba(93,64,55,0.2); color: #bcaaa4; }
+        .gas-nh3 { background: rgba(0,105,92,0.2); color: #80cbc4; }
+
+        .env-highlight { grid-column: 1 / -1; background: linear-gradient(135deg, rgba(46,125,50,0.15), rgba(0,105,92,0.1)); border: 1px solid rgba(46,125,50,0.3); border-radius: 16px; padding: 2.5rem; display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 2rem; }
+        .env-highlight-item { text-align: center; }
+        .env-highlight-item .value { font-family: 'JetBrains Mono', monospace; font-size: 1.8rem; font-weight: 500; color: var(--sun-glow); }
+        .env-highlight-item .desc { font-size: 0.82rem; color: rgba(255,255,255,0.6); margin-top: 0.3rem; line-height: 1.5; }
+
+        /* === OBJECTIVES === */
+        .objectives-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-top: 3rem; }
+        .obj-card { background: white; border: 1px solid var(--border); border-radius: 16px; padding: 2rem; transition: all 0.4s; position: relative; overflow: hidden; }
+        .obj-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: var(--meadow); transform: scaleX(0); transition: transform 0.4s; }
+        .obj-card:hover::before { transform: scaleX(1); }
+        .obj-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.06); }
+        .obj-num { font-family: 'JetBrains Mono', monospace; font-size: 0.7rem; font-weight: 500; color: var(--text-light); margin-bottom: 1rem; }
+        .obj-card h3 { font-family: 'DM Sans', sans-serif; font-size: 1.05rem; font-weight: 600; color: var(--earth); margin-bottom: 0.6rem; line-height: 1.35; }
+        .obj-card p { font-size: 0.85rem; color: var(--text-mid); line-height: 1.65; }
+
+        /* === IoT CAPABILITIES === */
+        .capabilities { background: white; border-top: 1px solid var(--border); border-bottom: 1px solid var(--border); }
+        .cap-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; margin-top: 3rem; }
+        .cap-item { padding: 1.5rem; border-radius: 12px; border: 1px solid var(--border); background: var(--cream); transition: all 0.3s; }
+        .cap-item:hover { border-color: var(--meadow); transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,0,0,0.04); }
+        .cap-icon { font-size: 1.5rem; margin-bottom: 0.8rem; }
+        .cap-item h4 { font-size: 0.9rem; font-weight: 600; color: var(--earth); margin-bottom: 0.4rem; }
+        .cap-item p { font-size: 0.78rem; color: var(--text-light); line-height: 1.55; }
+
+        /* === ARCHITECTURE === */
+        .architecture { background: linear-gradient(180deg, var(--cream) 0%, var(--warm-white) 100%); }
+        .arch-images { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; margin-top: 3rem; }
+        .arch-img-card { background: white; border: 1px solid var(--border); border-radius: 16px; padding: 1.5rem; overflow: hidden; }
+        .arch-img-card img { width: 100%; height: auto; border-radius: 10px; display: block; }
+        .arch-img-card .arch-caption { text-align: center; margin-top: 1rem; font-size: 0.82rem; font-weight: 600; color: var(--text-mid); text-transform: uppercase; letter-spacing: 0.06em; }
+
+        /* SVG Architecture */
+        .arch-diagram { margin-top: 3rem; background: white; border: 1px solid var(--border); border-radius: 20px; padding: 3rem; position: relative; overflow: hidden; }
+        .arch-diagram::before { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, rgba(45,80,22,0.02) 1px, transparent 1px), linear-gradient(rgba(45,80,22,0.02) 1px, transparent 1px); background-size: 40px 40px; }
+        .arch-svg { width: 100%; max-width: 1100px; margin: 0 auto; display: block; }
+
+        /* === LOGFRAME === */
+        .logframe { background: white; border-top: 1px solid var(--border); }
+        .logframe-table { width: 100%; border-collapse: collapse; margin-top: 2rem; font-size: 0.82rem; }
+        .logframe-table thead th { background: var(--meadow); color: white; padding: 0.8rem 0.6rem; font-size: 0.7rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; text-align: center; border: 1px solid rgba(255,255,255,0.15); }
+        .logframe-table thead th.year-header { background: var(--earth); font-size: 0.75rem; }
+        .logframe-table tbody td { padding: 0.6rem; border: 1px solid rgba(0,0,0,0.06); vertical-align: top; }
+        .logframe-table tbody tr:hover { background: rgba(45,80,22,0.02); }
+        .logframe-table .cat-cell { font-weight: 700; color: var(--meadow); background: rgba(45,80,22,0.04); writing-mode: vertical-rl; text-orientation: mixed; text-align: center; width: 30px; font-size: 0.72rem; letter-spacing: 0.05em; }
+        .logframe-table .activity-cell { font-weight: 600; color: var(--earth); }
+        .logframe-table .money { font-family: 'JetBrains Mono', monospace; font-size: 0.75rem; text-align: right; white-space: nowrap; }
+        .logframe-table .q-total { font-weight: 700; background: rgba(249,168,37,0.08); }
+        .logframe-table .year-total { font-weight: 700; background: rgba(45,80,22,0.06); color: var(--meadow); }
+        .logframe-table .grand-total { font-weight: 700; background: var(--earth); color: var(--sun-glow); }
+        .logframe-table .sub-activity { padding-left: 1.2rem; color: var(--text-mid); font-size: 0.78rem; }
+
+        /* === BUDGET HARDWARE TABLE === */
+        .budget { background: var(--cream); border-top: 1px solid var(--border); }
+        .budget-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
+        .budget-total { text-align: right; }
+        .budget-total .amount { font-family: 'JetBrains Mono', monospace; font-size: 2.2rem; font-weight: 500; color: var(--meadow); }
+        .budget-total .note { font-size: 0.78rem; color: var(--text-light); margin-top: 0.25rem; }
+        .budget-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+        .budget-table thead th { font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.08em; color: var(--text-light); padding: 0.8rem 1rem; border-bottom: 2px solid var(--border); text-align: left; }
+        .budget-table thead th:last-child { text-align: right; }
+        .budget-table thead th:nth-child(3), .budget-table thead th:nth-child(4), .budget-table thead th:nth-child(5) { text-align: center; }
+        .budget-table tbody td { padding: 0.7rem 1rem; font-size: 0.85rem; border-bottom: 1px solid rgba(0,0,0,0.04); color: var(--text-dark); }
+        .budget-table tbody td:last-child { text-align: right; font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; font-weight: 500; }
+        .budget-table tbody td:nth-child(3), .budget-table tbody td:nth-child(4), .budget-table tbody td:nth-child(5) { text-align: center; }
+        .budget-table tbody tr:hover { background: rgba(45,80,22,0.02); }
+        .budget-table tfoot td { padding: 1rem; font-weight: 700; border-top: 2px solid var(--meadow); font-size: 0.95rem; }
+        .budget-table tfoot td:last-child { text-align: right; font-family: 'JetBrains Mono', monospace; color: var(--meadow); font-size: 1rem; }
+
+        /* === NDC === */
+        .ndc-section { background: linear-gradient(135deg, #002f1a 0%, #004d2e 50%, #003320 100%); color: white; position: relative; overflow: hidden; }
+        .ndc-section::after { content: ''; position: absolute; right: -100px; top: -100px; width: 400px; height: 400px; border-radius: 50%; background: radial-gradient(circle, rgba(124,179,66,0.1) 0%, transparent 70%); }
+        .ndc-section .section-label { color: var(--leaf); }
+        .ndc-section .section-label::before { background: var(--leaf); }
+        .ndc-section .section-title { color: white; }
+        .ndc-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-top: 2.5rem; position: relative; }
+        .ndc-card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 14px; padding: 2rem; }
+        .ndc-card h3 { font-size: 1rem; font-weight: 600; margin-bottom: 0.5rem; }
+        .ndc-card p { font-size: 0.83rem; color: rgba(255,255,255,0.6); line-height: 1.6; }
+
+        /* === SCALING === */
+        .scaling { background: var(--warm-white); }
+        .scale-phases { margin-top: 3rem; display: flex; flex-direction: column; gap: 2rem; }
+        .scale-phase { background: white; border: 1px solid var(--border); border-radius: 16px; padding: 2rem 2.5rem; transition: all 0.3s; }
+        .scale-phase:hover { box-shadow: 0 8px 30px rgba(0,0,0,0.06); transform: translateY(-2px); }
+        .scale-phase-header { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.2rem; }
+        .scale-phase-icon { font-size: 2rem; }
+        .scale-phase-badge { display: inline-flex; padding: 0.3rem 0.8rem; border-radius: 100px; font-size: 0.68rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.06em; }
+        .badge-y1 { background: rgba(249,168,37,0.15); color: #e65100; }
+        .badge-y2 { background: rgba(45,80,22,0.12); color: var(--meadow); }
+        .badge-y3 { background: rgba(13,71,161,0.1); color: var(--sky); }
+        .badge-y4 { background: rgba(93,64,55,0.1); color: var(--bark); }
+        .badge-y5 { background: rgba(198,40,40,0.08); color: var(--gas-red); }
+        .scale-phase-title { font-family: 'Instrument Serif', serif; font-size: 1.4rem; color: var(--earth); }
+        .scale-metrics { display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 1.2rem; margin-bottom: 1.2rem; }
+        .scale-metric { text-align: center; padding: 1rem; background: var(--cream); border-radius: 10px; border: 1px solid var(--border); }
+        .scale-metric .metric-num { font-family: 'JetBrains Mono', monospace; font-size: 1.6rem; font-weight: 500; color: var(--meadow); line-height: 1.2; }
+        .scale-metric .metric-label { font-size: 0.72rem; color: var(--text-light); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 0.3rem; line-height: 1.3; }
+        .scale-details { display: grid; grid-template-columns: 1fr 1fr; gap: 0.8rem; }
+        .scale-detail { font-size: 0.82rem; color: var(--text-mid); line-height: 1.5; padding-left: 1rem; position: relative; }
+        .scale-detail::before { content: ''; position: absolute; left: 0; top: 0.5rem; width: 5px; height: 5px; border-radius: 50%; background: var(--leaf); }
+
+        /* === FOOTER === */
+        footer { background: var(--earth); color: rgba(255,255,255,0.5); padding: 4rem; text-align: center; }
+        footer .footer-logo { font-family: 'Instrument Serif', serif; font-size: 2rem; color: white; margin-bottom: 1rem; }
+        footer .footer-logo span { color: var(--sun); }
+        footer p { font-size: 0.82rem; line-height: 1.7; max-width: 500px; margin: 0 auto; }
+        footer .footer-tag { display: inline-block; margin-top: 2rem; padding: 0.4rem 1.2rem; border: 1px solid rgba(255,255,255,0.15); border-radius: 100px; font-size: 0.72rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.1em; color: rgba(255,255,255,0.4); }
+
+        /* === ANIMATIONS === */
+        @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+        .reveal { opacity: 0; transform: translateY(40px); transition: all 0.7s cubic-bezier(0.22, 1, 0.36, 1); }
+        .reveal.visible { opacity: 1; transform: translateY(0); }
+
+        /* === RESPONSIVE === */
+        @media (max-width: 1024px) {
+            section { padding: 4rem 2rem; }
+            .hero { padding: 7rem 2rem 3rem; }
+            .objectives-grid, .ndc-grid { grid-template-columns: repeat(2, 1fr); }
+            .cap-grid { grid-template-columns: repeat(2, 1fr); }
+            .env-grid { grid-template-columns: 1fr; }
+            .env-highlight { grid-template-columns: 1fr; }
+            .arch-images { grid-template-columns: 1fr; }
+            .logframe-table { font-size: 0.72rem; }
+        }
+        @media (max-width: 768px) {
+            nav { padding: 0.8rem 1.2rem; }
+            .nav-links { display: none; }
+            .hero { padding: 6rem 1.5rem 2rem; }
+            section { padding: 3rem 1.5rem; }
+            .objectives-grid, .cap-grid, .ndc-grid { grid-template-columns: 1fr; }
+            .scale-metrics { grid-template-columns: repeat(2, 1fr); }
+            .scale-details { grid-template-columns: 1fr; }
+            .budget-header { flex-direction: column; align-items: flex-start; }
+            .budget-total { text-align: left; }
+            .arch-diagram { padding: 1.5rem; }
+            .logframe-table { display: block; overflow-x: auto; }
+            .year-budget-banner { flex-direction: column; text-align: center; }
+            .yb-divider { width: 60px; height: 1px; }
+        }
+        .nav-hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 4px; }
+        .nav-hamburger span { width: 22px; height: 2px; background: var(--earth); border-radius: 2px; }
+        @media (max-width: 768px) { .nav-hamburger { display: flex; } }
+    </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav id="navbar">
+    <a href="#" class="nav-logo">Moo<span>Me</span></a>
+    <ul class="nav-links">
+        <li><a href="#environment">Environment</a></li>
+        <li><a href="#objectives">Objectives</a></li>
+        <li><a href="#architecture">Architecture</a></li>
+        <li><a href="#logframe">Logframe</a></li>
+        <li><a href="#budget">Budget</a></li>
+        <li><a href="#scaling">Scaling</a></li>
+    </ul>
+    <div class="nav-hamburger" onclick="document.querySelector('.nav-links').classList.toggle('show')">
+        <span></span><span></span><span></span>
+    </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+    <div class="hero-bg"></div>
+    <div class="hero-badge"><span class="dot"></span> Technical Support / IoT | Component 4</div>
+    <h1>Smart Livestock,<br><em>Greener</em> Future</h1>
+    <p class="hero-sub">
+        MooMe is an IoT-AI platform that monitors livestock health, automates farm operations, and reduces greenhouse gas emissions from dairy farming, contributing to Rwanda's NDC goals and FAO climate targets.
+    </p>
+    <div class="hero-stats">
+        <div class="hero-stat">
+            <span class="number">$723,287</span>
+            <span class="label">Total Budget (3 Years)</span>
+        </div>
+        <div class="hero-stat">
+            <span class="number">$205,479</span>
+            <span class="label">Year 1</span>
+        </div>
+        <div class="hero-stat">
+            <span class="number">$246,575</span>
+            <span class="label">Year 2</span>
+        </div>
+        <div class="hero-stat">
+            <span class="number">$271,233</span>
+            <span class="label">Year 3</span>
+        </div>
+    </div>
+
+    <!-- Year Budget Breakdown -->
+    <div class="year-budget-banner">
+        <div class="yb-item">
+            <div class="yb-label">Year 1: Prototype Startup</div>
+            <div class="yb-value">$205,479</div>
+        </div>
+        <div class="yb-divider"></div>
+        <div class="yb-item">
+            <div class="yb-label">Year 2: Proof of Concept</div>
+            <div class="yb-value">$246,575</div>
+        </div>
+        <div class="yb-divider"></div>
+        <div class="yb-item">
+            <div class="yb-label">Year 3: Growth to Scale</div>
+            <div class="yb-value">$271,233</div>
+        </div>
+        <div class="yb-divider"></div>
+        <div class="yb-item yb-total">
+            <div class="yb-label">Grand Total</div>
+            <div class="yb-value">$723,287</div>
+        </div>
+    </div>
+
+    <div class="hero-cta">
+        <a href="#environment" class="btn-primary">Our Climate Impact &#8595;</a>
+        <a href="#logframe" class="btn-secondary">View Logframe</a>
+    </div>
+</section>
+
+<!-- ENVIRONMENTAL MISSION -->
+<section class="env-mission" id="environment">
+    <div class="section-label">Objective #1: Environmental Impact</div>
+    <div class="section-title">Reducing Greenhouse Gas Emissions<br>from Livestock through IoT</div>
+    <p class="section-desc">
+        According to FAO, livestock contributes 14.5% of global GHG emissions. MooMe's IoT sensors detect harmful gases produced from manure and urine, enabling early mitigation and supporting Rwanda's Nationally Determined Contributions (NDC) and green project goals.
+    </p>
+
+    <div class="env-grid reveal">
+        <div class="env-card">
+            <div class="env-card-icon" style="background: rgba(198,40,40,0.15);">&#128168;</div>
+            <h3>GHG Detection from Livestock Waste</h3>
+            <p>IoT gas sensors (MQ-135, electrochemical) continuously monitor harmful gases produced from cow manure, urine, and dung in real-time.</p>
+            <div style="margin-top: 0.8rem;">
+                <span class="gas-tag gas-ch4">CH&#8324; Methane</span>
+                <span class="gas-tag gas-no3">NO&#8323;&#8314; Nitrous</span>
+                <span class="gas-tag gas-co2">CO&#8322; Carbon</span>
+                <span class="gas-tag gas-nh3">NH&#8323; Ammonia</span>
+            </div>
+        </div>
+        <div class="env-card">
+            <div class="env-card-icon" style="background: rgba(46,125,50,0.15);">&#9851;</div>
+            <h3>Biogas as Mitigation Measure</h3>
+            <p>Captured livestock waste gases feed biogas digesters. IoT sensors monitor gas pressure and temperature in biogas tanks, optimizing methane capture and converting waste into clean energy.</p>
+        </div>
+        <div class="env-card">
+            <div class="env-card-icon" style="background: rgba(0,105,92,0.15);">&#127777;&#65039;</div>
+            <h3>Environmental Monitoring</h3>
+            <p>DHT22 and dedicated environment sensors track outside temperature, air quality, humidity, and ventilation to detect conditions that increase GHG emissions or cause heat stress.</p>
+        </div>
+        <div class="env-card">
+            <div class="env-card-icon" style="background: rgba(249,168,37,0.15);">&#128200;</div>
+            <h3>AI-Driven Early Warning</h3>
+            <p>AI analytics predict emission spikes, recommend mitigation actions, and generate reports aligned with NDC program requirements and GHG Reduction targets for green financing.</p>
+        </div>
+        <div class="env-highlight">
+            <div class="env-highlight-item">
+                <div class="value">NDC</div>
+                <div class="desc">Contributing to Rwanda's Nationally Determined Contributions under the Paris Agreement</div>
+            </div>
+            <div class="env-highlight-item">
+                <div class="value">GHGR</div>
+                <div class="desc">Greenhouse Gas Reduction through IoT-enabled detection and biogas mitigation</div>
+            </div>
+            <div class="env-highlight-item">
+                <div class="value">FAO</div>
+                <div class="desc">Aligned with FAO goals to reduce livestock sector's contribution to global warming</div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- OBJECTIVES -->
+<section id="objectives">
+    <div class="section-label">Project Objectives</div>
+    <div class="section-title">Start Small, Think & Grow Big</div>
+    <p class="section-desc">A comprehensive IoT-AI platform covering environmental sustainability, animal health, productivity, and smart farm automation.</p>
+
+    <div class="objectives-grid reveal">
+        <div class="obj-card"><div class="obj-num">01</div><h3>GHG Emissions Reduction</h3><p>Detect CH&#8324;, NO&#8323;&#8314;, CO&#8322;, NH&#8323; from manure and urine. Deploy biogas technology with IoT-monitored pressure and temperature sensors as mitigation.</p></div>
+        <div class="obj-card"><div class="obj-num">02</div><h3>Heat Stress Management</h3><p>Monitor cow body temperature (IR sensors), outside temperature, humidity, and ventilation. Auto-activate cooling fans and water spray systems.</p></div>
+        <div class="obj-card"><div class="obj-num">03</div><h3>Water Efficiency</h3><p>Per-cow water flow sensors track intake. Smart pumps ensure optimal hydration while minimizing waste through AI-driven scheduling.</p></div>
+        <div class="obj-card"><div class="obj-num">04</div><h3>Feed Utilization & Intake</h3><p>Load cells measure feed consumption per cow. AI optimizes nutrition based on age, weight, lactation stage, and production goals.</p></div>
+        <div class="obj-card"><div class="obj-num">05</div><h3>Disease Detection & Health</h3><p>AI analyzes temperature patterns, activity levels, rumination rate, and resting time to predict diseases early, before visible symptoms appear.</p></div>
+        <div class="obj-card"><div class="obj-num">06</div><h3>Reproductive System Monitoring</h3><p>Track heat cycles, activity spikes, and behavioral changes. AI alerts farmers to optimal breeding windows, improving conception rates.</p></div>
+        <div class="obj-card"><div class="obj-num">07</div><h3>Rumination & Resting Analysis</h3><p>Accelerometer-based activity sensors measure rumination rate and resting time, which are key indicators of digestive health and overall well-being.</p></div>
+        <div class="obj-card"><div class="obj-num">08</div><h3>Milk Production Optimization</h3><p>Smart milk meters per cow track yield. AI predicts production trends, recommends optimal milking times, and detects quality issues.</p></div>
+        <div class="obj-card"><div class="obj-num">09</div><h3>Smart Ventilation Control</h3><p>Automated fan speed adjustment based on real-time temperature, humidity, and air quality data to maintain optimal barn conditions 24/7.</p></div>
+    </div>
+</section>
+
+<!-- IoT CAPABILITIES -->
+<section class="capabilities">
+    <div class="section-label">IoT Sensor Network</div>
+    <div class="section-title">Real-Time Monitoring at Every Level</div>
+    <div class="cap-grid reveal">
+        <div class="cap-item"><div class="cap-icon">&#127777;&#65039;</div><h4>Body Temperature</h4><p>Non-contact IR sensors per cow for continuous fever and health monitoring</p></div>
+        <div class="cap-item"><div class="cap-icon">&#128167;</div><h4>Water Intake</h4><p>Flow sensors per cow track daily consumption and detect dehydration</p></div>
+        <div class="cap-item"><div class="cap-icon">&#127871;</div><h4>Feed Measurement</h4><p>Load cells + HX711 modules measure individual feed intake precisely</p></div>
+        <div class="cap-item"><div class="cap-icon">&#129371;</div><h4>Milk Metering</h4><p>Smart meters record per-cow yield with AI-optimized milking schedules</p></div>
+        <div class="cap-item"><div class="cap-icon">&#128168;</div><h4>Gas Detection</h4><p>MQ-135 + O&#8322; sensors detect CH&#8324;, NH&#8323;, CO&#8322; from waste and environment</p></div>
+        <div class="cap-item"><div class="cap-icon">&#127758;</div><h4>Environment</h4><p>DHT22 sensors for temperature, humidity, and air quality monitoring</p></div>
+        <div class="cap-item"><div class="cap-icon">&#128204;</div><h4>RFID Identification</h4><p>Unique RFID tags per cow for individual tracking and data linkage</p></div>
+        <div class="cap-item"><div class="cap-icon">&#9889;</div><h4>Solar Power</h4><p>200W solar panel + battery backup for 24/7 off-grid operation</p></div>
+    </div>
+</section>
+
+<!-- ARCHITECTURE -->
+<section class="architecture" id="architecture">
+    <div class="section-label">System Architecture</div>
+    <div class="section-title">End-to-End IoT-AI Platform</div>
+    <p class="section-desc">From sensor data collection to AI-driven insights and automated control. A complete smart farming ecosystem.</p>
+
+    <!-- Actual Images from Project -->
+    <div class="arch-images reveal">
+        <div class="arch-img-card">
+            <img src="WhatsApp Image 2026-04-05 at 13.11.58.jpeg" alt="MooMe System Architecture - Block Diagram" />
+            <div class="arch-caption">System Block Diagram</div>
+        </div>
+        <div class="arch-img-card">
+            <img src="WhatsApp Image 2026-04-05 at 13.11.58 (1).jpeg" alt="MooMe IoT-AI Livestock Monitoring Workflow" />
+            <div class="arch-caption">IoT-AI Monitoring Workflow</div>
+        </div>
+    </div>
+
+    <!-- SVG Architecture Diagram -->
+    <div class="arch-diagram reveal">
+        <svg class="arch-svg" viewBox="0 0 1100 700" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <rect x="20" y="20" width="220" height="340" rx="12" fill="#FFF8E1" stroke="#F9A825" stroke-width="1.5"/>
+            <text x="130" y="50" text-anchor="middle" font-family="DM Sans" font-weight="700" font-size="12" fill="#E65100">INPUT SENSORS</text>
+            <text x="40" y="80" font-family="DM Sans" font-size="10" fill="#5D4037">&#x2022; Non-Contact Temp (Per Cow)</text>
+            <text x="40" y="100" font-family="DM Sans" font-size="10" fill="#5D4037">&#x2022; DHT22 (Temp &amp; Humidity)</text>
+            <text x="40" y="120" font-family="DM Sans" font-size="10" fill="#5D4037">&#x2022; Air Quality (MQ-135)</text>
+            <text x="40" y="140" font-family="DM Sans" font-size="10" fill="#5D4037">&#x2022; Oxygen Sensor</text>
+            <text x="40" y="160" font-family="DM Sans" font-size="10" fill="#5D4037">&#x2022; Feed Weight (Load Cell)</text>
+            <text x="40" y="180" font-family="DM Sans" font-size="10" fill="#5D4037">&#x2022; Water Flow Sensor</text>
+            <text x="40" y="200" font-family="DM Sans" font-size="10" fill="#5D4037">&#x2022; Smart Milk Meter</text>
+            <text x="40" y="220" font-family="DM Sans" font-size="10" fill="#5D4037">&#x2022; Activity Sensor (Accel.)</text>
+            <text x="40" y="250" font-family="DM Sans" font-size="10" fill="#5D4037">&#x2022; Biogas Pressure Sensor</text>
+            <text x="40" y="270" font-family="DM Sans" font-size="10" fill="#5D4037">&#x2022; Biogas Temp Sensor</text>
+            <text x="40" y="300" font-family="DM Sans" font-weight="700" font-size="11" fill="#E65100">IDENTIFICATION</text>
+            <text x="40" y="320" font-family="DM Sans" font-size="10" fill="#5D4037">&#x2022; RFID Reader + Tags</text>
+            <text x="40" y="340" font-family="DM Sans" font-size="10" fill="#5D4037">&#x2022; Smart Collars</text>
+
+            <rect x="300" y="20" width="260" height="280" rx="12" fill="#E8F5E9" stroke="#4CAF50" stroke-width="1.5"/>
+            <text x="430" y="50" text-anchor="middle" font-family="DM Sans" font-weight="700" font-size="12" fill="#2E7D32">PROCESSING &amp; CONTROL</text>
+            <rect x="320" y="65" width="220" height="30" rx="6" fill="#C8E6C9"/>
+            <text x="430" y="85" text-anchor="middle" font-family="DM Sans" font-weight="600" font-size="11" fill="#1B5E20">RASPBERRY PI 4/5</text>
+            <text x="320" y="120" font-family="DM Sans" font-size="10" fill="#33691E">Data Acquisition Module</text>
+            <text x="320" y="145" font-family="DM Sans" font-size="10" fill="#33691E">Control Logic (Automation Rules)</text>
+            <rect x="320" y="160" width="220" height="60" rx="6" fill="rgba(46,125,50,0.08)" stroke="#66BB6A" stroke-width="0.5"/>
+            <text x="330" y="178" font-family="DM Sans" font-weight="600" font-size="10" fill="#2E7D32">AI &amp; Analytics Engine</text>
+            <text x="330" y="195" font-family="DM Sans" font-size="9" fill="#4E4E3A">&#x2022; Disease Prediction &#x2022; Yield Forecast</text>
+            <text x="330" y="210" font-family="DM Sans" font-size="9" fill="#4E4E3A">&#x2022; Feed Optimization &#x2022; GHG Analytics</text>
+            <text x="320" y="240" font-family="DM Sans" font-size="10" fill="#33691E">Data Management (Local Storage)</text>
+            <text x="320" y="265" font-family="DM Sans" font-size="10" fill="#33691E">GHG Reporting &amp; NDC Compliance</text>
+
+            <rect x="620" y="20" width="220" height="260" rx="12" fill="#E3F2FD" stroke="#1976D2" stroke-width="1.5"/>
+            <text x="730" y="50" text-anchor="middle" font-family="DM Sans" font-weight="700" font-size="12" fill="#0D47A1">ACTUATORS</text>
+            <text x="640" y="80" font-family="DM Sans" font-size="10" fill="#1565C0">&#x2022; Fan Controller (Speed)</text>
+            <text x="640" y="100" font-family="DM Sans" font-size="10" fill="#1565C0">&#x2022; Water Spray Controller</text>
+            <text x="640" y="120" font-family="DM Sans" font-size="10" fill="#1565C0">&#x2022; Feed Dispenser Motor</text>
+            <text x="640" y="140" font-family="DM Sans" font-size="10" fill="#1565C0">&#x2022; Water Pump Motor</text>
+            <text x="640" y="160" font-family="DM Sans" font-size="10" fill="#1565C0">&#x2022; Milking System Interface</text>
+            <text x="640" y="180" font-family="DM Sans" font-size="10" fill="#1565C0">&#x2022; Position Indicator Light</text>
+            <text x="640" y="210" font-family="DM Sans" font-weight="600" font-size="10" fill="#0D47A1">BIOGAS CONTROL</text>
+            <text x="640" y="230" font-family="DM Sans" font-size="10" fill="#1565C0">&#x2022; Digester Valve Control</text>
+            <text x="640" y="250" font-family="DM Sans" font-size="10" fill="#1565C0">&#x2022; Gas Capture Optimization</text>
+
+            <rect x="890" y="20" width="190" height="180" rx="12" fill="#FFF3E0" stroke="#FF9800" stroke-width="1.5"/>
+            <text x="985" y="50" text-anchor="middle" font-family="DM Sans" font-weight="700" font-size="12" fill="#E65100">POWER SYSTEM</text>
+            <text x="910" y="80" font-family="DM Sans" font-size="10" fill="#BF360C">&#x2022; Solar Panels (200W)</text>
+            <text x="910" y="100" font-family="DM Sans" font-size="10" fill="#BF360C">&#x2022; Charge Controller</text>
+            <text x="910" y="120" font-family="DM Sans" font-size="10" fill="#BF360C">&#x2022; Battery Bank (100Ah)</text>
+            <text x="910" y="140" font-family="DM Sans" font-size="10" fill="#BF360C">&#x2022; DC/AC Converter</text>
+            <text x="910" y="160" font-family="DM Sans" font-size="10" fill="#BF360C">&#x2022; Power Distribution</text>
+            <text x="910" y="185" font-family="DM Sans" font-weight="500" font-size="9" fill="#E65100">+ Biogas Generator Backup</text>
+
+            <line x1="240" y1="180" x2="300" y2="180" stroke="#7CB342" stroke-width="2" marker-end="url(#arrowGreen)"/>
+            <line x1="560" y1="150" x2="620" y2="150" stroke="#1976D2" stroke-width="2" marker-end="url(#arrowBlue)"/>
+            <line x1="890" y1="120" x2="840" y2="120" stroke="#FF9800" stroke-width="2" marker-end="url(#arrowOrange)"/>
+
+            <rect x="300" y="340" width="260" height="70" rx="12" fill="#F3E5F5" stroke="#9C27B0" stroke-width="1.5"/>
+            <text x="430" y="365" text-anchor="middle" font-family="DM Sans" font-weight="700" font-size="12" fill="#6A1B9A">COMMUNICATION</text>
+            <text x="350" y="390" font-family="DM Sans" font-size="10" fill="#6A1B9A">WiFi Module</text>
+            <text x="470" y="390" font-family="DM Sans" font-size="10" fill="#6A1B9A">GSM (SMS via Mista.io)</text>
+            <line x1="430" y1="300" x2="430" y2="340" stroke="#9C27B0" stroke-width="2" marker-end="url(#arrowPurple)"/>
+
+            <rect x="120" y="450" width="220" height="130" rx="12" fill="#E0F2F1" stroke="#00897B" stroke-width="1.5"/>
+            <text x="230" y="478" text-anchor="middle" font-family="DM Sans" font-weight="700" font-size="12" fill="#00695C">CLOUD &amp; DATABASE</text>
+            <text x="140" y="500" font-family="DM Sans" font-size="10" fill="#004D40">&#x2022; Cow Profiles &amp; Sensor Data</text>
+            <text x="140" y="520" font-family="DM Sans" font-size="10" fill="#004D40">&#x2022; Milk Records &amp; Analytics</text>
+            <text x="140" y="540" font-family="DM Sans" font-size="10" fill="#004D40">&#x2022; GHG Emission Logs</text>
+            <text x="140" y="560" font-family="DM Sans" font-size="10" fill="#004D40">&#x2022; NDC Compliance Reports</text>
+
+            <rect x="400" y="450" width="220" height="130" rx="12" fill="#FCE4EC" stroke="#E91E63" stroke-width="1.5"/>
+            <text x="510" y="478" text-anchor="middle" font-family="DM Sans" font-weight="700" font-size="12" fill="#C2185B">NOTIFICATIONS</text>
+            <text x="420" y="500" font-family="DM Sans" font-size="10" fill="#880E4F">&#x2022; High Temperature Alert</text>
+            <text x="420" y="520" font-family="DM Sans" font-size="10" fill="#880E4F">&#x2022; Milking Time / Disease Warning</text>
+            <text x="420" y="540" font-family="DM Sans" font-size="10" fill="#880E4F">&#x2022; Low Feed/Water Alert</text>
+            <text x="420" y="560" font-family="DM Sans" font-size="10" fill="#880E4F">&#x2022; GHG Threshold Exceeded</text>
+
+            <rect x="680" y="380" width="220" height="200" rx="12" fill="#E8EAF6" stroke="#3F51B5" stroke-width="1.5"/>
+            <text x="790" y="408" text-anchor="middle" font-family="DM Sans" font-weight="700" font-size="12" fill="#283593">USER INTERFACE</text>
+            <rect x="700" y="420" width="180" height="65" rx="6" fill="rgba(63,81,181,0.06)"/>
+            <text x="710" y="438" font-family="DM Sans" font-weight="600" font-size="10" fill="#283593">Web Dashboard</text>
+            <text x="710" y="455" font-family="DM Sans" font-size="9" fill="#5C6BC0">&#x2022; Real-time Monitoring</text>
+            <text x="710" y="470" font-family="DM Sans" font-size="9" fill="#5C6BC0">&#x2022; Reports, Analytics, GHG Data</text>
+            <rect x="700" y="495" width="180" height="65" rx="6" fill="rgba(63,81,181,0.06)"/>
+            <text x="710" y="513" font-family="DM Sans" font-weight="600" font-size="10" fill="#283593">Mobile App</text>
+            <text x="710" y="530" font-family="DM Sans" font-size="9" fill="#5C6BC0">&#x2022; Live Data &amp; Alerts</text>
+            <text x="710" y="547" font-family="DM Sans" font-size="9" fill="#5C6BC0">&#x2022; AI Recommendations</text>
+
+            <rect x="400" y="630" width="300" height="50" rx="10" fill="#2D5016"/>
+            <text x="550" y="655" text-anchor="middle" font-family="DM Sans" font-weight="700" font-size="13" fill="white">FARMER / MANAGER</text>
+            <text x="550" y="672" text-anchor="middle" font-family="DM Sans" font-size="9" fill="rgba(255,255,255,0.7)">Makes Decisions Based on AI Insights &amp; GHG Reports</text>
+
+            <line x1="350" y1="410" x2="230" y2="450" stroke="#00897B" stroke-width="1.5" stroke-dasharray="6,3"/>
+            <line x1="500" y1="410" x2="510" y2="450" stroke="#E91E63" stroke-width="1.5" stroke-dasharray="6,3"/>
+            <line x1="560" y1="375" x2="680" y2="450" stroke="#3F51B5" stroke-width="1.5" stroke-dasharray="6,3"/>
+            <line x1="510" y1="580" x2="530" y2="630" stroke="#E91E63" stroke-width="1.5" stroke-dasharray="6,3"/>
+            <line x1="790" y1="580" x2="650" y2="630" stroke="#3F51B5" stroke-width="1.5" stroke-dasharray="6,3"/>
+            <line x1="230" y1="580" x2="430" y2="630" stroke="#00897B" stroke-width="1.5" stroke-dasharray="6,3"/>
+
+            <defs>
+                <marker id="arrowGreen" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="#7CB342"/></marker>
+                <marker id="arrowBlue" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6" fill="#1976D2"/></marker>
+                <marker id="arrowOrange" markerWidth="8" markerHeight="6" refX="0" refY="3" orient="auto"><path d="M8,0 L0,3 L8,6" fill="#FF9800"/></marker>
+                <marker id="arrowPurple" markerWidth="8" markerHeight="6" refX="3" refY="8" orient="auto"><path d="M0,0 L3,8 L6,0" fill="#9C27B0"/></marker>
+            </defs>
+        </svg>
+    </div>
+</section>
+
+<!-- LOGFRAME WITH QUARTERLY BUDGET - 3 YEARS -->
+<section class="logframe" id="logframe">
+    <div class="section-label">Logframe: Technical Support / IoT (PI/E)</div>
+    <div class="section-title">Quarterly Budget Breakdown</div>
+    <p class="section-desc">Solution Design, Development & Promotion: $723,287 USD across 3 years, split into quarterly allocations per year.</p>
+
+    <div style="overflow-x:auto;" class="reveal">
+        <table class="logframe-table">
+            <thead>
+                <tr>
+                    <th rowspan="2" style="min-width:110px;">Category</th>
+                    <th rowspan="2" style="min-width:180px;">Activity / Deliverable</th>
+                    <th colspan="4" class="year-header">Year 1 | $205,479</th>
+                    <th rowspan="2" style="min-width:70px;">Y1</th>
+                    <th colspan="4" class="year-header">Year 2 | $246,575</th>
+                    <th rowspan="2" style="min-width:70px;">Y2</th>
+                    <th colspan="4" class="year-header">Year 3 | $271,233</th>
+                    <th rowspan="2" style="min-width:70px;">Y3</th>
+                    <th rowspan="2" style="min-width:80px;">Total</th>
+                </tr>
+                <tr>
+                    <th>Q1</th><th>Q2</th><th>Q3</th><th>Q4</th>
+                    <th>Q1</th><th>Q2</th><th>Q3</th><th>Q4</th>
+                    <th>Q1</th><th>Q2</th><th>Q3</th><th>Q4</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- ====== SOLUTION DESIGN ====== -->
+                <tr>
+                    <td class="cat-cell" rowspan="6">SOLUTION DESIGN</td>
+                    <td class="activity-cell">System Architecture & Requirements</td>
+                    <td class="money">$8,000</td><td class="money">$5,000</td><td class="money">—</td><td class="money">—</td>
+                    <td class="money year-total">$13,000</td>
+                    <td class="money">$4,000</td><td class="money">$2,000</td><td class="money">—</td><td class="money">—</td>
+                    <td class="money year-total">$6,000</td>
+                    <td class="money">$3,000</td><td class="money">—</td><td class="money">—</td><td class="money">—</td>
+                    <td class="money year-total">$3,000</td>
+                    <td class="money q-total">$22,000</td>
+                </tr>
+                <tr>
+                    <td class="sub-activity">IoT Sensor Design & GHG Sensor Spec</td>
+                    <td class="money">$6,000</td><td class="money">$5,000</td><td class="money">$2,000</td><td class="money">—</td>
+                    <td class="money year-total">$13,000</td>
+                    <td class="money">$3,000</td><td class="money">$3,000</td><td class="money">$2,000</td><td class="money">—</td>
+                    <td class="money year-total">$8,000</td>
+                    <td class="money">$3,000</td><td class="money">$2,000</td><td class="money">—</td><td class="money">—</td>
+                    <td class="money year-total">$5,000</td>
+                    <td class="money q-total">$26,000</td>
+                </tr>
+                <tr>
+                    <td class="sub-activity">AI/ML Model Design (Disease, GHG, Yield)</td>
+                    <td class="money">$5,000</td><td class="money">$5,000</td><td class="money">$3,000</td><td class="money">$2,000</td>
+                    <td class="money year-total">$15,000</td>
+                    <td class="money">$4,000</td><td class="money">$4,000</td><td class="money">$3,000</td><td class="money">$2,000</td>
+                    <td class="money year-total">$13,000</td>
+                    <td class="money">$3,000</td><td class="money">$3,000</td><td class="money">$3,000</td><td class="money">$2,000</td>
+                    <td class="money year-total">$11,000</td>
+                    <td class="money q-total">$39,000</td>
+                </tr>
+                <tr>
+                    <td class="sub-activity">GHG / Biogas Monitoring System Design</td>
+                    <td class="money">$4,000</td><td class="money">$4,000</td><td class="money">$2,000</td><td class="money">—</td>
+                    <td class="money year-total">$10,000</td>
+                    <td class="money">$3,000</td><td class="money">$3,000</td><td class="money">$2,000</td><td class="money">$2,000</td>
+                    <td class="money year-total">$10,000</td>
+                    <td class="money">$3,000</td><td class="money">$3,000</td><td class="money">$2,000</td><td class="money">$2,000</td>
+                    <td class="money year-total">$10,000</td>
+                    <td class="money q-total">$30,000</td>
+                </tr>
+                <tr>
+                    <td class="sub-activity">Dashboard & Mobile App UX/UI Design</td>
+                    <td class="money">$3,000</td><td class="money">$3,000</td><td class="money">$2,000</td><td class="money">$1,000</td>
+                    <td class="money year-total">$9,000</td>
+                    <td class="money">$2,000</td><td class="money">$2,000</td><td class="money">$2,000</td><td class="money">$1,000</td>
+                    <td class="money year-total">$7,000</td>
+                    <td class="money">$2,000</td><td class="money">$2,000</td><td class="money">$1,000</td><td class="money">$1,000</td>
+                    <td class="money year-total">$6,000</td>
+                    <td class="money q-total">$22,000</td>
+                </tr>
+                <tr style="background:rgba(45,80,22,0.04); font-weight:600;">
+                    <td>Design Subtotal</td>
+                    <td class="money">$26,000</td><td class="money">$22,000</td><td class="money">$9,000</td><td class="money">$3,000</td>
+                    <td class="money year-total">$60,000</td>
+                    <td class="money">$16,000</td><td class="money">$14,000</td><td class="money">$9,000</td><td class="money">$5,000</td>
+                    <td class="money year-total">$44,000</td>
+                    <td class="money">$14,000</td><td class="money">$10,000</td><td class="money">$6,000</td><td class="money">$5,000</td>
+                    <td class="money year-total">$35,000</td>
+                    <td class="money q-total">$139,000</td>
+                </tr>
+
+                <!-- ====== SOLUTION DEVELOPMENT ====== -->
+                <tr>
+                    <td class="cat-cell" rowspan="8">SOLUTION DEVELOPMENT</td>
+                    <td class="activity-cell">IoT Hardware Procurement & Assembly</td>
+                    <td class="money">$3,000</td><td class="money">$10,000</td><td class="money">$8,000</td><td class="money">$4,000</td>
+                    <td class="money year-total">$25,000</td>
+                    <td class="money">$6,000</td><td class="money">$8,000</td><td class="money">$7,000</td><td class="money">$5,000</td>
+                    <td class="money year-total">$26,000</td>
+                    <td class="money">$8,000</td><td class="money">$10,000</td><td class="money">$8,000</td><td class="money">$6,000</td>
+                    <td class="money year-total">$32,000</td>
+                    <td class="money q-total">$83,000</td>
+                </tr>
+                <tr>
+                    <td class="sub-activity">Embedded Software & Firmware Dev</td>
+                    <td class="money">$2,000</td><td class="money">$4,000</td><td class="money">$5,000</td><td class="money">$4,000</td>
+                    <td class="money year-total">$15,000</td>
+                    <td class="money">$4,000</td><td class="money">$5,000</td><td class="money">$5,000</td><td class="money">$4,000</td>
+                    <td class="money year-total">$18,000</td>
+                    <td class="money">$5,000</td><td class="money">$6,000</td><td class="money">$6,000</td><td class="money">$5,000</td>
+                    <td class="money year-total">$22,000</td>
+                    <td class="money q-total">$55,000</td>
+                </tr>
+                <tr>
+                    <td class="sub-activity">AI Model Training & Deployment</td>
+                    <td class="money">—</td><td class="money">$3,000</td><td class="money">$5,000</td><td class="money">$5,000</td>
+                    <td class="money year-total">$13,000</td>
+                    <td class="money">$5,000</td><td class="money">$6,000</td><td class="money">$6,000</td><td class="money">$5,000</td>
+                    <td class="money year-total">$22,000</td>
+                    <td class="money">$7,000</td><td class="money">$7,000</td><td class="money">$7,000</td><td class="money">$6,000</td>
+                    <td class="money year-total">$27,000</td>
+                    <td class="money q-total">$62,000</td>
+                </tr>
+                <tr>
+                    <td class="sub-activity">Web Dashboard & Mobile App Dev</td>
+                    <td class="money">—</td><td class="money">$3,000</td><td class="money">$5,000</td><td class="money">$5,000</td>
+                    <td class="money year-total">$13,000</td>
+                    <td class="money">$5,000</td><td class="money">$6,000</td><td class="money">$5,000</td><td class="money">$5,000</td>
+                    <td class="money year-total">$21,000</td>
+                    <td class="money">$6,000</td><td class="money">$7,000</td><td class="money">$6,000</td><td class="money">$6,000</td>
+                    <td class="money year-total">$25,000</td>
+                    <td class="money q-total">$59,000</td>
+                </tr>
+                <tr>
+                    <td class="sub-activity">GHG Monitoring, Biogas & NDC Integration</td>
+                    <td class="money">$1,000</td><td class="money">$3,000</td><td class="money">$4,000</td><td class="money">$4,000</td>
+                    <td class="money year-total">$12,000</td>
+                    <td class="money">$4,000</td><td class="money">$5,000</td><td class="money">$5,000</td><td class="money">$4,000</td>
+                    <td class="money year-total">$18,000</td>
+                    <td class="money">$5,000</td><td class="money">$6,000</td><td class="money">$6,000</td><td class="money">$5,000</td>
+                    <td class="money year-total">$22,000</td>
+                    <td class="money q-total">$52,000</td>
+                </tr>
+                <tr>
+                    <td class="sub-activity">Cloud Infrastructure, Database & APIs</td>
+                    <td class="money">$2,000</td><td class="money">$3,000</td><td class="money">$3,000</td><td class="money">$4,479</td>
+                    <td class="money year-total">$12,479</td>
+                    <td class="money">$4,000</td><td class="money">$4,000</td><td class="money">$4,000</td><td class="money">$4,575</td>
+                    <td class="money year-total">$16,575</td>
+                    <td class="money">$5,000</td><td class="money">$5,000</td><td class="money">$5,000</td><td class="money">$5,233</td>
+                    <td class="money year-total">$20,233</td>
+                    <td class="money q-total">$49,287</td>
+                </tr>
+                <tr>
+                    <td class="sub-activity">Testing, QA & Pilot Deployment</td>
+                    <td class="money">—</td><td class="money">—</td><td class="money">$5,000</td><td class="money">$7,000</td>
+                    <td class="money year-total">$12,000</td>
+                    <td class="money">$4,000</td><td class="money">$5,000</td><td class="money">$5,000</td><td class="money">$5,000</td>
+                    <td class="money year-total">$19,000</td>
+                    <td class="money">$5,000</td><td class="money">$6,000</td><td class="money">$6,000</td><td class="money">$6,000</td>
+                    <td class="money year-total">$23,000</td>
+                    <td class="money q-total">$54,000</td>
+                </tr>
+                <tr style="background:rgba(45,80,22,0.04); font-weight:600;">
+                    <td>Development Subtotal</td>
+                    <td class="money">$8,000</td><td class="money">$26,000</td><td class="money">$35,000</td><td class="money">$33,479</td>
+                    <td class="money year-total">$102,479</td>
+                    <td class="money">$32,000</td><td class="money">$39,000</td><td class="money">$37,000</td><td class="money">$32,575</td>
+                    <td class="money year-total">$140,575</td>
+                    <td class="money">$41,000</td><td class="money">$47,000</td><td class="money">$44,000</td><td class="money">$39,233</td>
+                    <td class="money year-total">$171,233</td>
+                    <td class="money q-total">$414,287</td>
+                </tr>
+
+                <!-- ====== SOLUTION PROMOTION ====== -->
+                <tr>
+                    <td class="cat-cell" rowspan="7">SOLUTION PROMOTION</td>
+                    <td class="activity-cell">Farmer Training & Capacity Building</td>
+                    <td class="money">—</td><td class="money">—</td><td class="money">$3,000</td><td class="money">$3,000</td>
+                    <td class="money year-total">$6,000</td>
+                    <td class="money">$3,000</td><td class="money">$3,000</td><td class="money">$3,000</td><td class="money">$2,000</td>
+                    <td class="money year-total">$11,000</td>
+                    <td class="money">$3,000</td><td class="money">$3,000</td><td class="money">$2,000</td><td class="money">$2,000</td>
+                    <td class="money year-total">$10,000</td>
+                    <td class="money q-total">$27,000</td>
+                </tr>
+                <tr>
+                    <td class="sub-activity">Stakeholder Engagement & Live Demos</td>
+                    <td class="money">$1,000</td><td class="money">$2,000</td><td class="money">$2,000</td><td class="money">$1,000</td>
+                    <td class="money year-total">$6,000</td>
+                    <td class="money">$2,000</td><td class="money">$2,000</td><td class="money">$3,000</td><td class="money">$2,000</td>
+                    <td class="money year-total">$9,000</td>
+                    <td class="money">$2,000</td><td class="money">$2,000</td><td class="money">$2,000</td><td class="money">$2,000</td>
+                    <td class="money year-total">$8,000</td>
+                    <td class="money q-total">$23,000</td>
+                </tr>
+                <tr>
+                    <td class="sub-activity">NDC / GHG Impact Reports & Publications</td>
+                    <td class="money">—</td><td class="money">—</td><td class="money">$2,000</td><td class="money">$3,000</td>
+                    <td class="money year-total">$5,000</td>
+                    <td class="money">$2,000</td><td class="money">$2,000</td><td class="money">$3,000</td><td class="money">$2,000</td>
+                    <td class="money year-total">$9,000</td>
+                    <td class="money">$3,000</td><td class="money">$3,000</td><td class="money">$2,000</td><td class="money">$2,000</td>
+                    <td class="money year-total">$10,000</td>
+                    <td class="money q-total">$24,000</td>
+                </tr>
+                <tr>
+                    <td class="sub-activity">Marketing, Branding & Conferences</td>
+                    <td class="money">$2,000</td><td class="money">$2,000</td><td class="money">$3,000</td><td class="money">$2,000</td>
+                    <td class="money year-total">$9,000</td>
+                    <td class="money">$3,000</td><td class="money">$3,000</td><td class="money">$2,000</td><td class="money">$3,000</td>
+                    <td class="money year-total">$11,000</td>
+                    <td class="money">$3,000</td><td class="money">$3,000</td><td class="money">$3,000</td><td class="money">$3,000</td>
+                    <td class="money year-total">$12,000</td>
+                    <td class="money q-total">$32,000</td>
+                </tr>
+                <tr>
+                    <td class="sub-activity">Partnership Dev & Green Fund Applications</td>
+                    <td class="money">$2,000</td><td class="money">$3,000</td><td class="money">$3,000</td><td class="money">$4,000</td>
+                    <td class="money year-total">$12,000</td>
+                    <td class="money">$3,000</td><td class="money">$3,000</td><td class="money">$4,000</td><td class="money">$4,000</td>
+                    <td class="money year-total">$14,000</td>
+                    <td class="money">$3,000</td><td class="money">$4,000</td><td class="money">$4,000</td><td class="money">$4,000</td>
+                    <td class="money year-total">$15,000</td>
+                    <td class="money q-total">$41,000</td>
+                </tr>
+                <tr>
+                    <td class="sub-activity">Monitoring & Evaluation (M&E)</td>
+                    <td class="money">$1,000</td><td class="money">—</td><td class="money">$1,000</td><td class="money">$3,000</td>
+                    <td class="money year-total">$5,000</td>
+                    <td class="money">$1,000</td><td class="money">$2,000</td><td class="money">$2,000</td><td class="money">$3,000</td>
+                    <td class="money year-total">$8,000</td>
+                    <td class="money">$1,000</td><td class="money">$3,000</td><td class="money">$4,000</td><td class="money">$2,000</td>
+                    <td class="money year-total">$10,000</td>
+                    <td class="money q-total">$23,000</td>
+                </tr>
+                <tr style="background:rgba(45,80,22,0.04); font-weight:600;">
+                    <td>Promotion Subtotal</td>
+                    <td class="money">$6,000</td><td class="money">$7,000</td><td class="money">$14,000</td><td class="money">$16,000</td>
+                    <td class="money year-total">$43,000</td>
+                    <td class="money">$14,000</td><td class="money">$15,000</td><td class="money">$17,000</td><td class="money">$16,000</td>
+                    <td class="money year-total">$62,000</td>
+                    <td class="money">$15,000</td><td class="money">$18,000</td><td class="money">$17,000</td><td class="money">$15,000</td>
+                    <td class="money year-total">$65,000</td>
+                    <td class="money q-total">$170,000</td>
+                </tr>
+
+                <!-- ====== GRAND TOTALS ====== -->
+                <tr class="grand-total">
+                    <td colspan="2" style="text-align:right; padding-right:1rem;">QUARTERLY TOTALS</td>
+                    <td class="money">$40,000</td><td class="money">$55,000</td><td class="money">$58,000</td><td class="money">$52,479</td>
+                    <td class="money" style="font-size:0.85rem;">$205,479</td>
+                    <td class="money">$62,000</td><td class="money">$68,000</td><td class="money">$63,000</td><td class="money">$53,575</td>
+                    <td class="money" style="font-size:0.85rem;">$246,575</td>
+                    <td class="money">$70,000</td><td class="money">$75,000</td><td class="money">$67,000</td><td class="money">$59,233</td>
+                    <td class="money" style="font-size:0.85rem;">$271,233</td>
+                    <td class="money" style="font-size:0.95rem; color:#FFCA28;">$723,287</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</section>
+
+<!-- HARDWARE BUDGET -->
+<section class="budget" id="budget">
+    <div class="budget-header">
+        <div>
+            <div class="section-label">Prototype Hardware Cost</div>
+            <div class="section-title">IoT Kit: 12 Cow System</div>
+            <p class="section-desc">Hardware component breakdown for the prototype startup phase. Prices in USD (2,699,000 RWF total, included in the $723,287 global budget).</p>
+        </div>
+        <div class="budget-total">
+            <div class="amount">~$2,300</div>
+            <div class="note">2,699,000 RWF per 12-cow unit</div>
+        </div>
+    </div>
+
+    <div style="overflow-x:auto;" class="reveal">
+        <table class="budget-table">
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Component</th>
+                    <th>Qty</th>
+                    <th>Unit (USD)</th>
+                    <th>Total (USD)</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>1</td><td>Raspberry Pi 4/5</td><td>1</td><td>$102</td><td>$102</td></tr>
+                <tr><td>2</td><td>MicroSD Card (64GB)</td><td>1</td><td>$13</td><td>$13</td></tr>
+                <tr><td>3</td><td>Power Supply</td><td>1</td><td>$9</td><td>$9</td></tr>
+                <tr><td>4</td><td>Non-contact Temp Sensor (IR)</td><td>12</td><td>$17</td><td>$204</td></tr>
+                <tr><td>5</td><td>DHT22 Sensor</td><td>2</td><td>$7</td><td>$14</td></tr>
+                <tr><td>6</td><td>Air Quality Sensor (MQ-135)</td><td>1</td><td>$13</td><td>$13</td></tr>
+                <tr><td>7</td><td>Oxygen Sensor</td><td>1</td><td>$21</td><td>$21</td></tr>
+                <tr><td>8</td><td>RFID Reader Module</td><td>1</td><td>$15</td><td>$15</td></tr>
+                <tr><td>9</td><td>RFID Tags</td><td>12</td><td>$2</td><td>$20</td></tr>
+                <tr><td>10</td><td>Water Flow Sensor</td><td>12</td><td>$9</td><td>$102</td></tr>
+                <tr><td>11</td><td>Load Cell + HX711</td><td>12</td><td>$13</td><td>$153</td></tr>
+                <tr><td>12</td><td>Smart Milk Meter</td><td>12</td><td>$51</td><td>$611</td></tr>
+                <tr><td>13</td><td>DC Water Pump</td><td>12</td><td>$17</td><td>$204</td></tr>
+                <tr><td>14</td><td>Fans (Cooling)</td><td>4</td><td>$21</td><td>$85</td></tr>
+                <tr><td>15</td><td>Relay Modules</td><td>5</td><td>$7</td><td>$34</td></tr>
+                <tr><td>16</td><td>Motor (Feed Dispenser)</td><td>12</td><td>$15</td><td>$184</td></tr>
+                <tr><td>17</td><td>Pipes & Spray Nozzles</td><td>1 set</td><td>$51</td><td>$51</td></tr>
+                <tr><td>18</td><td>GSM Module (SIM800L)</td><td>1</td><td>$13</td><td>$13</td></tr>
+                <tr><td>19</td><td>Wi-Fi Router</td><td>1</td><td>$30</td><td>$30</td></tr>
+                <tr><td>20</td><td>Solar Panel (200W)</td><td>1</td><td>$128</td><td>$128</td></tr>
+                <tr><td>21</td><td>Battery (100Ah)</td><td>1</td><td>$153</td><td>$153</td></tr>
+                <tr><td>22</td><td>Charge Controller</td><td>1</td><td>$34</td><td>$34</td></tr>
+                <tr><td>23</td><td>Inverter</td><td>1</td><td>$68</td><td>$68</td></tr>
+                <tr><td>24</td><td>Wires & Installation</td><td>1</td><td>$39</td><td>$39</td></tr>
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="4">Total Prototype Hardware (12 Cows)</td>
+                    <td>$2,300</td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</section>
+
+<!-- NDC / CLIMATE -->
+<section class="ndc-section" id="ndc">
+    <div class="section-label">Climate & Development Impact</div>
+    <div class="section-title" style="max-width:800px;">AI-IoT Digital Solutions Contributing to<br>NDC Program & GHG Reduction</div>
+    <div class="ndc-grid reveal">
+        <div class="ndc-card"><h3 style="color:#7CB342;">Livestock GHG Detection</h3><p>Real-time monitoring of CH&#8324;, NO&#8323;&#8314;, CO&#8322;, and NH&#8323; emissions from manure, urine, and cow dung using IoT gas sensors, enabling data-driven mitigation before pollution occurs.</p></div>
+        <div class="ndc-card"><h3 style="color:#FFCA28;">Biogas Technology</h3><p>Converting livestock waste gases into clean biogas energy. IoT sensors monitor digester pressure and temperature to optimize methane capture and reduce atmospheric emissions.</p></div>
+        <div class="ndc-card"><h3 style="color:#4FC3F7;">NDC Compliance</h3><p>Automated reporting aligned with Rwanda's Nationally Determined Contributions under the Paris Agreement. Verifiable GHG reduction data for green financing and carbon credits.</p></div>
+        <div class="ndc-card"><h3 style="color:#EF9A9A;">FAO Alignment</h3><p>Directly contributes to FAO's goal of reducing the livestock sector's 14.5% contribution to global GHG emissions through technology-driven early detection and waste management.</p></div>
+        <div class="ndc-card"><h3 style="color:#CE93D8;">Green Project Financing</h3><p>IoT-verified emission reduction data qualifies MooMe farms for green climate funds, carbon credit markets, and ESG-aligned investment, creating financial incentives for sustainable farming.</p></div>
+        <div class="ndc-card"><h3 style="color:#80CBC4;">Circular Economy</h3><p>Waste-to-energy cycle: livestock waste produces biogas for farm energy, reducing both GHG emissions and energy costs. Digestate becomes organic fertilizer, completing the loop.</p></div>
+    </div>
+</section>
+
+<!-- SCALING -->
+<section class="scaling" id="scaling">
+    <div class="section-label">Growth Vision</div>
+    <div class="section-title">Start Small, Think & Grow Big</div>
+    <p class="section-desc">Scaling through farmers, animals, and environmental impact across Rwanda and beyond.</p>
+
+    <div class="scale-phases reveal">
+
+        <!-- PHASE 1: PROTOTYPE STARTUP -->
+        <div class="scale-phase">
+            <div class="scale-phase-header">
+                <span class="scale-phase-icon">&#127793;</span>
+                <span class="scale-phase-badge badge-y1">Year 1</span>
+                <span class="scale-phase-title">Prototype Startup</span>
+            </div>
+            <div class="scale-metrics">
+                <div class="scale-metric"><div class="metric-num">1</div><div class="metric-label">Pilot Farm</div></div>
+                <div class="scale-metric"><div class="metric-num">12</div><div class="metric-label">Dairy Cows Monitored</div></div>
+                <div class="scale-metric"><div class="metric-num">6</div><div class="metric-label">Master Trainers</div></div>
+                <div class="scale-metric"><div class="metric-num">36</div><div class="metric-label">Facilitators (Animal Scientists)</div></div>
+                <div class="scale-metric"><div class="metric-num">432</div><div class="metric-label">Dairy Farmers Trained</div></div>
+                <div class="scale-metric"><div class="metric-num">1</div><div class="metric-label">Biogas Unit</div></div>
+            </div>
+            <div class="scale-details">
+                <div class="scale-detail">Single dairy farm in Rwanda equipped with full MooMe IoT sensor kit (24+ sensors)</div>
+                <div class="scale-detail">6 Master Trainers: data analysis, reporting &amp; coaching (each trains 6 facilitators)</div>
+                <div class="scale-detail">36 Facilitators (Animal Scientists): ToT program, field training, app handling (each trains 12 farmers)</div>
+                <div class="scale-detail">432 Dairy Farmers: smartphone-equipped, trained in Kinyarwanda &amp; English on MooMe app</div>
+                <div class="scale-detail">GHG baseline measurement: CH4, NO3+, CO2, NH3 from livestock waste</div>
+                <div class="scale-detail">First biogas digester with IoT pressure and temperature monitoring</div>
+            </div>
+        </div>
+
+        <!-- PHASE 2: PROOF OF CONCEPT -->
+        <div class="scale-phase">
+            <div class="scale-phase-header">
+                <span class="scale-phase-icon">&#127807;</span>
+                <span class="scale-phase-badge badge-y2">Year 2</span>
+                <span class="scale-phase-title">Proof of Concept</span>
+            </div>
+            <div class="scale-metrics">
+                <div class="scale-metric"><div class="metric-num">3</div><div class="metric-label">Dairy Farms</div></div>
+                <div class="scale-metric"><div class="metric-num">50+</div><div class="metric-label">Cows Monitored</div></div>
+                <div class="scale-metric"><div class="metric-num">20</div><div class="metric-label">Master Trainers</div></div>
+                <div class="scale-metric"><div class="metric-num">120</div><div class="metric-label">Facilitators (Animal Scientists)</div></div>
+                <div class="scale-metric"><div class="metric-num">1,440</div><div class="metric-label">Model Dairy Farmers</div></div>
+                <div class="scale-metric"><div class="metric-num">3</div><div class="metric-label">Biogas Units</div></div>
+            </div>
+            <div class="scale-details">
+                <div class="scale-detail">Multi-farm validation across 3 districts with validated AI models (&gt;85% accuracy)</div>
+                <div class="scale-detail">20 Master Trainers: each trains 6 facilitators = 120 facilitators across districts</div>
+                <div class="scale-detail">120 Facilitators (Animal Scientists): each trains 12 farmers = 1,440 model dairy farmers</div>
+                <div class="scale-detail">1,440 Dairy Farmers: smartphone-equipped, trained in Kinyarwanda &amp; English on MooMe app</div>
+                <div class="scale-detail">First NDC contribution report with verified GHG reduction data</div>
+                <div class="scale-detail">Investor and green fund pitches with measurable environmental impact data</div>
+            </div>
+        </div>
+
+        <!-- PHASE 3: GROWTH TO SCALE -->
+        <div class="scale-phase">
+            <div class="scale-phase-header">
+                <span class="scale-phase-icon">&#127795;</span>
+                <span class="scale-phase-badge badge-y3">Year 3</span>
+                <span class="scale-phase-title">Growth to Scale: Dairy Rwanda</span>
+            </div>
+            <div class="scale-metrics">
+                <div class="scale-metric"><div class="metric-num">10+</div><div class="metric-label">Dairy Farms</div></div>
+                <div class="scale-metric"><div class="metric-num">500+</div><div class="metric-label">Cows Monitored</div></div>
+                <div class="scale-metric"><div class="metric-num">75</div><div class="metric-label">Master Trainers</div></div>
+                <div class="scale-metric"><div class="metric-num">450</div><div class="metric-label">Facilitators (Animal Scientists)</div></div>
+                <div class="scale-metric"><div class="metric-num">5,400</div><div class="metric-label">Model Dairy Farmers</div></div>
+                <div class="scale-metric"><div class="metric-num">10+</div><div class="metric-label">Biogas Digesters</div></div>
+            </div>
+            <div class="scale-details">
+                <div class="scale-detail">75 Master Trainers: each trains 6 facilitators = 450 facilitators across Rwanda</div>
+                <div class="scale-detail">450 Facilitators (Animal Scientists): ToT program, each trains 12 farmers = 5,400 dairy farmers</div>
+                <div class="scale-detail">5,400 Model Dairy Farmers: smartphone-equipped, trained in Kinyarwanda &amp; English on MooMe app</div>
+                <div class="scale-detail">Carbon credit tracking, green project certification, partnership with Rwanda Environment Management Authority</div>
+                <div class="scale-detail">Measurable GHG reduction impact across national dairy sector</div>
+                <div class="scale-detail">Prepare multi-sector expansion: poultry, pigs, beef with species-specific AI and IoT adaptations</div>
+            </div>
+        </div>
+
+        <!-- PHASE 4: MULTI-SECTOR (Future Vision) -->
+        <div class="scale-phase" style="border-left: 3px solid var(--bark); opacity: 0.92;">
+            <div class="scale-phase-header">
+                <span class="scale-phase-icon">&#127757;</span>
+                <span class="scale-phase-badge badge-y4">Year 4+</span>
+                <span class="scale-phase-title">Multi-Sector: Poultry, Pigs & Beef</span>
+            </div>
+            <div class="scale-metrics">
+                <div class="scale-metric"><div class="metric-num">4</div><div class="metric-label">Livestock Sectors</div></div>
+                <div class="scale-metric"><div class="metric-num">5,000+</div><div class="metric-label">Animals Monitored</div></div>
+                <div class="scale-metric"><div class="metric-num">150+</div><div class="metric-label">Master Trainers</div></div>
+                <div class="scale-metric"><div class="metric-num">900+</div><div class="metric-label">Facilitators</div></div>
+                <div class="scale-metric"><div class="metric-num">10,800+</div><div class="metric-label">Farmers Reached</div></div>
+                <div class="scale-metric"><div class="metric-num">50+</div><div class="metric-label">Biogas Systems</div></div>
+            </div>
+            <div class="scale-details">
+                <div class="scale-detail">Species-specific AI models and IoT sensors adapted for poultry, pigs, and beef</div>
+                <div class="scale-detail">Cross-sector GHG emission profiles and mitigation strategies per livestock type</div>
+                <div class="scale-detail">Rwanda-wide NDC impact dashboard with unified multi-sector analytics</div>
+                <div class="scale-detail">Scalable deployment playbook for rapid replication across new farm types</div>
+            </div>
+        </div>
+
+        <!-- PHASE 5: INTERNATIONAL (Future Vision) -->
+        <div class="scale-phase" style="border-left: 3px solid var(--gas-red); opacity: 0.92;">
+            <div class="scale-phase-header">
+                <span class="scale-phase-icon">&#127758;</span>
+                <span class="scale-phase-badge badge-y5">Year 5+</span>
+                <span class="scale-phase-title">International Expansion</span>
+            </div>
+            <div class="scale-metrics">
+                <div class="scale-metric"><div class="metric-num">5+</div><div class="metric-label">Countries</div></div>
+                <div class="scale-metric"><div class="metric-num">50,000+</div><div class="metric-label">Animals Monitored</div></div>
+                <div class="scale-metric"><div class="metric-num">500+</div><div class="metric-label">Master Trainers</div></div>
+                <div class="scale-metric"><div class="metric-num">3,000+</div><div class="metric-label">Facilitators</div></div>
+                <div class="scale-metric"><div class="metric-num">36,000+</div><div class="metric-label">Farmers Reached</div></div>
+                <div class="scale-metric"><div class="metric-num">500+</div><div class="metric-label">Biogas Systems</div></div>
+            </div>
+            <div class="scale-details">
+                <div class="scale-detail">Expansion to Kenya, Uganda, Tanzania, and beyond with local partners</div>
+                <div class="scale-detail">Pan-African livestock IoT standard and climate finance partnerships</div>
+                <div class="scale-detail">Multi-language platform (Kinyarwanda, Swahili, English, French)</div>
+                <div class="scale-detail">Global GHG impact reporting aligned with international climate agreements</div>
+            </div>
+        </div>
+
+    </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+    <div class="footer-logo">Moo<span>Me</span></div>
+    <p>IoT-AI Livestock Monitoring Platform. Smart farming for a greener, more productive future. Contributing to Rwanda's NDC goals and FAO global warming targets through technology-driven emission reduction.</p>
+    <p style="margin-top:0.8rem; font-size:0.75rem; color:rgba(255,255,255,0.35);">Component 4: Technical Support / IoT &bull; PI/E &bull; Total Budget: $723,287 USD (3 Years)</p>
+    <div class="footer-tag">Prototype Startup &bull; 2026</div>
+</footer>
+
+<script>
+    const reveals = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => { if (entry.isIntersecting) entry.target.classList.add('visible'); });
+    }, { threshold: 0.1 });
+    reveals.forEach(el => observer.observe(el));
+
+    window.addEventListener('scroll', () => {
+        document.getElementById('navbar').classList.toggle('scrolled', window.scrollY > 50);
+    });
+
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function(e) {
+            e.preventDefault();
+            const target = document.querySelector(this.getAttribute('href'));
+            if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+    });
+</script>
+
+</body>
+</html>

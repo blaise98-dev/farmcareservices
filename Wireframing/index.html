@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WOREX Ltd — MooMe IoT-AI Smart Livestock Pitch Deck</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Source+Sans+3:wght@300;400;600;700&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+:root{--forest:#0D3B1E;--forest-mid:#1B5E20;--forest-light:#2E7D32;--gold:#D4A017;--gold-light:#E8C547;--gold-pale:#F5E6B8;--cream:#FDF8EE;--cream-dark:#F0E6D3;--charcoal:#1A1A1A;--slate:#4A4A4A;--mist:#8A9A8A;--white:#FFF}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth;scroll-snap-type:y mandatory}
+body{font-family:'Source Sans 3',sans-serif;color:var(--charcoal);background:var(--cream);overflow-x:hidden;-webkit-font-smoothing:antialiased}
+
+/* ── SLIDE SYSTEM ── */
+.slide{min-height:100vh;scroll-snap-align:start;position:relative;display:flex;align-items:center;justify-content:center;padding:70px 60px;overflow:hidden}
+@media(max-width:768px){.slide{padding:50px 20px}}
+.slide-inner{max-width:1200px;width:100%;position:relative;z-index:2}
+.section-label{font-size:.65rem;font-weight:700;letter-spacing:4px;text-transform:uppercase;color:var(--gold);margin-bottom:12px}
+.section-title{font-family:'Playfair Display',serif;font-size:clamp(1.8rem,3.5vw,3rem);font-weight:900;line-height:1.15;margin-bottom:40px}
+.section-title.dark{color:var(--forest)}.section-title.light{color:var(--white)}
+
+/* ── NAV DOTS ── */
+.nav-dots{position:fixed;right:22px;top:50%;transform:translateY(-50%);z-index:100;display:flex;flex-direction:column;gap:8px}
+.nav-dot{width:9px;height:9px;border-radius:50%;background:rgba(13,59,30,.2);border:1px solid rgba(13,59,30,.3);cursor:pointer;transition:all .3s}
+.nav-dot.active{background:var(--gold);border-color:var(--gold);box-shadow:0 0 8px rgba(212,160,23,.4);transform:scale(1.4)}
+@media(max-width:768px){.nav-dots{right:8px;gap:6px}.nav-dot{width:7px;height:7px}}
+
+/* ── DARK SECTION BG ── */
+.bg-forest{background:var(--forest);color:var(--white)}
+.bg-forest::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 20% 80%,rgba(46,125,50,.35) 0%,transparent 60%),radial-gradient(ellipse 60% 80% at 80% 20%,rgba(212,160,23,.12) 0%,transparent 50%)}
+.bg-cream{background:var(--cream)}.bg-white{background:var(--white)}
+
+/* HERO PATTERN */
+.hero-pattern{position:absolute;inset:0;opacity:.04;background-image:repeating-linear-gradient(0deg,transparent,transparent 60px,rgba(255,255,255,.5) 60px,rgba(255,255,255,.5) 61px),repeating-linear-gradient(90deg,transparent,transparent 60px,rgba(255,255,255,.5) 60px,rgba(255,255,255,.5) 61px)}
+
+/* ════ SLIDE 1: HERO ════ */
+.hero-content{position:relative;z-index:2;text-align:center;max-width:920px;margin:0 auto}
+.hero-badge{display:inline-block;border:1px solid var(--gold);color:var(--gold);font-size:.7rem;font-weight:700;letter-spacing:4px;text-transform:uppercase;padding:8px 24px;margin-bottom:36px;opacity:0;animation:fadeUp .8s ease .3s forwards}
+.hero-title{font-family:'Playfair Display',serif;font-weight:900;font-size:clamp(2.4rem,5.2vw,4.5rem);color:var(--white);line-height:1.08;margin-bottom:16px;opacity:0;animation:fadeUp .8s ease .5s forwards}
+.hero-title .gold{color:var(--gold)}
+.hero-sub{font-family:'Playfair Display',serif;font-style:italic;font-size:clamp(1rem,1.6vw,1.25rem);color:rgba(255,255,255,.7);line-height:1.6;max-width:620px;margin:0 auto 44px;opacity:0;animation:fadeUp .8s ease .7s forwards}
+.hero-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;max-width:720px;margin:0 auto;opacity:0;animation:fadeUp .8s ease .9s forwards}
+@media(max-width:600px){.hero-stats{grid-template-columns:repeat(2,1fr)}}
+.hero-stat{text-align:center;padding:18px 10px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1)}
+.hero-stat-n{font-family:'Playfair Display',serif;font-size:1.9rem;font-weight:900;color:var(--gold);line-height:1;margin-bottom:5px}
+.hero-stat-l{font-size:.65rem;letter-spacing:1.5px;text-transform:uppercase;color:rgba(255,255,255,.5);font-weight:600}
+.hero-co{position:absolute;top:-44px;left:0;right:0;text-align:center}
+.hero-co-name{font-family:'Playfair Display',serif;font-weight:900;font-size:1.15rem;color:var(--gold);letter-spacing:3px}
+.hero-co-sub{font-size:.68rem;color:rgba(255,255,255,.4);letter-spacing:2px;text-transform:uppercase;margin-top:2px}
+
+/* ════ PROBLEM CARDS ════ */
+.p-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+@media(max-width:900px){.p-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){.p-grid{grid-template-columns:1fr}}
+.p-card{background:var(--white);padding:28px;border:1px solid rgba(0,0,0,.06);position:relative;overflow:hidden;transition:all .4s}
+.p-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:var(--gold);transform:scaleX(0);transition:transform .4s}
+.p-card:hover{transform:translateY(-4px);box-shadow:0 16px 50px rgba(0,0,0,.08)}.p-card:hover::after{transform:scaleX(1)}
+.p-card-icon{font-size:1.8rem;margin-bottom:12px}
+.p-card-name{font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:700;color:var(--forest);margin-bottom:6px}
+.p-card-desc{font-size:.85rem;color:var(--slate);line-height:1.5;margin-bottom:10px}
+.p-card-stat{display:inline-block;font-family:'JetBrains Mono',monospace;font-size:.68rem;font-weight:600;letter-spacing:1px;padding:3px 10px;background:rgba(212,160,23,.1);color:var(--gold);border:1px solid rgba(212,160,23,.2)}
+
+/* ════ SOLUTION CARDS ════ */
+.s-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px}
+@media(max-width:1000px){.s-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:600px){.s-grid{grid-template-columns:1fr 1fr}}
+.s-card{padding:24px 16px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);text-align:center;transition:all .3s}
+.s-card:hover{background:rgba(212,160,23,.1);border-color:rgba(212,160,23,.3);transform:translateY(-3px)}
+.s-num{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;background:rgba(212,160,23,.15);color:var(--gold);font-family:'JetBrains Mono',monospace;font-size:.72rem;font-weight:600;margin-bottom:12px}
+.s-name{font-family:'Playfair Display',serif;font-size:.9rem;font-weight:700;color:var(--white);margin-bottom:6px}
+.s-desc{font-size:.75rem;color:rgba(255,255,255,.5);line-height:1.45}
+.s-intro{font-size:1.05rem;color:rgba(255,255,255,.75);line-height:1.7;max-width:700px;margin-bottom:36px}
+
+/* ════ ARCHITECTURE ════ */
+.arch-frame{background:var(--white);padding:16px;border:1px solid rgba(0,0,0,.08);box-shadow:0 16px 60px rgba(0,0,0,.08);text-align:center}
+.arch-frame img{width:100%;max-width:880px;height:auto}
+.arch-caption{margin-top:20px;font-size:.85rem;color:var(--slate);line-height:1.6;max-width:700px;margin-left:auto;margin-right:auto}
+
+/* ════ APP SCREENSHOTS ════ */
+.app-showcase{display:grid;grid-template-columns:repeat(4,1fr);gap:20px;margin-top:36px}
+@media(max-width:900px){.app-showcase{grid-template-columns:repeat(2,1fr)}}
+.app-item{text-align:center;transition:all .3s}
+.app-item:hover{transform:translateY(-4px)}
+.app-frame{background:var(--white);border:1px solid rgba(0,0,0,.08);border-radius:16px;overflow:hidden;box-shadow:0 8px 30px rgba(0,0,0,.06);margin-bottom:12px}
+.app-frame img{width:100%;height:auto;display:block}
+.app-label{font-family:'Playfair Display',serif;font-size:.88rem;font-weight:700;color:var(--forest);margin-bottom:3px}
+.app-sublabel{font-size:.75rem;color:var(--mist)}
+
+/* ════ TRACK RECORD ════ */
+.track-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+@media(max-width:900px){.track-grid{grid-template-columns:repeat(2,1fr)}}
+.track-card{background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.08);padding:28px 20px;transition:all .3s}
+.track-card:hover{background:rgba(212,160,23,.1);border-color:rgba(212,160,23,.3)}
+.track-flag{font-size:2rem;margin-bottom:10px}
+.track-country{font-family:'Playfair Display',serif;font-size:1.05rem;font-weight:700;color:var(--white);margin-bottom:6px}
+.track-context{font-size:.8rem;color:rgba(255,255,255,.55);line-height:1.5;margin-bottom:10px}
+.track-validation{font-size:.78rem;color:var(--gold-light);line-height:1.4;font-weight:600}
+
+/* ════ COMPARISON TABLE ════ */
+.cmp-table{width:100%;border-collapse:collapse;font-size:.88rem}
+.cmp-table thead th{background:var(--forest);color:var(--gold);padding:14px 18px;text-align:left;font-size:.68rem;font-weight:700;letter-spacing:2px;text-transform:uppercase}
+.cmp-table tbody td{padding:16px 18px;border-bottom:1px solid var(--cream-dark);color:var(--charcoal);line-height:1.5}
+.cmp-table tbody tr:hover{background:rgba(212,160,23,.05)}
+.cmp-table .highlight{color:var(--forest);font-weight:700}
+.cmp-table .dim{color:var(--mist)}
+
+/* ════ IMPACT CARDS ════ */
+.i-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:28px}
+@media(max-width:900px){.i-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){.i-grid{grid-template-columns:1fr}}
+.i-card{text-align:center;padding:32px 18px;position:relative}
+.i-card::before{content:'';position:absolute;top:0;left:50%;transform:translateX(-50%);width:36px;height:3px;background:var(--gold)}
+.i-num{font-family:'Playfair Display',serif;font-size:2.6rem;font-weight:900;color:var(--forest);line-height:1;margin-top:14px;margin-bottom:6px}
+.i-label{font-size:.85rem;color:var(--slate);line-height:1.4}
+
+/* ════ TIMELINE ════ */
+.tl-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0;position:relative}
+.tl-grid::before{content:'';position:absolute;top:42px;left:6%;right:6%;height:2px;background:linear-gradient(to right,var(--forest-light),var(--gold),var(--gold-light),var(--forest-light))}
+@media(max-width:768px){.tl-grid{grid-template-columns:repeat(2,1fr);gap:24px}.tl-grid::before{display:none}}
+.tl-phase{text-align:center;padding:0 14px}
+.tl-q{font-size:.6rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--gold)}
+.tl-dot{width:14px;height:14px;background:var(--gold);border-radius:50%;margin:26px auto;box-shadow:0 0 14px rgba(212,160,23,.4);border:3px solid var(--forest)}
+.tl-name{font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:var(--white);margin-bottom:4px}
+.tl-dur{font-size:.72rem;color:var(--gold-light);font-weight:600;margin-bottom:14px}
+.tl-items{list-style:none;text-align:left}
+.tl-items li{font-size:.78rem;color:rgba(255,255,255,.6);padding:4px 0 4px 14px;position:relative;line-height:1.4}
+.tl-items li::before{content:'';position:absolute;left:0;top:10px;width:5px;height:5px;background:var(--gold);border-radius:50%}
+
+/* ════ BUDGET ════ */
+.b-header{display:flex;align-items:baseline;gap:18px;margin-bottom:44px;flex-wrap:wrap}
+.b-amount{font-family:'Playfair Display',serif;font-size:3.2rem;font-weight:900;color:var(--forest)}
+.b-label{font-size:.88rem;color:var(--slate);font-weight:300}
+.b-grid{display:grid;grid-template-columns:1fr 1fr;gap:50px;align-items:start}
+@media(max-width:900px){.b-grid{grid-template-columns:1fr}}
+.b-bars{display:flex;flex-direction:column;gap:12px}
+.b-row{display:flex;align-items:center;gap:12px}
+.b-row-label{width:155px;min-width:155px;font-size:.84rem;font-weight:600;color:var(--charcoal);text-align:right}
+@media(max-width:600px){.b-row-label{width:100px;min-width:100px;font-size:.72rem}}
+.b-bar-wrap{flex:1;height:30px;background:var(--cream-dark);position:relative;overflow:hidden}
+.b-bar{height:100%;background:linear-gradient(90deg,var(--forest),var(--forest-light));transition:width 1.5s cubic-bezier(.16,1,.3,1);position:relative}
+.b-bar.gold{background:linear-gradient(90deg,var(--gold),var(--gold-light))}
+.b-bar-v{position:absolute;right:8px;top:50%;transform:translateY(-50%);font-family:'JetBrains Mono',monospace;font-size:.68rem;font-weight:600;color:var(--white);white-space:nowrap}
+.b-bar-v.out{right:auto;left:calc(100% + 8px);color:var(--charcoal)}
+.b-donut{display:flex;align-items:center;justify-content:center;flex-direction:column;gap:20px}
+.donut-svg{width:260px;height:260px;transform:rotate(-90deg)}
+.donut-seg{fill:none;stroke-width:42;transition:all .3s;cursor:pointer}
+.donut-seg:hover{stroke-width:48;filter:brightness(1.15)}
+.legend{display:flex;flex-wrap:wrap;gap:14px;justify-content:center}
+.legend-i{display:flex;align-items:center;gap:5px;font-size:.76rem;color:var(--slate)}
+.legend-d{width:10px;height:10px;border-radius:2px}
+.b-inclusions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:20px;padding-top:18px;border-top:1px solid var(--cream-dark)}
+@media(max-width:600px){.b-inclusions{grid-template-columns:1fr}}
+.b-inc{font-size:.8rem;color:var(--slate);padding:10px 12px;background:var(--white);border:1px solid rgba(0,0,0,.06)}
+.b-inc strong{font-family:'JetBrains Mono',monospace;font-size:.73rem;color:var(--forest);display:block;margin-bottom:2px}
+.b-inc span{font-size:.7rem;color:var(--mist)}
+
+/* ════ PARTNERS ════ */
+.ptr-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:14px}
+.ptr-item{display:flex;align-items:center;gap:14px;padding:18px 22px;background:var(--white);border:1px solid rgba(0,0,0,.06);transition:all .3s}
+.ptr-item:hover{border-color:var(--gold);transform:translateX(4px)}
+.ptr-badge{display:inline-block;font-size:.58rem;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;padding:3px 9px;white-space:nowrap;border-radius:2px}
+.ptr-badge.govt{background:rgba(46,125,50,.1);color:var(--forest-light)}
+.ptr-badge.tech{background:rgba(212,160,23,.1);color:var(--gold)}
+.ptr-badge.intl{background:rgba(33,150,243,.1);color:#1976D2}
+.ptr-badge.research{background:rgba(156,39,176,.1);color:#7B1FA2}
+.ptr-info{flex:1}.ptr-name{font-weight:700;color:var(--forest);font-size:.92rem}
+.ptr-role{font-size:.78rem;color:var(--slate);margin-top:2px}
+.policy-box{margin-top:32px;padding:24px 28px;background:var(--white);border-left:4px solid var(--gold)}
+.policy-box p{font-size:.85rem;color:var(--slate);line-height:1.6}.policy-box strong{color:var(--forest)}
+
+/* ════ CTA ════ */
+.cta-amount{font-family:'Playfair Display',serif;font-size:clamp(2.2rem,4.5vw,4rem);font-weight:900;color:var(--gold);margin-bottom:8px}
+.cta-period{font-size:1rem;color:rgba(255,255,255,.6);margin-bottom:44px}
+.cc-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;max-width:680px;margin:0 auto 44px;text-align:center}
+@media(max-width:600px){.cc-grid{grid-template-columns:1fr}}
+.cc{padding:24px 18px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.03);transition:all .3s}
+.cc:hover{border-color:var(--gold);background:rgba(212,160,23,.05)}
+.cc-label{font-size:.6rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;color:var(--gold);margin-bottom:6px}
+.cc-val{font-size:.92rem;color:var(--white);font-weight:600}
+.cta-quote{font-family:'Playfair Display',serif;font-style:italic;font-size:1.15rem;color:rgba(255,255,255,.6);max-width:520px;margin:0 auto 28px;line-height:1.6}
+.cta-foot{font-size:.7rem;color:rgba(255,255,255,.3);letter-spacing:1.5px;text-transform:uppercase;border-top:1px solid rgba(255,255,255,.1);padding-top:20px;max-width:700px;margin:0 auto}
+.cta-tags{margin-top:8px;color:var(--gold-light);letter-spacing:1px}
+
+/* ════ ANIMATIONS ════ */
+@keyframes fadeUp{from{opacity:0;transform:translateY(30px)}to{opacity:1;transform:translateY(0)}}
+.reveal{opacity:0;transform:translateY(36px);transition:all .8s cubic-bezier(.16,1,.3,1)}
+.reveal.visible{opacity:1;transform:translateY(0)}
+@media print{.nav-dots{display:none}.slide{min-height:auto;break-inside:avoid}}
+</style>
+</head>
+<body>
+
+<!-- NAV DOTS -->
+<nav class="nav-dots" id="navDots"></nav>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- 1. HERO -->
+<!-- ═══════════════════════════════════════════ -->
+<section class="slide bg-forest">
+  <div class="hero-pattern"></div>
+  <div class="hero-content">
+    <div class="hero-co">
+      <div class="hero-co-name">WOREX</div>
+      <div class="hero-co-sub">World Resource &amp; Exchange Ltd</div>
+    </div>
+    <div class="hero-badge">Funding Proposal &mdash; April 2026</div>
+    <h1 class="hero-title">IoT-AI Smart Dairy Farm <br><span class="gold">Management Platform</span></h1>
+    <p class="hero-sub">Enhancing dairy productivity, reproductive efficiency, and environmental sustainability across Eastern &amp; Northern Rwanda through the <strong style="color:var(--gold-light)">MooMe</strong> platform.</p>
+    <div class="hero-stats">
+      <div class="hero-stat"><div class="hero-stat-n">6</div><div class="hero-stat-l">Districts</div></div>
+      <div class="hero-stat"><div class="hero-stat-n">500+</div><div class="hero-stat-l">Farmers</div></div>
+      <div class="hero-stat"><div class="hero-stat-n">12</div><div class="hero-stat-l">Months (Year 1)</div></div>
+      <div class="hero-stat"><div class="hero-stat-n">$205K</div><div class="hero-stat-l">Year 1 Budget</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- 2. THE PROBLEM -->
+<!-- ═══════════════════════════════════════════ -->
+<section class="slide bg-cream">
+  <div class="slide-inner">
+    <div class="reveal"><div class="section-label">The Challenge</div><h2 class="section-title dark">Rwanda's Dairy Sector<br>Operates Far Below Potential</h2></div>
+    <div class="p-grid reveal">
+      <div class="p-card"><div class="p-card-icon">&#129371;</div><div class="p-card-name">Low Milk Yields</div><div class="p-card-desc">Average 1 - 3.6 L/cow/day vs. genetic potential of 20&ndash;50 L for improved breeds.</div><span class="p-card-stat">85% BELOW POTENTIAL</span></div>
+      <div class="p-card"><div class="p-card-icon">&#129440;</div><div class="p-card-name">Disease Prevalence</div><div class="p-card-desc">60% mastitis prevalence. East Coast Fever causes 1.1M cattle deaths/year in Africa.</div><span class="p-card-stat">60% MASTITIS RATE</span></div>
+      <div class="p-card"><div class="p-card-icon">&#129516;</div><div class="p-card-name">Reproductive Failure</div><div class="p-card-desc">AI success rates below 40%. Over 95% of farmers keep no reproductive records.</div><span class="p-card-stat">&lt;40% CONCEPTION</span></div>
+      <div class="p-card"><div class="p-card-icon">&#127758;</div><div class="p-card-name">High Emissions</div><div class="p-card-desc">Emission factors 3&ndash;26x above IPCC defaults. Manure energy potential untapped.</div><span class="p-card-stat">3&ndash;26X ABOVE BASELINE</span></div>
+      <div class="p-card"><div class="p-card-icon">&#127806;</div><div class="p-card-name">Feed Scarcity</div><div class="p-card-desc">Unbalanced feeding, no dry-season conservation. Land subdivision shrinks grazing areas.</div><span class="p-card-stat">CRITICAL GAP</span></div>
+      <div class="p-card"><div class="p-card-icon">&#128176;</div><div class="p-card-name">Existing Solutions Too Expensive</div><div class="p-card-desc">International IoT platforms cost $2000 per farm &mdash; unaffordable for smallholders.</div><span class="p-card-stat">$2000 / FARM</span></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- 3. INTRODUCING MOOME -->
+<!-- ═══════════════════════════════════════════ -->
+<section class="slide bg-forest">
+  <div class="slide-inner">
+    <div class="reveal"><div class="section-label">Our Solution</div><h2 class="section-title light">Introducing <span style="color:var(--gold)">MooMe</span> &mdash;<br>An Affordable AI-IoT Platform</h2></div>
+    <p class="s-intro reveal">MooMe is an AI-powered, IoT-integrated dairy farm management mobile application &mdash; purpose-built for smallholder farms. It runs on standard Android smartphones, integrates with low-cost IoT kits (<strong style="color:var(--gold-light)"> to reduce between 40% to 60%</strong> vs. $2,000/farm for alternatives), and delivers actionable intelligence through an intuitive mobile interface.</p>
+    <div class="s-grid reveal">
+      <div class="s-card"><div class="s-num">01</div><div class="s-name">Smart Feed Management</div><div class="s-desc">IoT sensors + ML-optimized rations with sweet potato silage</div></div>
+      <div class="s-card"><div class="s-num">02</div><div class="s-name">Disease Early Warning</div><div class="s-desc">Wearable sensors with &lt;2hr alert response capability</div></div>
+      <div class="s-card"><div class="s-num">03</div><div class="s-name">Reproductive Management</div><div class="s-desc">AI-powered estrus detection &amp; digital records</div></div>
+      <div class="s-card"><div class="s-num">04</div><div class="s-name">Biodigester Monitoring</div><div class="s-desc">ML-predicted biogas output &amp; emissions tracking</div></div>
+      <div class="s-card"><div class="s-num">05</div><div class="s-name">Unified Platform</div><div class="s-desc">Cloud dashboard + SMS/USSD for all literacy levels</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- 4. SYSTEM ARCHITECTURE -->
+<!-- ═══════════════════════════════════════════ -->
+<section class="slide bg-cream">
+  <div class="slide-inner">
+    <div class="reveal"><div class="section-label">System Architecture</div><h2 class="section-title dark">MooMe &mdash; IoT-AI Livestock<br>Monitoring &amp; Automated Control</h2></div>
+    <div class="arch-frame reveal"><img src="moome-architecture.jpg" alt="MooMe System Architecture"></div>
+    <p class="arch-caption reveal">10 integrated subsystems: smart cow sensors (RFID, temperature, heart rate, activity), environment sensors, central Raspberry Pi controller, automated feeding &amp; water, milking system, cloud database, AI analytics, dashboard &amp; mobile app, and SMS alerts &mdash; all solar-powered.</p>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- 5. MOOME APP IN ACTION -->
+<!-- ═══════════════════════════════════════════ -->
+<section class="slide bg-white" style="border-top:1px solid var(--cream-dark)">
+  <div class="slide-inner">
+    <div class="reveal"><div class="section-label">MooMe in Action</div><h2 class="section-title dark">A Complete Farm Management<br>Suite in Your Pocket</h2></div>
+    <div class="app-showcase reveal">
+      <div class="app-item"><div class="app-frame"><img src="moome-dashboard.jpg" alt="Dashboard"></div><div class="app-label">Dashboard</div><div class="app-sublabel">Farm analytics overview</div></div>
+      <div class="app-item"><div class="app-frame"><img src="moome-herd.jpg" alt="Herd Management"></div><div class="app-label">Herd Management</div><div class="app-sublabel">Real-time herd composition</div></div>
+      <div class="app-item"><div class="app-frame"><img src="moome-milk.jpg" alt="Milk Production"></div><div class="app-label">Milk Production</div><div class="app-sublabel">Daily recording &amp; RWF income</div></div>
+      <div class="app-item"><div class="app-frame"><img src="moome-repro.jpg" alt="Reproductive Tracking"></div><div class="app-label">Reproduction</div><div class="app-sublabel">Calving, lactation &amp; gestation</div></div>
+    </div>
+    <div class="app-showcase reveal" style="margin-top:20px">
+      <div class="app-item"><div class="app-frame"><img src="moome-feed.jpg" alt="Feed Consumption"></div><div class="app-label">Feed &amp; Fodder</div><div class="app-sublabel">Group-based consumption tracking</div></div>
+      <div class="app-item"><div class="app-frame"><img src="moome-income.jpg" alt="Income Recording"></div><div class="app-label">Farm Economics</div><div class="app-sublabel">Sales &amp; income by category</div></div>
+      <div class="app-item"><div class="app-frame"><img src="moome-inventory.jpg" alt="Feed Inventory"></div><div class="app-label">Feed Inventory</div><div class="app-sublabel">Dry matter &amp; protein tracking</div></div>
+      <div class="app-item"><div class="app-frame"><img src="moome-misc.jpg" alt="Misc Inventory"></div><div class="app-label">Inventory Control</div><div class="app-sublabel">Supplies &amp; equipment management</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- 6. PROVEN TRACK RECORD -->
+<!-- ═══════════════════════════════════════════ -->
+<section class="slide bg-forest">
+  <div class="slide-inner">
+    <div class="reveal"><div class="section-label">Proven Track Record</div><h2 class="section-title light">Validated Across Africa &mdash;<br>Not a Prototype</h2></div>
+    <div class="track-grid reveal">
+      <div class="track-card"><div class="track-flag">&#127472;&#127466;</div><div class="track-country">Kenya</div><div class="track-context">Smallholder dairy farms in Rift Valley; mixed agro-pastoral systems</div><div class="track-validation">IoT sensor accuracy for milk yield; mobile app adoption by low-literacy farmers</div></div>
+      <div class="track-card"><div class="track-flag">&#127482;&#127468;</div><div class="track-country">Uganda</div><div class="track-context">Cooperative dairy clusters; Western Uganda highlands</div><div class="track-validation">Group-based feed management; multi-farm data aggregation validated</div></div>
+      <div class="track-card"><div class="track-flag">&#127475;&#127468;</div><div class="track-country">Nigeria</div><div class="track-context">Peri-urban commercial farms; Kaduna &amp; Plateau states</div><div class="track-validation">Economic module: income tracking, cost analysis, profitability reporting</div></div>
+      <div class="track-card"><div class="track-flag">&#127481;&#127475;</div><div class="track-country">Tunisia</div><div class="track-context">Technology hub; MooMe core engineering &amp; expert base</div><div class="track-validation">Full platform development, AI model training, IoT hardware calibration</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- 7. MOOME VS COMPETITION -->
+<!-- ═══════════════════════════════════════════ -->
+<section class="slide bg-cream">
+  <div class="slide-inner">
+    <div class="reveal"><div class="section-label">Competitive Advantage</div><h2 class="section-title dark">MooMe vs. Existing<br>High-Cost Solutions</h2></div>
+    <div class="reveal" style="overflow-x:auto;">
+      <table class="cmp-table">
+        <thead><tr><th>Criteria</th><th>Existing High-Cost Systems</th><th>MooMe (Proposed)</th></tr></thead>
+        <tbody>
+          <tr><td style="font-weight:700">Hardware Cost</td><td class="dim">$2,000 per farm</td><td class="highlight">~$1,000 per farm (4&ndash;6x cheaper)</td></tr>
+          <tr><td style="font-weight:700">Connectivity</td><td class="dim">Requires stable internet &amp; cloud servers</td><td class="highlight">Mobile-first, works on basic 4G</td></tr>
+          <tr><td style="font-weight:700">Language Support</td><td class="dim">Mostly English / European languages</td><td class="highlight">Multilingual incl. Kinyarwanda</td></tr>
+          <tr><td style="font-weight:700">Target Market</td><td class="dim">Large commercial farms</td><td class="highlight">Smallholder &amp; mid-scale farms</td></tr>
+          <tr><td style="font-weight:700">Reference Countries</td><td class="dim">Europe, North America</td><td class="highlight">Kenya, Uganda, Nigeria, Tunisia</td></tr>
+          <tr><td style="font-weight:700">Local Support</td><td class="dim">No in-country training capacity</td><td class="highlight">3-day expert training + 6 local technicians</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="reveal" style="margin-top:28px;padding:20px 24px;background:var(--forest);text-align:center">
+      <p style="font-family:'JetBrains Mono',monospace;font-size:.82rem;color:var(--gold-light);letter-spacing:1px">THE $1,000 PER-FARM COST = 4&times; TO 6&times; COST REDUCTION VS. INTERNATIONAL ALTERNATIVES</p>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- 8. EXPECTED IMPACT -->
+<!-- ═══════════════════════════════════════════ -->
+<section class="slide bg-white" style="border-top:1px solid var(--cream-dark)">
+  <div class="slide-inner">
+    <div class="reveal"><div class="section-label">Expected Impact</div><h2 class="section-title dark">Measurable Outcomes That<br>Transform Livelihoods</h2></div>
+    <div class="i-grid reveal">
+      <div class="i-card"><div class="i-num">+10% - 15%</div><div class="i-label">Milk yield increase<br>across target farms</div></div>
+      <div class="i-card"><div class="i-num">&gt;10% - 15%</div><div class="i-label">AI conception rate<br>up from &lt;25% baseline</div></div>
+      <div class="i-card"><div class="i-num">-15%</div><div class="i-label">GHG emissions<br>per farm within 3 years</div></div>
+      <div class="i-card"><div class="i-num">85%+</div><div class="i-label">Disease detection<br>accuracy (&lt;2hr alerts)</div></div>
+      <div class="i-card"><div class="i-num">200+</div><div class="i-label">Active farmers on<br>platform by Year 3</div></div>
+      <div class="i-card"><div class="i-num">50+</div><div class="i-label">Youth and women empowered as<br>IoT technicians &amp; data agents</div></div>
+    </div>
+    <!-- Year 1 vs Long-term -->
+    <div class="reveal" style="margin-top:40px;display:grid;grid-template-columns:1fr 1fr;gap:24px">
+      <div style="padding:28px;background:var(--cream);border:1px solid var(--cream-dark)">
+        <div style="font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:var(--forest);margin-bottom:14px;padding-bottom:10px;border-bottom:2px solid var(--gold)">Immediate (Year 1)</div>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:8px">
+          <li style="font-size:.85rem;color:var(--charcoal);display:flex;gap:8px;align-items:flex-start"><span style="color:var(--gold);font-weight:700">&#9679;</span> 12 farms operating MooMe IoT kits</li>
+          <li style="font-size:.85rem;color:var(--charcoal);display:flex;gap:8px;align-items:flex-start"><span style="color:var(--gold);font-weight:700">&#9679;</span> 6 trained local technicians in Rwanda</li>
+          <li style="font-size:.85rem;color:var(--charcoal);display:flex;gap:8px;align-items:flex-start"><span style="color:var(--gold);font-weight:700">&#9679;</span> Validated IoT data accuracy benchmarks</li>
+          <li style="font-size:.85rem;color:var(--charcoal);display:flex;gap:8px;align-items:flex-start"><span style="color:var(--gold);font-weight:700">&#9679;</span> App localized for Rwanda (Kinyarwanda)</li>
+        </ul>
+      </div>
+      <div style="padding:28px;background:var(--cream);border:1px solid var(--cream-dark)">
+        <div style="font-family:'Playfair Display',serif;font-size:1.1rem;font-weight:700;color:var(--forest);margin-bottom:14px;padding-bottom:10px;border-bottom:2px solid var(--gold)">Long-Term (Years 2&ndash;5)</div>
+        <ul style="list-style:none;display:flex;flex-direction:column;gap:8px">
+          <li style="font-size:.85rem;color:var(--charcoal);display:flex;gap:8px;align-items:flex-start"><span style="color:var(--gold);font-weight:700">&#9679;</span> Scale to 500+ farms nationally</li>
+          <li style="font-size:.85rem;color:var(--charcoal);display:flex;gap:8px;align-items:flex-start"><span style="color:var(--gold);font-weight:700">&#9679;</span> Rwanda as regional MooMe hub for EAC</li>
+          <li style="font-size:.85rem;color:var(--charcoal);display:flex;gap:8px;align-items:flex-start"><span style="color:var(--gold);font-weight:700">&#9679;</span> Integration with national dairy programs</li>
+          <li style="font-size:.85rem;color:var(--charcoal);display:flex;gap:8px;align-items:flex-start"><span style="color:var(--gold);font-weight:700">&#9679;</span> Carbon credit revenue &amp; financial sustainability</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- 9. TIMELINE -->
+<!-- ═══════════════════════════════════════════ -->
+<section class="slide bg-forest">
+  <div class="slide-inner">
+    <div class="reveal"><div class="section-label">Implementation Plan</div><h2 class="section-title light">12-Month Year 1<br>Deployment Roadmap</h2></div>
+    <div class="tl-grid reveal">
+      <div class="tl-phase"><div class="tl-q">Q1</div><div class="tl-dot"></div><div class="tl-name">Inception &amp; Design</div><div class="tl-dur">Months 1&ndash;3</div><ul class="tl-items"><li>Baseline survey across 6 districts</li><li>IoT sensor selection &amp; procurement</li><li>Platform architecture finalization</li><li>Expert training from Tunisia (3 days)</li></ul></div>
+      <div class="tl-phase"><div class="tl-q">Q2</div><div class="tl-dot"></div><div class="tl-name">Build &amp; Prepare</div><div class="tl-dur">Months 4&ndash;6</div><ul class="tl-items"><li>Platform &amp; ML model development</li><li>Hardware prototyping &amp; testing</li><li>12 IoT kits deployed to pilot farms</li><li>Stakeholder engagement (RAB)</li></ul></div>
+      <div class="tl-phase"><div class="tl-q">Q3</div><div class="tl-dot"></div><div class="tl-name">Pilot Deployment</div><div class="tl-dur">Months 7&ndash;9</div><ul class="tl-items"><li>Expand to 50 pilot farms per district</li><li>Research Components</li><li>SMS gateway &amp; USSD integration</li><li>Farmer &amp; technician training</li><li>Kinyarwanda localization live</li></ul></div>
+      <div class="tl-phase"><div class="tl-q">Q4</div><div class="tl-dot"></div><div class="tl-name">Test &amp; Validate</div><div class="tl-dur">Months 10&ndash;12</div><ul class="tl-items"><li>ML models trained on live data</li><li>SMS alerts go live</li><li>Year 1 impact evaluation</li><li>Scale-up plan for Year 2</li></ul></div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- 10. BUDGET -->
+<!-- ═══════════════════════════════════════════ -->
+<section class="slide bg-cream">
+  <div class="slide-inner">
+    <div class="reveal">
+      <div class="section-label">Year 1 Investment</div>
+      <div class="b-header"><div class="b-amount">$205,479</div><div class="b-label">Year 1 Budget (USD)</div></div>
+    </div>
+    <div class="b-grid reveal">
+      <div>
+        <div class="b-bars">
+          <div class="b-row"><div class="b-row-label">Solution Development</div><div class="b-bar-wrap"><div class="b-bar" data-width="100" style="width:0%"><span class="b-bar-v">$102,479 &mdash; 50%</span></div></div></div>
+          <div class="b-row"><div class="b-row-label">Administration & Coordination</div><div class="b-bar-wrap"><div class="b-bar gold" data-width="59" style="width:0%"><span class="b-bar-v">$60,000 &mdash; 29%</span></div></div></div>
+          <div class="b-row"><div class="b-row-label">Research & Dissemination</div><div class="b-bar-wrap"><div class="b-bar" data-width="42" style="width:0%"><span class="b-bar-v">$43,000 &mdash; 21%</span></div></div></div>
+        </div>
+        <div class="b-inclusions">
+          <div class="b-inc"><strong>$1,000 / farm</strong><span>IoT Hardware Kit (50 pilot farms)</span></div>
+          <div class="b-inc"><strong>$24,000</strong><span>Total Hardware Investment</span></div>
+          <div class="b-inc"><strong>Cloud + AI</strong><span>Platform &amp; ML Infrastructure</span></div>
+          <div class="b-inc"><strong>Training</strong><span>6 technicians + 50 farmers</span></div>
+        </div>
+      </div>
+      <div class="b-donut">
+        <svg class="donut-svg" viewBox="0 0 200 200">
+          <circle class="donut-seg" cx="100" cy="100" r="70" stroke="#1B5E20" stroke-dasharray="219.91 219.91" stroke-dashoffset="0"/>
+          <circle class="donut-seg" cx="100" cy="100" r="70" stroke="#D4A017" stroke-dasharray="127.55 312.27" stroke-dashoffset="-219.91"/>
+          <circle class="donut-seg" cx="100" cy="100" r="70" stroke="#4CAF50" stroke-dasharray="92.36 347.46" stroke-dashoffset="-347.46"/>
+          <text x="100" y="88" text-anchor="middle" font-family="Playfair Display,serif" font-size="19" font-weight="900" fill="#0D3B1E" transform="rotate(90 100 100)">$205K</text>
+          <text x="100" y="108" text-anchor="middle" font-family="Source Sans 3,sans-serif" font-size="7.5" fill="#4A4A4A" letter-spacing="2" font-weight="700" transform="rotate(90 100 100)">YEAR 1</text>
+        </svg>
+        <div class="legend">
+          <div class="legend-i"><div class="legend-d" style="background:#1B5E20"></div>Development (50%)</div>
+          <div class="legend-i"><div class="legend-d" style="background:#D4A017"></div>Administration & Coordination (29%)</div>
+          <div class="legend-i"><div class="legend-d" style="background:#4CAF50"></div>Research & Dissemination (21%)</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- 11. PARTNERSHIPS -->
+<!-- ═══════════════════════════════════════════ -->
+<section class="slide bg-white" style="border-top:1px solid var(--cream-dark)">
+  <div class="slide-inner">
+    <div class="reveal"><div class="section-label">Strategic Partnerships</div><h2 class="section-title dark">A Multi-Stakeholder<br>Consortium for Impact</h2></div>
+    <div class="ptr-grid reveal">
+      <div class="ptr-item"><div class="ptr-info"><div class="ptr-name">WOREX Ltd.</div><div class="ptr-role">Lead Implementer &mdash; Project coordination, design &amp; delivery</div></div><span class="ptr-badge tech">Lead</span></div>
+      <div class="ptr-item"><div class="ptr-info"><div class="ptr-name">ACTION FAMILY TECH LTD</div><div class="ptr-role">Technology Partner &mdash; Web app, IoT &amp; AI systems</div></div><span class="ptr-badge tech">Technology</span></div>
+      <div class="ptr-item"><div class="ptr-info"><div class="ptr-name">MooMe (Tunisia)</div><div class="ptr-role">Platform Provider &mdash; Expert training &amp; knowledge transfer</div></div><span class="ptr-badge tech">Platform</span></div>
+      <div class="ptr-item"><div class="ptr-info"><div class="ptr-name">FAO Rwanda</div><div class="ptr-role">Funding &mdash; Climate-smart agriculture alignment</div></div><span class="ptr-badge intl">UN Agency</span></div>
+      <div class="ptr-item"><div class="ptr-info"><div class="ptr-name">Rwanda Agriculture Board (RAB)</div><div class="ptr-role">Co-implementing &mdash; Extension services &amp; data sharing</div></div><span class="ptr-badge govt">Government</span></div>
+      <div class="ptr-item"><div class="ptr-info"><div class="ptr-name">MINAGRI</div><div class="ptr-role">Policy Oversight &mdash; NST2, NDCs, agricultural policy</div></div><span class="ptr-badge govt">Government</span></div>
+      <div class="ptr-item"><div class="ptr-info"><div class="ptr-name">University of Rwanda & University of Kigali</div><div class="ptr-role">Research &mdash; College of Agriculture &amp; Veterinary Medicine</div></div><span class="ptr-badge research">Research</span></div>
+    </div>
+    <div class="policy-box reveal"><p>Aligned with <strong>NST2 (2024&ndash;2029)</strong>, Rwanda's <strong>NDCs</strong> under the Paris Agreement, <strong>FAO's climate-smart agriculture</strong> agenda, and the <strong>AU Agenda 2063</strong>.</p></div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════ -->
+<!-- 12. CALL TO ACTION -->
+<!-- ═══════════════════════════════════════════ -->
+<section class="slide bg-forest" style="text-align:center">
+  <div class="slide-inner">
+    <div class="reveal">
+      <div class="section-label" style="color:rgba(255,255,255,.5)">Funding Request</div>
+      <div class="cta-amount">USD $205,479</div>
+      <div class="cta-period">Year 1 Investment &mdash; Design, Development &amp; Pilot Deployment</div>
+    </div>
+    <div class="cc-grid reveal">
+      <div class="cc"><div class="cc-label">Email</div><div class="cc-val">worexltd2010@gmail.com</div></div>
+      <div class="cc"><div class="cc-label">Phone</div><div class="cc-val">+250 788 300 975</div></div>
+      <div class="cc"><div class="cc-label">Address</div><div class="cc-val">Nyagatare Sector, Nyagatare City</div></div>
+    </div>
+    <p class="cta-quote reveal">"Resources are meant to be shared. When shared, they become catalysts for development."</p>
+    <div class="cta-foot reveal">
+      WOREX Ltd. &bull; World Resource &amp; Exchange &bull; Submitted April 2026 &bull; 12-Month Year 1 Funding
+      <div class="cta-tags">60%+ Women Beneficiaries &bull; 50+ Youth Jobs &bull; Solar-Powered &bull; Carbon Credit Eligible &bull; 4&ndash;6x Cheaper Than Alternatives</div>
+    </div>
+  </div>
+</section>
+
+<script>
+// ── NAV DOTS (auto-generate) ──
+const slides = document.querySelectorAll('.slide');
+const navContainer = document.getElementById('navDots');
+slides.forEach((_, i) => {
+  const btn = document.createElement('button');
+  btn.className = 'nav-dot' + (i === 0 ? ' active' : '');
+  btn.dataset.slide = i;
+  btn.addEventListener('click', () => slides[i].scrollIntoView({ behavior: 'smooth' }));
+  navContainer.appendChild(btn);
+});
+const dots = navContainer.querySelectorAll('.nav-dot');
+
+// ── SCROLL OBSERVERS ──
+const revealObs = new IntersectionObserver(entries => {
+  entries.forEach((e, i) => {
+    if (e.isIntersecting) { e.target.style.transitionDelay = `${i * 0.04}s`; e.target.classList.add('visible'); revealObs.unobserve(e.target); }
+  });
+}, { threshold: 0.1, rootMargin: '0px 0px -30px 0px' });
+document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el));
+
+const slideObs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      const idx = Array.from(slides).indexOf(e.target);
+      dots.forEach(d => d.classList.remove('active'));
+      dots[idx]?.classList.add('active');
+    }
+  });
+}, { threshold: 0.45 });
+slides.forEach(s => slideObs.observe(s));
+
+// ── BUDGET BARS ──
+const barsWrap = document.querySelector('.b-bars');
+if (barsWrap) {
+  new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.querySelectorAll('.b-bar').forEach((b, i) => setTimeout(() => b.style.width = b.dataset.width + '%', i * 150));
+        e.target._obs?.disconnect();
+      }
+    });
+  }, { threshold: 0.3 }).observe(barsWrap);
+}
+
+// ── COUNTER ANIMATION ──
+const cObs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (!e.isIntersecting) return;
+    const el = e.target, txt = el.textContent, m = txt.match(/^([\d,]+)/);
+    if (m) {
+      const tgt = parseInt(m[1].replace(/,/g, '')), suf = txt.slice(m[1].length), dur = 1200, st = performance.now();
+      (function upd(now) {
+        const p = Math.min((now - st) / dur, 1), eased = 1 - Math.pow(1 - p, 3);
+        el.textContent = Math.round(tgt * eased).toLocaleString() + suf;
+        if (p < 1) requestAnimationFrame(upd);
+      })(st);
+    }
+    cObs.unobserve(el);
+  });
+}, { threshold: 0.5 });
+document.querySelectorAll('.i-num,.hero-stat-n').forEach(c => cObs.observe(c));
+</script>
+</body>
+</html>
