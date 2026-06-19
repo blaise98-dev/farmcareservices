@@ -57,7 +57,7 @@ export default function Login() {
             fontSize: 42, margin: '0 auto 16px',
             boxShadow: '0 8px 32px rgba(76,175,80,.4)',
           }}>🐄</div>
-          <h1 style={{ fontWeight: 900, fontSize: 32, letterSpacing: .5, margin: 0 }}>MooMe</h1>
+          <h1 style={{ fontWeight: 900, fontSize: 32, letterSpacing: .5, margin: 0 }}>FarmCareServices</h1>
           <p style={{ opacity: .75, fontSize: 14, marginTop: 4, letterSpacing: 1 }}>
             {farm?.farm_name || 'IoT-AI Smart Dairy Farm Platform'}
           </p>
@@ -210,7 +210,7 @@ export default function Login() {
         </div>
 
         <p style={{ textAlign: 'center', color: 'rgba(255,255,255,.4)', fontSize: 11 }}>
-          {farm?.farm_name ? `${farm.farm_name} · ` : 'MooMe · '}{farm?.location || 'Rwanda'} 🇷🇼
+          {farm?.farm_name ? `${farm.farm_name} · ` : 'FarmCareServices · '}{farm?.location || 'Rwanda'} 🇷🇼
         </p>
       </div>
     </div>
