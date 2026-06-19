@@ -30,7 +30,7 @@ jobs:
             cd backend
             source venv/bin/activate
             pip install -r requirements.txt
-            sudo systemctl restart fastapi
+            sudo -n systemctl restart fastapi
 
             echo "Frontend build"
             cd ../frontend
@@ -40,6 +40,6 @@ jobs:
             sudo rm -rf /var/www/farmcareservices_user/*
             sudo cp -r dist/* /var/www/farmcareservices_user/
 
-            sudo systemctl reload nginx
+            sudo -n systemctl reload nginx
 
             echo "✅ Deploy complete"
