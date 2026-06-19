@@ -16,9 +16,16 @@ jobs:
           host: ${{ secrets.VPS_HOST }}
           username: ${{ secrets.VPS_USER }}
           key: ${{ secrets.VPS_SSH_KEY }}
+          request_pty: true
           script: |
-
             set -e
+
+            echo "===== DEBUG ====="
+            whoami
+            id
+            pwd
+            sudo -l
+            echo "================="
 
             echo "🚀 Deploy started"
 
@@ -26,15 +33,13 @@ jobs:
             git pull origin main
 
             echo "Backend update"
-
             cd backend
 
             /home/farmcareservices_user/farmcareservices/webapp/backend/venv/bin/pip install -r requirements.txt
 
-            sudo -n systemctl restart fastapi
+            sudo -n /usr/bin/systemctl restart fastapi
 
             echo "Frontend build"
-
             cd ../frontend
 
             npm ci || npm install
@@ -43,6 +48,6 @@ jobs:
             sudo -n rm -rf /var/www/farmcareservices_user/*
             sudo -n cp -r dist/* /var/www/farmcareservices_user/
 
-            sudo -n systemctl reload nginx
+            sudo -n /usr/bin/systemctl reload nginx
 
             echo "✅ Deploy complete"
