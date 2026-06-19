@@ -23,22 +23,25 @@ jobs:
             echo "🚀 Deploy started"
 
             cd ~/farmcareservices/webapp
-
             git pull origin main
 
             echo "Backend update"
+
             cd backend
-            source venv/bin/activate
-            pip install -r requirements.txt
+
+            /home/farmcareservices_user/farmcareservices/webapp/backend/venv/bin/pip install -r requirements.txt
+
             sudo -n systemctl restart fastapi
 
             echo "Frontend build"
+
             cd ../frontend
-            npm ci
+
+            npm ci || npm install
             npm run build
 
-            sudo rm -rf /var/www/farmcareservices_user/*
-            sudo cp -r dist/* /var/www/farmcareservices_user/
+            sudo -n rm -rf /var/www/farmcareservices_user/*
+            sudo -n cp -r dist/* /var/www/farmcareservices_user/
 
             sudo -n systemctl reload nginx
 
