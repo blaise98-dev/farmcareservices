@@ -7,6 +7,7 @@ This document contains the complete production setup lifecycle from:
 - DNS configuration
 - Backend + frontend deployment
 - Database setup
+- CI/CD (GitHub Actions → VPS)
 - Production maintenance
 
 ---
@@ -522,7 +523,302 @@ sudo systemctl reload nginx
 
 ---
 
-# 🔒 14. IMPORTANT SECURITY FIX (REMOVE PORT 8000 PUBLIC ACCESS)
+# 🚀 14. CI/CD SETUP (GitHub Actions → VPS Deployment)
+
+## Overview
+
+This section covers full CI/CD setup for:
+
+- FastAPI backend (systemd + uvicorn)
+- Frontend build (Vite/React → dist)
+- Deployment via SSH (GitHub Actions → VPS)
+- Nginx static hosting
+- Secure automation (no password sudo)
+
+---
+
+## 14.1 LOCAL MACHINE SETUP (SSH KEY)
+
+### Generate SSH key
+
+```bash
+ssh-keygen -t rsa -b 4096 -C "github-actions-vps"
+```
+
+You will get:
+
+```bash
+~/.ssh/id_rsa        # PRIVATE KEY (NEVER SHARE)
+~/.ssh/id_rsa.pub    # PUBLIC KEY
+```
+
+### Copy PUBLIC key to VPS
+
+```bash
+ssh-copy-id farmcareservices_user@YOUR_VPS_IP
+```
+
+OR manual:
+
+```bash
+cat ~/.ssh/id_rsa.pub
+```
+
+Paste into:
+
+```bash
+~/.ssh/authorized_keys   # on server
+```
+
+### Test SSH access
+
+```bash
+ssh farmcareservices_user@YOUR_VPS_IP
+```
+
+---
+
+## 14.2 VPS SETUP (USER + PERMISSIONS)
+
+### Ensure sudo works without password (CRITICAL)
+
+```bash
+sudo visudo
+```
+
+Add:
+
+```
+farmcareservices_user ALL=(ALL) NOPASSWD:ALL
+```
+
+Verify:
+
+```bash
+sudo -n systemctl restart fastapi
+```
+
+Expected:
+
+- No password prompt
+- Exit code 0
+
+### Verify systemctl access
+
+```bash
+sudo -n systemctl status fastapi
+```
+
+---
+
+## 14.3 GITHUB REPOSITORY SECRETS
+
+Go to:
+
+**GitHub → Repository → Settings → Secrets and variables → Actions**
+
+### Add secrets
+
+| Name | Value |
+|------|-------|
+| `VPS_HOST` | YOUR_VPS_IP |
+| `VPS_USER` | `farmcareservices_user` |
+| `VPS_SSH_KEY` | PRIVATE SSH KEY |
+
+### IMPORTANT: SSH private key format
+
+Paste EXACTLY:
+
+```
+-----BEGIN OPENSSH PRIVATE KEY-----
+...
+-----END OPENSSH PRIVATE KEY-----
+```
+
+**DO NOT:**
+
+- add spaces
+- remove new lines
+- use public key
+
+---
+
+## 14.4 GITHUB ACTIONS WORKFLOW
+
+File:
+
+```bash
+.github/workflows/deploy.yml
+```
+
+### Full CI/CD pipeline
+
+```yaml
+name: Deploy to VPS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Deploy to server
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+
+          script: |
+            set -e
+
+            echo "🚀 Deployment started"
+
+            # Pull latest code
+            cd ~/farmcareservices/webapp
+            git pull origin main
+
+            # Backend update
+            echo "Backend update"
+            cd backend
+            source venv/bin/activate
+            pip install -r requirements.txt
+            sudo -n systemctl restart fastapi
+
+            # Frontend build
+            echo "Frontend build"
+            cd ../frontend
+            npm ci || npm install
+            npm run build
+
+            # Deploy frontend to Nginx
+            sudo -n rm -rf /var/www/farmcareservices_user/*
+            sudo -n cp -r dist/* /var/www/farmcareservices_user/
+            sudo -n systemctl reload nginx
+
+            echo "✅ Deployment complete"
+```
+
+---
+
+## 14.5 COMMON CI/CD FAILURES & FIXES
+
+### sudo password error
+
+```
+sudo: a password is required
+```
+
+Fix:
+
+```bash
+sudo visudo
+```
+
+Add:
+
+```
+farmcareservices_user ALL=(ALL) NOPASSWD:ALL
+```
+
+### SSH key rejected
+
+Check:
+
+- private key used (NOT public)
+- correct GitHub secret formatting
+
+### git pull fails
+
+```bash
+git pull origin main
+```
+
+Fix:
+
+```bash
+git config pull.rebase false
+```
+
+OR:
+
+```bash
+git stash
+git pull
+```
+
+### npm build fails
+
+```bash
+npm ci || npm install
+npm run build
+```
+
+---
+
+## 14.6 DEPLOYMENT FLOW (WHAT HAPPENS)
+
+On every push to `main`:
+
+1. GitHub Actions triggers
+2. SSH into VPS
+3. Pull latest code
+4. Install backend dependencies
+5. Restart FastAPI (systemd)
+6. Build frontend
+7. Copy `dist` → Nginx folder
+8. Reload Nginx
+
+---
+
+## 14.7 SECURITY NOTES
+
+**NEVER expose:**
+
+- port 8000 externally
+- FastAPI directly to internet
+
+**Correct setup:**
+
+- FastAPI → `localhost:8000`
+- Nginx → public (80/443)
+
+---
+
+## 14.8 OPTIONAL DEBUG COMMANDS
+
+### Check CI logs on VPS
+
+```bash
+journalctl -u fastapi -f
+```
+
+### Check nginx
+
+```bash
+sudo nginx -t
+sudo systemctl status nginx
+```
+
+### Check port exposure
+
+```bash
+ss -tulnp | grep 8000
+```
+
+Expected:
+
+```
+127.0.0.1:8000
+```
+
+---
+
+# 🔒 15. IMPORTANT SECURITY FIX (REMOVE PORT 8000 PUBLIC ACCESS)
 
 ## WHY
 
@@ -598,7 +894,7 @@ Should **WORK** ✔
 
 ---
 
-# 🧠 FINAL ARCHITECTURE
+# 🧠 16. FINAL ARCHITECTURE
 
 ```
 Internet
