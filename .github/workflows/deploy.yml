@@ -1,10 +1,5 @@
 name: Deploy to VPS
 
-<<<<<<< HEAD
-name: Deploy to VPS
-
-=======
->>>>>>> 6a96d9b (Added github workflows and new changes)
 on:
   push:
     branches:
@@ -47,8 +42,4 @@ jobs:
 
             sudo systemctl reload nginx
 
-<<<<<<< HEAD
             echo "✅ Deploy complete"
-=======
-            echo "✅ Deploy complete"
->>>>>>> 6a96d9b (Added github workflows and new changes)
