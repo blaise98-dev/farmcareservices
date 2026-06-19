@@ -138,7 +138,7 @@ export default function Login() {
                   to="/forgot-password"
                   style={{ fontSize: 12, color: '#1E4D7B', textDecoration: 'none', fontWeight: 600 }}
                 >
-                  Forgot password?
+                  Forgot password? Reset here
                 </Link>
               </div>
             </div>
