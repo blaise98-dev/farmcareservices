@@ -6,6 +6,7 @@
 
 # ── Private deployment / infrastructure docs ──────────────────────────────────
 SHARED_DB_SETUP.md
+VPS_DEPLOYMENT_PLAYBOOK.md
 
 # ── Database dumps (production data, password hashes, PII) ────────────────────
 *.sql
