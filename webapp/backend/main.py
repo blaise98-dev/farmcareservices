@@ -11,7 +11,7 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 
 from config import settings
-from database import get_pool, close_pool, fetchone, execute, log_remote_connection, ensure_password_reset_table
+from database import get_pool, close_pool, fetchone, execute, log_remote_connection, ensure_password_reset_table, ensure_sensor_readings_table
 from ws_manager import manager
 from routers import dashboard, herd, milk, feed, environment, alerts, economics, predictions, admin
 from routers.auth import router as auth_router
