@@ -29,13 +29,13 @@ jobs:
 
             echo "Deploy started"
 
-            cd ~/MooMe/webapp
+            cd ~/farmcareservices/webapp
             git pull origin main
 
             echo "Backend update"
             cd backend
 
-            /home/farmcareservices_user/MooMe/webapp/backend/venv/bin/pip install -r requirements.txt
+            /home/farmcareservices_user/farmcareservices/webapp/backend/venv/bin/pip install -r requirements.txt
 
             sudo -n /usr/bin/systemctl restart fastapi
 
@@ -45,8 +45,8 @@ jobs:
             npm ci || npm install
             npm run build
 
-            sudo -n rm -rf /var/www/farmcareservices.com/*
-            sudo -n cp -r dist/* /var/www/farmcareservices.com/
+            sudo -n rm -rf /var/www/farmcareservices_user/*
+            sudo -n cp -r dist/* /var/www/farmcareservices_user/
 
             sudo -n /usr/bin/systemctl reload nginx
 
