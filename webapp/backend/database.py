@@ -71,6 +71,32 @@ async def execute(sql: str, args=None):
         return cur.lastrowid
 
 
+async def ensure_sensor_readings_table() -> None:
+    """Create SensorReadings table if it does not exist (populated by ESP32 ingest)."""
+    await execute(
+        """
+        CREATE TABLE IF NOT EXISTS SensorReadings (
+            reading_id    INT AUTO_INCREMENT PRIMARY KEY,
+            device_id     VARCHAR(50) NOT NULL DEFAULT 'esp32_main',
+            temperature   FLOAT NULL,
+            humidity      FLOAT NULL,
+            mq5_pct       INT NULL,
+            mq135_pct     INT NULL,
+            flow_rate     FLOAT NULL,
+            total_liters  FLOAT NULL,
+            tank_level    FLOAT NULL,
+            feed_weight   FLOAT NULL,
+            pump_status   TINYINT(1) NOT NULL DEFAULT 0,
+            fan_status    TINYINT(1) NOT NULL DEFAULT 0,
+            spray_status  TINYINT(1) NOT NULL DEFAULT 0,
+            buzzer_status TINYINT(1) NOT NULL DEFAULT 0,
+            recorded_at   DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            INDEX idx_sr_time (device_id, recorded_at)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+        """
+    )
+
+
 async def ensure_password_reset_table() -> None:
     """Create PasswordResetTokens table if it does not exist."""
     await execute(

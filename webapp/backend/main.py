@@ -11,7 +11,7 @@ from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
 
 from config import settings
-from database import get_pool, close_pool, fetchone, log_remote_connection, ensure_password_reset_table
+from database import get_pool, close_pool, fetchone, execute, log_remote_connection, ensure_password_reset_table
 from ws_manager import manager
 from routers import dashboard, herd, milk, feed, environment, alerts, economics, predictions, admin
 from routers.auth import router as auth_router
@@ -23,6 +23,7 @@ from routers.tanks import router as tanks_router
 from routers.weekly_plan import router as weekly_plan_router
 from routers.feedback import router as feedback_router
 from routers.iot_control import router as iot_router
+from routers.iot_ingest import router as iot_ingest_router
 from routers.sms_config import router as sms_config_router
 from routers.cow_economics import router as cow_economics_router
 
@@ -32,6 +33,7 @@ async def lifespan(app: FastAPI):
     # Startup: warm DB pool (remote MySQL via SSH tunnel), kick off real-time poller
     await get_pool()
     await ensure_password_reset_table()
+    await ensure_sensor_readings_table()
     await log_remote_connection()
     task = asyncio.create_task(realtime_poller())
     yield
@@ -74,6 +76,7 @@ app.include_router(tanks_router)
 app.include_router(weekly_plan_router)
 app.include_router(feedback_router)
 app.include_router(iot_router)
+app.include_router(iot_ingest_router)
 app.include_router(sms_config_router)
 app.include_router(cow_economics_router)
 
