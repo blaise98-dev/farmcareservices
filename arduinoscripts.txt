@@ -1,0 +1,466 @@
+// =============================================================================
+//  MooMe IoT Livestock Monitor — ESP32 v2.1  (WDT-safe build)
+//  Fixes applied:
+//    1. esp_task_wdt_init(30,true) + esp_task_wdt_add(NULL) before any delays
+//    2. All bare delay() in setup() replaced with safeDelay()
+//    3. Separate sprayRunning flag — spray_status no longer mirrors fan_status
+//    4. HX711 raw-value sanity check moved after is_ready() guard
+//    5. connectWiFi() feeds WDT on every iteration
+// =============================================================================
+
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+#include <DHT.h>
+#include <HX711.h>
+#include <WiFi.h>
+#include <HTTPClient.h>
+#include <ArduinoJson.h>
+#include <esp_task_wdt.h>
+
+// ── Pin definitions ──────────────────────────────────────────────────────────
+#define DOUT                26
+#define CLK                 27
+#define CALIBRATION_FACTOR  4223.0f
+#define DHTPIN              4
+#define DHTTYPE             DHT11
+#define MQ5_PIN             34
+#define MQ135_PIN           35
+#define BUZZER_PIN          12
+#define RELAY_FAN_PIN       14
+#define FLOW_SENSOR_PIN     23
+#define PULSES_PER_LITRE    5.5f
+#define IN1                 16
+#define IN2                 17
+#define IN3                 18
+#define IN4                 19
+#define TRIG_PIN            15
+#define ECHO_PIN            5
+
+// ── Thresholds & timings ─────────────────────────────────────────────────────
+#define TANK_HEIGHT_CM      34.0f
+#define TEMP_BUZZER         28.0f
+#define TEMP_FAN            30.0f
+#define TANK_STOP_PERCENT   90.0f
+#define TANK_START_PERCENT  70.0f
+#define SAMPLE_INTERVAL_MS  1000UL
+#define LCD_PAGE_INTERVAL_MS 3000UL
+#define HTTP_INTERVAL_MS    10000UL
+#define WDT_TIMEOUT_S       30          // watchdog timeout in seconds
+
+// ── Network credentials ───────────────────────────────────────────────────────
+const char* WIFI_SSID  = "Xperia";
+const char* WIFI_PASS  = "1234565432";  
+const char* SERVER_URL = "https://farmcareservices.com/api/iot/ingest";
+const char* DEVICE_ID  = "esp32_main";
+
+// ── Objects ───────────────────────────────────────────────────────────────────
+LiquidCrystal_I2C lcd(0x27, 20, 4);
+DHT               dht(DHTPIN, DHTTYPE);
+HX711             scale;
+
+// ── State variables ───────────────────────────────────────────────────────────
+volatile uint32_t pulseCount     = 0;
+float             flowRate       = 0.0f;
+float             totalLiters    = 0.0f;
+bool              pumpRunning    = false;
+bool              sprayRunning   = false;   // FIX: separate spray flag
+unsigned long     previousMillis = 0;
+unsigned long     previousBuzzer = 0;
+bool              buzzerState    = false;
+uint8_t           lcdPage        = 0;
+unsigned long     lcdPageTimer   = 0;
+unsigned long     lastHttpSend   = 0;
+int               lastHttpCode   = 0;
+
+// =============================================================================
+//  Watchdog-safe delay
+//  Replaces bare delay() calls in setup() so the WDT never starves.
+// =============================================================================
+void safeDelay(unsigned long ms) {
+  unsigned long start = millis();
+  while (millis() - start < ms) {
+    esp_task_wdt_reset();
+    yield();
+    delay(10);
+  }
+}
+
+// =============================================================================
+//  ISR
+// =============================================================================
+void IRAM_ATTR pulseCounter() { pulseCount++; }
+
+// =============================================================================
+//  Motor helpers
+// =============================================================================
+void pumpOn()  { digitalWrite(IN1, HIGH); digitalWrite(IN2, LOW);  pumpRunning  = true;  }
+void pumpOff() { digitalWrite(IN1, LOW);  digitalWrite(IN2, LOW);  pumpRunning  = false; }
+
+void sprayOn()  {
+  digitalWrite(IN3, HIGH);
+  digitalWrite(IN4, LOW);
+  sprayRunning = true;           // FIX: track spray state
+}
+void sprayOff() {
+  digitalWrite(IN3, LOW);
+  digitalWrite(IN4, LOW);
+  sprayRunning = false;          // FIX: track spray state
+}
+
+// =============================================================================
+//  Ultrasonic tank level  (returns 0-100 %, or -1 on timeout)
+// =============================================================================
+float readTankLevel() {
+  digitalWrite(TRIG_PIN, LOW);
+  delayMicroseconds(2);
+  digitalWrite(TRIG_PIN, HIGH);
+  delayMicroseconds(10);
+  digitalWrite(TRIG_PIN, LOW);
+  long dur = pulseIn(ECHO_PIN, HIGH, 15000);
+  if (dur == 0) return -1.0f;
+  float dist = dur * 0.0343f / 2.0f;
+  return constrain(((TANK_HEIGHT_CM - dist) / TANK_HEIGHT_CM) * 100.0f, 0.0f, 100.0f);
+}
+
+// =============================================================================
+//  LCD helper — clears and prints up to 4 rows
+// =============================================================================
+void lcdShowBig(const char* r0,
+                const char* r1 = "",
+                const char* r2 = "",
+                const char* r3 = "") {
+  lcd.clear();
+  lcd.setCursor(0, 0); lcd.print(r0);
+  lcd.setCursor(0, 1); lcd.print(r1);
+  lcd.setCursor(0, 2); lcd.print(r2);
+  lcd.setCursor(0, 3); lcd.print(r3);
+}
+
+// =============================================================================
+//  WiFi connect  (feeds WDT every iteration)
+// =============================================================================
+void connectWiFi() {
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(WIFI_SSID, WIFI_PASS);
+  lcdShowBig("-- CONNECTING --    ",
+             "WiFi: Xperiaaa      ",
+             "Please wait...      ");
+  int tries = 0;
+  while (WiFi.status() != WL_CONNECTED && tries < 20) {
+    esp_task_wdt_reset();        // FIX: feed WDT inside WiFi wait
+    yield();
+    delay(300);
+    tries++;
+  }
+  if (WiFi.status() == WL_CONNECTED) {
+    lcdShowBig("-- NETWORK OK --    ",
+               "WiFi: CONNECTED     ",
+               WiFi.localIP().toString().c_str(),
+               "MooMe v2 Online     ");
+  } else {
+    lcdShowBig("-- NETWORK FAIL --  ",
+               "WiFi: OFFLINE       ",
+               "Running local only  ");
+  }
+  esp_task_wdt_reset();
+  safeDelay(2000);
+  lcd.clear();
+}
+
+// =============================================================================
+//  HTTP POST to server
+// =============================================================================
+void sendToServer(float temp, float hum, int mq5, int mq135,
+                  float fr, float tl, float tank, float weight,
+                  bool fanOn) {
+  if (WiFi.status() != WL_CONNECTED) {
+    connectWiFi();
+    return;
+  }
+
+  StaticJsonDocument<512> doc;
+  doc["device_id"]     = DEVICE_ID;
+  doc["temperature"]   = isnan(temp)   ? 0.0f : temp;
+  doc["humidity"]      = isnan(hum)    ? 0.0f : hum;
+  doc["mq5_pct"]       = mq5;
+  doc["mq135_pct"]     = mq135;
+  doc["flow_rate"]     = fr;
+  doc["total_liters"]  = tl;
+  doc["tank_level"]    = (tank < 0)    ? 0.0f : tank;
+  doc["feed_weight"]   = weight;
+  doc["pump_status"]   = pumpRunning  ? 1 : 0;
+  doc["fan_status"]    = fanOn        ? 1 : 0;
+  doc["spray_status"]  = sprayRunning ? 1 : 0;  // FIX: use real spray flag
+  doc["buzzer_status"] = buzzerState  ? 1 : 0;
+
+  String payload;
+  serializeJson(doc, payload);
+
+  HTTPClient http;
+  http.setTimeout(5000);
+  http.begin(SERVER_URL);
+  http.addHeader("Content-Type", "application/json");
+  esp_task_wdt_reset();
+  lastHttpCode = http.POST(payload);
+  http.end();
+
+  Serial.printf("[HTTP] POST %d | Tank:%.0f%% | Temp:%.1f | Feed:%.2fkg\n",
+                lastHttpCode,
+                (tank < 0) ? 0.0f : tank,
+                isnan(temp) ? 0.0f : temp,
+                weight);
+}
+
+// =============================================================================
+//  SETUP
+// =============================================================================
+void setup() {
+  Serial.begin(115200);
+  safeDelay(500);
+
+  // ── FIX: configure & subscribe WDT FIRST, before any long operations ──────
+  esp_task_wdt_init(WDT_TIMEOUT_S, true);  // 30 s timeout, panic on trigger
+  esp_task_wdt_add(NULL);                  // subscribe main loop task
+  // ─────────────────────────────────────────────────────────────────────────
+
+  // GPIO setup
+  pinMode(IN1,             OUTPUT);
+  pinMode(IN2,             OUTPUT);
+  pinMode(IN3,             OUTPUT);
+  pinMode(IN4,             OUTPUT);
+  pinMode(BUZZER_PIN,      OUTPUT);
+  pinMode(RELAY_FAN_PIN,   OUTPUT);
+  pinMode(TRIG_PIN,        OUTPUT);
+  pinMode(FLOW_SENSOR_PIN, INPUT_PULLUP);
+  pinMode(ECHO_PIN,        INPUT);
+
+  pumpOff();
+  sprayOff();
+  digitalWrite(BUZZER_PIN,    LOW);
+  digitalWrite(RELAY_FAN_PIN, HIGH);
+
+  attachInterrupt(digitalPinToInterrupt(FLOW_SENSOR_PIN), pulseCounter, FALLING);
+  dht.begin();
+
+  // Splash screen
+  lcd.init();
+  lcd.backlight();
+  lcdShowBig("  ** MooMe IoT **   ",
+             " Livestock Monitor  ",
+             "     ESP32 v2.1     ",   // bumped version
+             "   Initialising...  ");
+  safeDelay(2500);                    // FIX: safeDelay keeps WDT fed
+  lcd.clear();
+
+  // ── HX711 / load cell init ─────────────────────────────────────────────────
+  scale.begin(DOUT, CLK);
+
+  // Wait for HX711 to be ready (max 10 × 500 ms = 5 s)
+  int timeout = 0;
+  while (!scale.is_ready()) {
+    esp_task_wdt_reset();
+    safeDelay(500);                   // FIX: safeDelay instead of delay
+    if (++timeout > 10) {
+      lcdShowBig("HX711 ERROR!        ",
+                 "Check wiring        ");
+      esp_task_wdt_reset();
+      safeDelay(2000);
+      break;
+    }
+  }
+
+  if (scale.is_ready()) {
+    // FIX: raw-value sanity check now safely inside is_ready() guard
+    esp_task_wdt_reset();
+    long rawVal = scale.read_average(3);
+    if (abs(rawVal) < 1000) {
+      lcdShowBig("HX711 WARNING!      ",
+                 "Load cell check     ",
+                 "wiring/placement    ");
+      esp_task_wdt_reset();
+      safeDelay(2000);               // FIX: safeDelay
+    }
+
+    lcdShowBig("-- LOAD CELL --     ",
+               "Remove all weight   ",
+               "Taring in 3s...     ");
+    // 3-second tare countdown, each step feeds WDT
+    for (int i = 0; i < 6; i++) {
+      esp_task_wdt_reset();
+      safeDelay(500);                // FIX: safeDelay
+    }
+    scale.tare();
+    scale.set_scale(CALIBRATION_FACTOR);
+
+    lcdShowBig("-- LOAD CELL --     ",
+               "Tare: DONE          ",
+               "Scale: READY        ");
+    esp_task_wdt_reset();
+    safeDelay(1500);                 // FIX: safeDelay
+    lcd.clear();
+  }
+
+  connectWiFi();
+
+  pumpOn();
+  previousMillis = millis();
+  lcdPageTimer   = millis();
+  lastHttpSend   = millis();
+
+  Serial.println("=== MooMe v2.1 System Running ===");
+}
+
+// =============================================================================
+//  LOOP
+// =============================================================================
+void loop() {
+  esp_task_wdt_reset();
+  unsigned long now = millis();
+
+  // ── Sensor reads (every loop pass) ─────────────────────────────────────────
+  float temperature = dht.readTemperature();
+  float humidity    = dht.readHumidity();
+  int   mq5Pct      = map(analogRead(MQ5_PIN),   0, 4095, 0, 100);
+  int   mq135Pct    = map(analogRead(MQ135_PIN), 0, 4095, 0, 100);
+  float tankLevel   = readTankLevel();
+  bool  fanOn       = (!isnan(temperature) && temperature > TEMP_FAN);
+
+  // ── 1-second flow + pump logic ──────────────────────────────────────────────
+  if (now - previousMillis >= SAMPLE_INTERVAL_MS) {
+    previousMillis += SAMPLE_INTERVAL_MS;
+
+    // Atomic pulse snapshot
+    detachInterrupt(digitalPinToInterrupt(FLOW_SENSOR_PIN));
+    uint32_t pulses = pulseCount;
+    pulseCount = 0;
+    attachInterrupt(digitalPinToInterrupt(FLOW_SENSOR_PIN), pulseCounter, FALLING);
+
+    flowRate     = (float)pulses / PULSES_PER_LITRE;
+    totalLiters += (float)pulses / (PULSES_PER_LITRE * 60.0f);
+
+    // Pump hysteresis control
+    if (tankLevel >= TANK_STOP_PERCENT && pumpRunning) {
+      pumpOff();
+      Serial.println("*** TANK >= 90% — PUMP OFF ***");
+    }
+    if (tankLevel < TANK_START_PERCENT && !pumpRunning) {
+      pumpOn();
+      Serial.println("*** TANK < 70% — PUMP ON ***");
+    }
+
+    Serial.printf("[FLOW] %.2f L/min | Total: %.3f L | Tank: %.1f%% | Pump: %s\n",
+                  flowRate, totalLiters, tankLevel,
+                  pumpRunning ? "ON" : "OFF");
+  }
+
+  // ── Load cell read ──────────────────────────────────────────────────────────
+  float weight = 0.0f;
+  if (scale.is_ready()) {
+    weight = scale.get_units(3);
+    if (abs(weight) < 0.001f) weight = 0.0f;
+    Serial.printf("[FEED]  %.3f kg\n", weight);
+  }
+
+  // ── Buzzer logic (beep pattern when temp > TEMP_BUZZER) ────────────────────
+  if (!isnan(temperature) && temperature > TEMP_BUZZER) {
+    if (buzzerState && (now - previousBuzzer >= 1000)) {
+      buzzerState    = false;
+      previousBuzzer = now;
+      digitalWrite(BUZZER_PIN, LOW);
+    } else if (!buzzerState && (now - previousBuzzer >= 3000)) {
+      buzzerState    = true;
+      previousBuzzer = now;
+      digitalWrite(BUZZER_PIN, HIGH);
+    }
+  } else {
+    digitalWrite(BUZZER_PIN, LOW);
+    buzzerState = false;
+  }
+
+  // ── Fan + spray control ─────────────────────────────────────────────────────
+  if (!isnan(temperature)) {
+    if (fanOn) {
+      digitalWrite(RELAY_FAN_PIN, LOW);
+      sprayOn();
+    } else {
+      digitalWrite(RELAY_FAN_PIN, HIGH);
+      sprayOff();
+    }
+  }
+
+  // ── LCD pages (rotate every LCD_PAGE_INTERVAL_MS) ──────────────────────────
+  if (now - lcdPageTimer >= LCD_PAGE_INTERVAL_MS) {
+    lcdPageTimer = now;
+    lcdPage = (lcdPage + 1) % 4;
+    lcd.clear();
+  }
+
+  switch (lcdPage) {
+    case 0:
+      lcd.setCursor(0, 0); lcd.print("-- ENV MONITOR --   ");
+      lcd.setCursor(0, 1);
+      lcd.print("Temp:");
+      lcd.print(isnan(temperature) ? 0.0f : temperature, 1);
+      lcd.print((char)223); lcd.print("C");
+      lcd.setCursor(11, 1);
+      lcd.print("H:"); lcd.print(isnan(humidity) ? 0.0f : humidity, 0); lcd.print("%");
+      lcd.setCursor(0, 2);
+      lcd.print("MQ5:"); lcd.print(mq5Pct); lcd.print("% ");
+      lcd.print("MQ135:"); lcd.print(mq135Pct); lcd.print("%");
+      lcd.setCursor(0, 3);
+      lcd.print("Fan:"); lcd.print(fanOn ? "ON  " : "OFF ");
+      lcd.print("Buzz:"); lcd.print(buzzerState ? "ON " : "OFF");
+      break;
+
+    case 1:
+      lcd.setCursor(0, 0); lcd.print("-- WATER SYSTEM --  ");
+      lcd.setCursor(0, 1);
+      lcd.print("Flow: "); lcd.print(flowRate, 2); lcd.print(" L/min  ");
+      lcd.setCursor(0, 2);
+      lcd.print("Total:"); lcd.print(totalLiters, 2); lcd.print(" L      ");
+      lcd.setCursor(0, 3);
+      lcd.print("Tank:");
+      if (tankLevel < 0) lcd.print("ERR  ");
+      else { lcd.print(tankLevel, 0); lcd.print("%  "); }
+      lcd.print("Pump:"); lcd.print(pumpRunning ? "ON " : "OFF");
+      break;
+
+    case 2:
+      lcd.setCursor(0, 0); lcd.print("-- FEED MONITOR --  ");
+      lcd.setCursor(0, 1); lcd.print("Feed Weight:        ");
+      lcd.setCursor(0, 2);
+      lcd.print("  "); lcd.print(weight, 3); lcd.print(" kg         ");
+      lcd.setCursor(0, 3);
+      lcd.print(weight < 0.5f ? "Feeder: EMPTY   " : "Feeder: LOADED  ");
+      break;
+
+    case 3:
+      lcd.setCursor(0, 0); lcd.print("-- NETWORK --       ");
+      lcd.setCursor(0, 1);
+      if (WiFi.status() == WL_CONNECTED) {
+        lcd.print("WiFi: CONNECTED     ");
+        lcd.setCursor(0, 2);
+        String ip = WiFi.localIP().toString();
+        while (ip.length() < 20) ip += " ";
+        lcd.print(ip);
+      } else {
+        lcd.print("WiFi: OFFLINE       ");
+        lcd.setCursor(0, 2);
+        lcd.print("Retrying soon...    ");
+      }
+      lcd.setCursor(0, 3);
+      lcd.print("API:");
+      lcd.print(lastHttpCode == 200 ? "OK   " : "WAIT ");
+      lcd.print("RSSI:"); lcd.print(WiFi.RSSI());
+      break;
+  }
+
+  // ── HTTP send every HTTP_INTERVAL_MS ───────────────────────────────────────
+  if (now - lastHttpSend >= HTTP_INTERVAL_MS) {
+    lastHttpSend = now;
+    sendToServer(temperature, humidity, mq5Pct, mq135Pct,
+                 flowRate, totalLiters, tankLevel, weight, fanOn);
+  }
+
+  delay(200);
+}
