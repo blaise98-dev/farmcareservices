@@ -87,7 +87,7 @@ export default function Login() {
                 type="text"
                 value={username}
                 onChange={e => setUsername(e.target.value)}
-                placeholder="Enter your username and password"
+                placeholder="Enter your username"
                 required
                 autoFocus
                 style={{
