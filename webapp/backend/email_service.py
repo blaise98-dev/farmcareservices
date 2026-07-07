@@ -49,11 +49,15 @@ async def send_password_reset_email(to_email: str, name: str, reset_url: str) ->
     msg.attach(MIMEText(plain, "plain"))
     msg.attach(MIMEText(html, "html"))
 
-    await aiosmtplib.send(
-        msg,
-        hostname=settings.SMTP_HOST,
-        port=settings.SMTP_PORT,
-        username=settings.SMTP_USER or None,
-        password=settings.SMTP_PASSWORD or None,
-        start_tls=settings.SMTP_USE_TLS,
-    )
+    try:
+        await aiosmtplib.send(
+            msg,
+            hostname=settings.SMTP_HOST,
+            port=settings.SMTP_PORT,
+            username=settings.SMTP_USER or None,
+            password=settings.SMTP_PASSWORD or None,
+            start_tls=settings.SMTP_USE_TLS,
+        )
+        logger.info("Password reset email sent to %s", to_email)
+    except Exception as exc:
+        logger.error("Failed to send password reset email to %s: %s", to_email, exc)

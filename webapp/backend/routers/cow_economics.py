@@ -4,7 +4,7 @@ Cow-level economics: lifetime costs and revenues per cow.
 - Veterinarian: medicine/procedure costs; veterinary fee revenues (what they charged)
 """
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional
 from database import fetchall, fetchone, execute
 from rbac import require_any, require_admin_or_farmer
@@ -29,19 +29,19 @@ def _safe(row: dict) -> dict:
 class CostEntry(BaseModel):
     cow_id: int
     cost_date: str
-    cost_category: str
-    description: Optional[str] = None
-    amount_rwf: float
+    cost_category: str = Field(..., max_length=100)
+    description: Optional[str] = Field(None, max_length=500)
+    amount_rwf: float = Field(..., ge=0, le=100_000_000)
 
 
 class RevenueEntry(BaseModel):
     cow_id: int
     revenue_date: str
-    revenue_category: str
-    description: Optional[str] = None
-    amount_rwf: float
-    quantity: Optional[float] = None
-    unit: Optional[str] = None
+    revenue_category: str = Field(..., max_length=100)
+    description: Optional[str] = Field(None, max_length=500)
+    amount_rwf: float = Field(..., ge=0, le=100_000_000)
+    quantity: Optional[float] = Field(None, ge=0)
+    unit: Optional[str] = Field(None, max_length=50)
 
 
 # ── Summary per cow ───────────────────────────────────────────────────────────
@@ -239,12 +239,18 @@ async def add_revenue(body: RevenueEntry, current_user: dict = Depends(require_a
 
 
 @router.delete("/costs/{cost_id}")
-async def delete_cost(cost_id: int, _=Depends(require_any())):
+async def delete_cost(cost_id: int, current_user: dict = Depends(require_admin_or_farmer())):
+    row = await fetchone("SELECT cost_id FROM CowCosts WHERE cost_id=%s", (cost_id,))
+    if not row:
+        raise HTTPException(404, "Cost record not found")
     await execute("DELETE FROM CowCosts WHERE cost_id=%s", (cost_id,))
     return {"ok": True}
 
 
 @router.delete("/revenues/{revenue_id}")
-async def delete_revenue(revenue_id: int, _=Depends(require_any())):
+async def delete_revenue(revenue_id: int, current_user: dict = Depends(require_admin_or_farmer())):
+    row = await fetchone("SELECT revenue_id FROM CowRevenues WHERE revenue_id=%s", (revenue_id,))
+    if not row:
+        raise HTTPException(404, "Revenue record not found")
     await execute("DELETE FROM CowRevenues WHERE revenue_id=%s", (revenue_id,))
     return {"ok": True}

@@ -4,11 +4,14 @@ Real-time farm monitoring with WebSocket broadcasts.
 """
 import asyncio
 import json
+import logging
 from contextlib import asynccontextmanager
 from datetime import datetime
 
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.middleware.cors import CORSMiddleware
+
+logger = logging.getLogger(__name__)
 
 from config import settings
 from database import get_pool, close_pool, fetchone, execute, log_remote_connection, ensure_password_reset_table, ensure_sensor_readings_table
@@ -121,8 +124,8 @@ async def realtime_poller():
                 "SELECT COUNT(*) AS cnt FROM Alerts WHERE is_resolved=FALSE"
             )
             await manager.broadcast("alerts_count", {"count": active["cnt"] if active else 0})
-        except Exception:
-            pass  # DB might not be ready yet
+        except Exception as exc:
+            logger.warning("Realtime poller error: %s", exc)
 
 
 async def build_snapshot():
@@ -139,7 +142,8 @@ async def build_snapshot():
             "farm_summary": {k: (float(v) if hasattr(v, "__float__") else str(v) if not isinstance(v, (int, str, bool, type(None))) else v) for k, v in (summary or {}).items()},
             "active_alerts": alerts_cnt["cnt"] if alerts_cnt else 0,
         }
-    except Exception:
+    except Exception as exc:
+        logger.warning("Snapshot build error: %s", exc)
         return {}
 
 

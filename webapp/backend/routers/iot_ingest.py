@@ -5,7 +5,7 @@ The ESP32 POSTs JSON to POST /api/iot/ingest every 10 seconds.
 Mirrors all logic from api.php handleSensorData() + alert/control logging,
 writing into the same tables the dashboard already reads.
 """
-from fastapi import APIRouter, Request
+from fastapi import APIRouter
 from pydantic import BaseModel, field_validator
 from typing import Optional
 from database import execute, fetchone
@@ -52,15 +52,17 @@ def _mq135_to_ppm(pct: int) -> float:
 
 
 async def _log_alert(alert_type: str, cow_id, severity: str, message: str):
-    # Suppress duplicates within 10 minutes (same logic as api.php)
+    # Suppress duplicates within 10 minutes per alert_type + cow_id combination
     dup = await fetchone(
         """
         SELECT alert_id FROM Alerts
-        WHERE alert_type = %s AND is_resolved = FALSE
+        WHERE alert_type = %s
+          AND (cow_id = %s OR (cow_id IS NULL AND %s IS NULL))
+          AND is_resolved = FALSE
           AND created_at > NOW() - INTERVAL 10 MINUTE
         LIMIT 1
         """,
-        (alert_type,),
+        (alert_type, cow_id, cow_id),
     )
     if dup:
         return
@@ -88,7 +90,6 @@ async def _log_control(device_type: str, action: str, value, reason: str):
 async def ingest(payload: SensorPayload):
     """
     Receives sensor data from the ESP32 and writes it to the remote database.
-    No authentication — secured by device_id validation only.
     Replace SERVER_URL in the Arduino sketch with:
         https://farmcareservices.com/api/iot/ingest
     """

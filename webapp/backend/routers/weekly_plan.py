@@ -102,6 +102,9 @@ async def update_task(
     body: TaskUpdate,
     _=Depends(require_any()),
 ):
+    row = await fetchone("SELECT task_id FROM WeeklyPlan WHERE task_id=%s", (task_id,))
+    if not row:
+        raise HTTPException(404, "Task not found")
     fields = {k: v for k, v in body.model_dump().items() if v is not None}
     if not fields:
         raise HTTPException(400, "No fields to update")
@@ -123,5 +126,8 @@ async def update_task(
 
 @router.delete("/{task_id}")
 async def delete_task(task_id: int, _=Depends(require_any())):
+    row = await fetchone("SELECT task_id FROM WeeklyPlan WHERE task_id=%s", (task_id,))
+    if not row:
+        raise HTTPException(404, "Task not found")
     await execute("DELETE FROM WeeklyPlan WHERE task_id=%s", (task_id,))
     return {"ok": True}

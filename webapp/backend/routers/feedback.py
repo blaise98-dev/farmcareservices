@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional
 from database import fetchall, fetchone, execute
 from rbac import require_any, require_admin
@@ -22,15 +22,15 @@ def _safe(row: dict) -> dict:
 
 
 class FeedbackCreate(BaseModel):
-    category: Optional[str] = "General"
-    subject: str
-    message: str
-    rating: Optional[int] = None
+    category: Optional[str] = Field("General", max_length=50)
+    subject: str = Field(..., min_length=1, max_length=200)
+    message: str = Field(..., min_length=1, max_length=2000)
+    rating: Optional[int] = Field(None, ge=1, le=5)
 
 
 class FeedbackReply(BaseModel):
-    admin_reply: str
-    status: Optional[str] = "Resolved"
+    admin_reply: str = Field(..., min_length=1, max_length=2000)
+    status: Optional[str] = Field("Resolved", pattern="^(Resolved|Pending|In Progress)$")
 
 
 @router.get("/")

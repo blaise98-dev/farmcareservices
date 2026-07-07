@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional
 from database import fetchall, fetchone, execute
 from ws_manager import manager
@@ -25,12 +25,12 @@ def _safe(row: dict) -> dict:
 class FeedEntry(BaseModel):
     cow_id: Optional[int] = None
     group_id: Optional[int] = None
-    feed_amount_kg: float
-    feed_type: Optional[str] = "Mixed Feed"
-    methane_impact: Optional[str] = "Neutral"   # Increases | Reduces | Neutral
+    feed_amount_kg: float = Field(..., ge=0, le=10000)
+    feed_type: Optional[str] = Field("Mixed Feed", max_length=100)
+    methane_impact: Optional[str] = Field("Neutral", pattern="^(Increases|Reduces|Neutral)$")
     dispensed_by_system: Optional[bool] = False
-    prescription_notes: Optional[str] = None
-    entry_date: Optional[str] = None            # YYYY-MM-DD; defaults to today
+    prescription_notes: Optional[str] = Field(None, max_length=1000)
+    entry_date: Optional[str] = None
 
 
 @router.get("/")

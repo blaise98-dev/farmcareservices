@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional
 from database import fetchall, fetchone, execute
 from rbac import require_any, require_admin_or_farmer
@@ -22,16 +22,16 @@ def _safe(row: dict) -> dict:
 
 
 class InventoryEntry(BaseModel):
-    item_name: str
-    category: Optional[str] = "Hay"
-    quantity_kg: float
-    dry_matter_pct: Optional[float] = 85.0
-    crude_protein_pct: Optional[float] = 12.0
-    unit_cost_rwf: Optional[float] = 0
-    supplier: Optional[str] = None
+    item_name: str = Field(..., min_length=1, max_length=200)
+    category: Optional[str] = Field("Hay", max_length=100)
+    quantity_kg: float = Field(..., ge=0, le=1_000_000)
+    dry_matter_pct: Optional[float] = Field(85.0, ge=0, le=100)
+    crude_protein_pct: Optional[float] = Field(12.0, ge=0, le=100)
+    unit_cost_rwf: Optional[float] = Field(0, ge=0)
+    supplier: Optional[str] = Field(None, max_length=200)
     purchase_date: Optional[str] = None
     expiry_date: Optional[str] = None
-    notes: Optional[str] = None
+    notes: Optional[str] = Field(None, max_length=1000)
 
 
 class InventoryUpdate(BaseModel):

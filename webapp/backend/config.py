@@ -1,16 +1,22 @@
+import sys
+import logging
 from pydantic_settings import BaseSettings
 from typing import List
+
+logger = logging.getLogger(__name__)
+
+_INSECURE_SECRET = "moome-secret-key-change-in-production"
 
 
 class Settings(BaseSettings):
     # Connect via SSH tunnel: localhost:DB_PORT → remote MySQL
     DB_HOST: str = "localhost"
-    DB_PORT: int = 3307
+    DB_PORT: int = 3306
     DB_REMOTE_HOST: str = ""
     DB_USER: str = "root"
     DB_PASSWORD: str = ""
     DB_NAME: str = "MooMeSystem"
-    SECRET_KEY: str = "moome-secret-key-change-in-production"
+    SECRET_KEY: str = _INSECURE_SECRET
     CORS_ORIGINS: str = "http://localhost:5173,http://localhost:3000"
 
     # Password reset
@@ -35,3 +41,11 @@ class Settings(BaseSettings):
 
 
 settings = Settings()
+
+# Warn loudly if running with insecure defaults in a production-like environment
+if settings.SECRET_KEY == _INSECURE_SECRET:
+    logger.warning(
+        "SECURITY WARNING: SECRET_KEY is set to the insecure default. "
+        "Set a strong SECRET_KEY in your .env file before deploying to production."
+    )
+

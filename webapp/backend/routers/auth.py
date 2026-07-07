@@ -120,14 +120,10 @@ async def login(form: OAuth2PasswordRequestForm = Depends()):
         raise HTTPException(status_code=400, detail="Incorrect username or password")
 
     ph = user["password_hash"]
-    if ph == "hashed_password_placeholder":
-        # First-run: accept any password; encourage user to set a real one
-        valid = True
-    else:
-        try:
-            valid = pwd_ctx.verify(form.password, ph)
-        except Exception:
-            valid = False
+    try:
+        valid = pwd_ctx.verify(form.password, ph)
+    except Exception:
+        valid = False
 
     if not valid:
         raise HTTPException(status_code=400, detail="Incorrect username or password")
