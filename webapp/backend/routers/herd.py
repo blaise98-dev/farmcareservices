@@ -234,6 +234,22 @@ async def get_cow(cow_id: int, _=Depends(require_any())):
         """,
         (cow_id,),
     )
+    water_quality = await fetchall(
+        "SELECT * FROM WaterQualityReadings WHERE cow_id=%s ORDER BY recorded_at DESC LIMIT 20",
+        (cow_id,),
+    )
+    location = await fetchall(
+        "SELECT * FROM LocationReadings WHERE cow_id=%s ORDER BY recorded_at DESC LIMIT 50",
+        (cow_id,),
+    )
+    vitals = await fetchall(
+        "SELECT * FROM VitalsReadings WHERE cow_id=%s ORDER BY recorded_at DESC LIMIT 20",
+        (cow_id,),
+    )
+    motion = await fetchall(
+        "SELECT * FROM MotionReadings WHERE cow_id=%s ORDER BY recorded_at DESC LIMIT 20",
+        (cow_id,),
+    )
     return {
         "cow":            _safe(cow),
         "temperatures":   [_safe(r) for r in temps],
@@ -243,6 +259,10 @@ async def get_cow(cow_id: int, _=Depends(require_any())):
         "alerts":         [_safe(r) for r in alerts],
         "predictions":    [_safe(r) for r in predictions],
         "offspring":      [_safe(r) for r in offspring],
+        "water_quality":  [_safe(r) for r in water_quality],
+        "location":       [_safe(r) for r in location],
+        "vitals":         [_safe(r) for r in vitals],
+        "motion":         [_safe(r) for r in motion],
     }
 
 

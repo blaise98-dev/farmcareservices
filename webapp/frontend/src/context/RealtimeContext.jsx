@@ -6,12 +6,16 @@ const RealtimeCtx = createContext(null);
 export function RealtimeProvider({ children }) {
   const { connected, on } = useWebSocket();
   const [env, setEnv] = useState(null);
+  const [collar, setCollar] = useState(null);
+  const [vitals, setVitals] = useState(null);
   const [alertsCount, setAlertsCount] = useState(0);
   const [snapshot, setSnapshot] = useState(null);
   const [notifications, setNotifications] = useState([]);
 
   useEffect(() => on('env_live', setEnv), [on]);
   useEffect(() => on('env_update', setEnv), [on]);
+  useEffect(() => on('wearable_collar_live', setCollar), [on]);
+  useEffect(() => on('wearable_vitals_live', setVitals), [on]);
   useEffect(() => on('alerts_count', d => setAlertsCount(d.count)), [on]);
   useEffect(() => on('snapshot', d => {
     setSnapshot(d);
@@ -29,7 +33,7 @@ export function RealtimeProvider({ children }) {
   }), [on]);
 
   return (
-    <RealtimeCtx.Provider value={{ connected, env, alertsCount, snapshot, notifications }}>
+    <RealtimeCtx.Provider value={{ connected, env, collar, vitals, alertsCount, snapshot, notifications }}>
       {children}
     </RealtimeCtx.Provider>
   );

@@ -3,10 +3,23 @@ import { useParams, Link } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { getCow, updateCow, getCowRepro, getCowTreatments } from '../lib/api';
 import { usePermissions } from '../hooks/usePermissions';
+import { useRealtime } from '../context/RealtimeContext';
 import RoleGuard from '../components/RoleGuard';
-import { ArrowLeft, Thermometer, Droplets, Activity, Save, Lock } from 'lucide-react';
+import { ArrowLeft, Thermometer, Droplets, Activity, Save, Lock, HeartPulse, MapPin, Waves } from 'lucide-react';
 import { LineChart as ELine, BarChart as EBar, ChartCard } from '../components/ChartKit';
 import { format } from 'date-fns';
+import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
+import 'leaflet/dist/leaflet.css';
+import L from 'leaflet';
+import markerIcon2x from 'leaflet/dist/images/marker-icon-2x.png';
+import markerIcon from 'leaflet/dist/images/marker-icon.png';
+import markerShadow from 'leaflet/dist/images/marker-shadow.png';
+
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: markerIcon2x,
+  iconUrl: markerIcon,
+  shadowUrl: markerShadow,
+});
 
 const HEALTH_COLOR = {
   Healthy: '#4CAF50', Warning: '#FF9800', Critical: '#F44336', 'Under Treatment': '#9C27B0'
@@ -29,6 +42,7 @@ export default function CowDetail() {
   const { id } = useParams();
   const qc = useQueryClient();
   const p = usePermissions();
+  const { vitals: liveVitals } = useRealtime();
   const [detailTab, setDetailTab] = useState('overview');
   const { data, isLoading } = useQuery({ queryKey: ['cow', id], queryFn: () => getCow(id) });
   const { data: reproRecords = [] } = useQuery({ queryKey: ['cow-repro', id],       queryFn: () => getCowRepro(id),        enabled: detailTab === 'reproduction' });
@@ -43,7 +57,22 @@ export default function CowDetail() {
   if (isLoading) return <div className="spinner" />;
   if (!data) return <div className="empty-state"><span>Cow not found</span></div>;
 
-  const { cow, temperatures = [], feedings = [], water_intake = [], milk_production = [], alerts = [], predictions = [] } = data;
+  const {
+    cow, temperatures = [], feedings = [], water_intake = [], milk_production = [], alerts = [], predictions = [],
+    water_quality = [], location = [], vitals = [], motion = [],
+  } = data;
+
+  const isThisCow = liveVitals && Number(liveVitals.cow_id) === Number(id);
+  const latestVitals = isThisCow ? liveVitals : vitals[0];
+  const latestLocation = (isThisCow && liveVitals.latitude != null) ? liveVitals : location[0];
+  const latestMotion = motion[0];
+  const latestWaterQuality = water_quality[0];
+
+  const vitalsChart = [...vitals].reverse().map(v => ({
+    time: v.recorded_at ? format(new Date(v.recorded_at), 'HH:mm') : '',
+    bpm: v.heart_rate_bpm != null ? Number(v.heart_rate_bpm).toFixed(0) : null,
+    spo2: v.spo2_pct != null ? Number(v.spo2_pct).toFixed(0) : null,
+  }));
 
   const tempData = [...temperatures].reverse().map(t => ({
     time: t.recorded_at ? format(new Date(t.recorded_at), 'HH:mm') : '',
@@ -255,6 +284,7 @@ export default function CowDetail() {
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
         {[
           { id: 'overview',      label: '📊 Overview' },
+          { id: 'vitals',        label: '❤️ Vitals & Location' },
           { id: 'reproduction',  label: '🐣 Reproduction' },
           { id: 'health',        label: '💊 Treatments' },
         ].map(t => (
@@ -265,6 +295,107 @@ export default function CowDetail() {
           </button>
         ))}
       </div>
+
+      {/* Vitals & Location tab */}
+      {detailTab === 'vitals' && (
+        <>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(220px,1fr))', gap: 16 }}>
+            <div className="card" style={{ borderTop: '4px solid #E91E63' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: .5 }}>Heart Rate</span>
+                <HeartPulse size={18} color="#E91E63" />
+              </div>
+              <div style={{ fontSize: 34, fontWeight: 900, color: '#E91E63' }}>
+                {latestVitals?.heart_rate_bpm != null ? `${Number(latestVitals.heart_rate_bpm).toFixed(0)} bpm` : '--'}
+              </div>
+              {latestVitals?.heart_rate_bpm != null && (latestVitals.heart_rate_bpm < 48 || latestVitals.heart_rate_bpm > 100)
+                ? <span style={{ fontSize: 11, color: '#F44336', fontWeight: 700 }}>⚠ Outside 48–100 bpm range</span>
+                : <span style={{ fontSize: 11, color: '#4CAF50' }}>✓ Normal range</span>
+              }
+            </div>
+
+            <div className="card" style={{ borderTop: '4px solid #3F51B5' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: .5 }}>SpO2</span>
+                <Activity size={18} color="#3F51B5" />
+              </div>
+              <div style={{ fontSize: 34, fontWeight: 900, color: '#3F51B5' }}>
+                {latestVitals?.spo2_pct != null ? `${Number(latestVitals.spo2_pct).toFixed(0)}%` : '--'}
+              </div>
+              {latestVitals?.spo2_pct != null && latestVitals.spo2_pct < 90
+                ? <span style={{ fontSize: 11, color: '#F44336', fontWeight: 700 }}>⚠ Low SpO2</span>
+                : <span style={{ fontSize: 11, color: '#4CAF50' }}>✓ Normal range</span>
+              }
+            </div>
+
+            <div className="card" style={{ borderTop: '4px solid #009688' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: .5 }}>Activity</span>
+                <Activity size={18} color="#009688" />
+              </div>
+              <div style={{ fontSize: 22, fontWeight: 900, color: '#009688' }}>
+                {latestMotion ? (latestMotion.is_moving ? '⚡ Moving' : '— Still') : '--'}
+              </div>
+              {latestMotion?.recorded_at && (
+                <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
+                  {format(new Date(latestMotion.recorded_at), 'MMM d, HH:mm')}
+                </span>
+              )}
+            </div>
+
+            <div className="card" style={{ borderTop: '4px solid #00838F' }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+                <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: .5 }}>Water Quality</span>
+                <Waves size={18} color="#00838F" />
+              </div>
+              <div style={{ fontSize: 34, fontWeight: 900, color: '#00838F' }}>
+                {latestWaterQuality?.tds_ppm != null ? `${Number(latestWaterQuality.tds_ppm).toFixed(0)} ppm` : '--'}
+              </div>
+              {latestWaterQuality?.tds_ppm >= 1000
+                ? <span style={{ fontSize: 11, color: '#FF9800', fontWeight: 700 }}>⚠ Elevated TDS</span>
+                : <span style={{ fontSize: 11, color: '#4CAF50' }}>✓ Normal range</span>
+              }
+            </div>
+          </div>
+
+          <ChartCard title="❤️ Heart Rate & SpO2" sub="Recent readings from vitals collar">
+            <ELine data={vitalsChart} xKey="time"
+              series={[{ key: 'bpm', name: 'Heart Rate (bpm)', color: '#E91E63' }, { key: 'spo2', name: 'SpO2 (%)', color: '#3F51B5' }]}
+              smooth height={220} unit=""
+            />
+          </ChartCard>
+
+          <div className="card">
+            <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 12 }}>📍 Last Known Location</h2>
+            {latestLocation?.latitude != null && latestLocation?.longitude != null ? (
+              <>
+                <div style={{ height: 320, borderRadius: 12, overflow: 'hidden', marginBottom: 12 }}>
+                  <MapContainer center={[latestLocation.latitude, latestLocation.longitude]} zoom={15} style={{ height: '100%', width: '100%' }}>
+                    <TileLayer
+                      url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                      attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                    />
+                    <Marker position={[latestLocation.latitude, latestLocation.longitude]}>
+                      <Popup>
+                        {cow.cow_name}<br />
+                        {Number(latestLocation.latitude).toFixed(6)}, {Number(latestLocation.longitude).toFixed(6)}
+                      </Popup>
+                    </Marker>
+                  </MapContainer>
+                </div>
+                <div style={{ display: 'flex', gap: 20, flexWrap: 'wrap', fontSize: 13 }}>
+                  <span><MapPin size={13} style={{ verticalAlign: -2 }} /> {Number(latestLocation.latitude).toFixed(6)}, {Number(latestLocation.longitude).toFixed(6)}</span>
+                  {latestLocation.speed_kmph != null && <span>Speed: {Number(latestLocation.speed_kmph).toFixed(1)} km/h</span>}
+                  {latestLocation.satellites != null && <span>Satellites: {latestLocation.satellites}</span>}
+                  {latestLocation.recorded_at && <span style={{ color: 'var(--text-secondary)' }}>{format(new Date(latestLocation.recorded_at), 'MMM d, HH:mm')}</span>}
+                </div>
+              </>
+            ) : (
+              <div className="empty-state" style={{ padding: 20 }}><span>No GPS fix recorded yet for this cow</span></div>
+            )}
+          </div>
+        </>
+      )}
 
       {/* Reproduction tab */}
       {detailTab === 'reproduction' && (

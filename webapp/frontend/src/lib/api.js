@@ -202,6 +202,14 @@ export const getSmsHistory        = (limit=100) => api.get(`/api/sms-config/sms-
 
 // Body Condition Score
 export const getBCS               = () => api.get('/api/reproduction/bcs').then(r => r.data);
+
+// IoT Wearables — RFID collar (water quality) + vitals tag (GPS/heart rate/motion)
+export const getWaterQualityLatest  = (cowId) => api.get('/api/iot/water-quality/latest', { params: cowId ? { cow_id: cowId } : {} }).then(r => r.data);
+export const getWaterQualityHistory = (hours=24, cowId) => api.get('/api/iot/water-quality/history', { params: { hours, ...(cowId ? { cow_id: cowId } : {}) } }).then(r => r.data);
+export const getLocationLatest      = (cowId) => api.get(`/api/iot/location/latest/${cowId}`).then(r => r.data);
+export const getLocationHistory     = (cowId, hours=24) => api.get(`/api/iot/location/history/${cowId}?hours=${hours}`).then(r => r.data);
+export const getVitalsHistory       = (cowId, hours=24) => api.get(`/api/iot/vitals/history/${cowId}?hours=${hours}`).then(r => r.data);
+export const getMotionHistory       = (cowId, hours=24) => api.get(`/api/iot/motion/history/${cowId}?hours=${hours}`).then(r => r.data);
 export const addBCS               = (body) => api.post('/api/reproduction/bcs', body).then(r => r.data);
 
 // Profile avatar upload (base64 stored in Users table)

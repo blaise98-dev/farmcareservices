@@ -97,6 +97,95 @@ async def ensure_sensor_readings_table() -> None:
     )
 
 
+async def ensure_wearable_tables() -> None:
+    """Create tables backing the RFID collar (ESP32) and vitals tag (ESP8266) wearables."""
+    await execute(
+        """
+        CREATE TABLE IF NOT EXISTS RfidScans (
+            scan_id     INT AUTO_INCREMENT PRIMARY KEY,
+            device_id   VARCHAR(50) NOT NULL,
+            rfid_tag    VARCHAR(50) NOT NULL,
+            cow_id      INT NULL,
+            found       TINYINT(1) NOT NULL DEFAULT 0,
+            scanned_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            INDEX idx_rs_device (device_id, scanned_at),
+            INDEX idx_rs_cow (cow_id, scanned_at),
+            CONSTRAINT fk_rs_cow FOREIGN KEY (cow_id) REFERENCES Cows(cow_id) ON DELETE SET NULL
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+        """
+    )
+    await execute(
+        """
+        CREATE TABLE IF NOT EXISTS WaterQualityReadings (
+            reading_id   INT AUTO_INCREMENT PRIMARY KEY,
+            device_id    VARCHAR(50) NOT NULL,
+            cow_id       INT NULL,
+            tds_ppm      FLOAT NULL,
+            distance_cm  FLOAT NULL,
+            recorded_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            INDEX idx_wq_device (device_id, recorded_at),
+            INDEX idx_wq_cow (cow_id, recorded_at),
+            CONSTRAINT fk_wq_cow FOREIGN KEY (cow_id) REFERENCES Cows(cow_id) ON DELETE SET NULL
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+        """
+    )
+    await execute(
+        """
+        CREATE TABLE IF NOT EXISTS LocationReadings (
+            reading_id   INT AUTO_INCREMENT PRIMARY KEY,
+            device_id    VARCHAR(50) NOT NULL,
+            cow_id       INT NULL,
+            latitude     DOUBLE NULL,
+            longitude    DOUBLE NULL,
+            altitude_m   FLOAT NULL,
+            speed_kmph   FLOAT NULL,
+            satellites   INT NULL,
+            hdop         FLOAT NULL,
+            recorded_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            INDEX idx_loc_device (device_id, recorded_at),
+            INDEX idx_loc_cow (cow_id, recorded_at),
+            CONSTRAINT fk_loc_cow FOREIGN KEY (cow_id) REFERENCES Cows(cow_id) ON DELETE SET NULL
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+        """
+    )
+    await execute(
+        """
+        CREATE TABLE IF NOT EXISTS VitalsReadings (
+            reading_id     INT AUTO_INCREMENT PRIMARY KEY,
+            device_id      VARCHAR(50) NOT NULL,
+            cow_id         INT NULL,
+            heart_rate_bpm FLOAT NULL,
+            spo2_pct       FLOAT NULL,
+            body_temp_c    FLOAT NULL,
+            recorded_at    DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            INDEX idx_vit_device (device_id, recorded_at),
+            INDEX idx_vit_cow (cow_id, recorded_at),
+            CONSTRAINT fk_vit_cow FOREIGN KEY (cow_id) REFERENCES Cows(cow_id) ON DELETE SET NULL
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+        """
+    )
+    await execute(
+        """
+        CREATE TABLE IF NOT EXISTS MotionReadings (
+            reading_id   INT AUTO_INCREMENT PRIMARY KEY,
+            device_id    VARCHAR(50) NOT NULL,
+            cow_id       INT NULL,
+            accel_x_g    FLOAT NULL,
+            accel_y_g    FLOAT NULL,
+            accel_z_g    FLOAT NULL,
+            gyro_x_dps   FLOAT NULL,
+            gyro_y_dps   FLOAT NULL,
+            gyro_z_dps   FLOAT NULL,
+            is_moving    TINYINT(1) NOT NULL DEFAULT 0,
+            recorded_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            INDEX idx_mot_device (device_id, recorded_at),
+            INDEX idx_mot_cow (cow_id, recorded_at),
+            CONSTRAINT fk_mot_cow FOREIGN KEY (cow_id) REFERENCES Cows(cow_id) ON DELETE SET NULL
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+        """
+    )
+
+
 async def ensure_password_reset_table() -> None:
     """Create PasswordResetTokens table if it does not exist."""
     await execute(

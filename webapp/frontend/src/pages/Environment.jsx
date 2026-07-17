@@ -1,16 +1,16 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRealtime } from '../context/RealtimeContext';
-import { getEnvHistory, getEnvDailyAvg, getCowTemperatures, addEnvReading } from '../lib/api';
+import { getEnvHistory, getEnvDailyAvg, getCowTemperatures, addEnvReading, getWaterQualityLatest, getWaterQualityHistory } from '../lib/api';
 import { usePermissions } from '../hooks/usePermissions';
 import { LineChart as ELine, BarChart as EBar, GaugeChart, ChartCard } from '../components/ChartKit';
-import { Thermometer, Wind, Droplets, Activity, Plus, X } from 'lucide-react';
+import { Thermometer, Wind, Droplets, Activity, Plus, X, Waves } from 'lucide-react';
 import { format } from 'date-fns';
 
 const TEMP_COLOR = { Normal: '#4CAF50', Elevated: '#FF9800', High: '#FF5722', Fever: '#F44336', Low: '#2196F3' };
 
 export default function Environment() {
-  const { env: liveEnv } = useRealtime();
+  const { env: liveEnv, collar: liveCollar } = useRealtime();
   const [hours, setHours] = useState(24);
   const [showAdd, setShowAdd] = useState(false);
   const [addForm, setAddForm] = useState({ temperature_celsius: '', humidity_percent: '', air_quality_ppm: '', oxygen_percent: '' });
@@ -29,6 +29,8 @@ export default function Environment() {
   });
   const { data: dailyAvg = [] } = useQuery({ queryKey: ['env-daily'], queryFn: getEnvDailyAvg });
   const { data: cowTemps = [] } = useQuery({ queryKey: ['cow-temps'], queryFn: getCowTemperatures, refetchInterval: 15000 });
+  const { data: wqLatest } = useQuery({ queryKey: ['wq-latest'], queryFn: () => getWaterQualityLatest(), refetchInterval: 15000 });
+  const { data: wqHistory = [] } = useQuery({ queryKey: ['wq-history', hours], queryFn: () => getWaterQualityHistory(hours) });
 
   const histChart = history.map(r => ({
     time: r.recorded_at ? format(new Date(r.recorded_at), 'HH:mm') : '',
@@ -39,6 +41,12 @@ export default function Environment() {
   }));
 
   const env = liveEnv || (history.length ? history[history.length - 1] : {});
+  const wq = liveCollar || wqLatest || {};
+
+  const wqChart = wqHistory.map(r => ({
+    time: r.recorded_at ? format(new Date(r.recorded_at), 'HH:mm') : '',
+    tds: r.tds_ppm != null ? Number(r.tds_ppm).toFixed(0) : null,
+  }));
 
   const GAUGES = [
     { label: 'Temperature', icon: Thermometer, val: Number(env.temperature_celsius || 0).toFixed(1) + '°C', pct: Math.min(100, (Number(env.temperature_celsius || 0) / 45) * 100), color: '#FF9800', warn: env.temperature_celsius > 32, warnMsg: '> 32°C — High' },
@@ -82,6 +90,39 @@ export default function Environment() {
             </div>
           </div>
         ))}
+      </div>
+
+      {/* Water quality (TDS collar) */}
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: 20 }}>
+        <div className="card" style={{ borderTop: '4px solid #00838F' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+            <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: .5 }}>Water Quality (TDS)</span>
+            <Waves size={18} color="#00838F" />
+          </div>
+          <div style={{ fontSize: 34, fontWeight: 900, color: '#00838F', marginBottom: 12 }}>
+            {wq.tds_ppm != null ? `${Number(wq.tds_ppm).toFixed(0)} ppm` : '--'}
+          </div>
+          <div className="gauge-bar" style={{ marginBottom: 8 }}>
+            <div className="gauge-bar-fill" style={{ width: `${Math.min(100, ((Number(wq.tds_ppm || 0)) / 2000) * 100)}%`, background: '#00838F' }} />
+          </div>
+          {wq.tds_ppm >= 2000
+            ? <span style={{ fontSize: 11, color: '#F44336', fontWeight: 700 }}>⚠ Critical — TDS ≥ 2000 ppm</span>
+            : wq.tds_ppm >= 1000
+              ? <span style={{ fontSize: 11, color: '#FF9800', fontWeight: 700 }}>⚠ Elevated — TDS ≥ 1000 ppm</span>
+              : <span style={{ fontSize: 11, color: '#4CAF50' }}>✓ Normal range</span>
+          }
+          <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 6 }}>
+            <span className="live-dot" style={{ background: '#00838F' }} />
+            <span style={{ fontSize: 10, color: 'var(--text-secondary)' }}>Collar sensor {wq.device_id ? `— ${wq.device_id}` : ''}</span>
+          </div>
+        </div>
+        <ChartCard title="💧 Water Quality Trend" sub="TDS ppm — Warn ≥1000 / Critical ≥2000">
+          <ELine data={wqChart} xKey="time"
+            series={[{ key: 'tds', name: 'TDS (ppm)', color: '#00838F' }]}
+            smooth height={200} unit=" ppm"
+            markLine={[{ yAxis: 2000, label: { formatter: () => '2000 Critical', position: 'end' } }, { yAxis: 1000, label: { formatter: () => '1000 Warn', position: 'end' } }]}
+          />
+        </ChartCard>
       </div>
 
       {/* Trend chart */}
