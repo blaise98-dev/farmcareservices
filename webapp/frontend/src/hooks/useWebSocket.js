@@ -1,10 +1,12 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 
 // In dev the Vite proxy forwards /ws → backend WS on 8000.
-// Derive the WS URL from the current page's host so proxy works automatically.
-const WS_URL = import.meta.env.PROD
-  ? (import.meta.env.VITE_WS_URL || 'ws://localhost:8000') + '/ws'
-  : `ws://${window.location.host}/ws`;
+// In prod, nginx proxies /ws → backend WS on 127.0.0.1:8000 (same origin as the page).
+// Derive the WS URL from the current page's host/scheme so both cases work automatically,
+// unless VITE_WS_URL is explicitly set at build time to point elsewhere.
+const WS_URL = import.meta.env.VITE_WS_URL
+  ? `${import.meta.env.VITE_WS_URL}/ws`
+  : `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/ws`;
 
 export function useWebSocket() {
   const ws = useRef(null);
