@@ -52,17 +52,20 @@ def _mq135_to_ppm(pct: int) -> float:
 
 
 async def _log_alert(alert_type: str, cow_id, severity: str, message: str):
-    # Suppress duplicates within 10 minutes per alert_type + cow_id combination
+    # Suppress duplicates within 10 minutes per (alert_type, cow_id, message) —
+    # matching on the exact message (not just alert_type) so distinct conditions
+    # sharing a type (e.g. MQ5 vs MQ135 both "Air Quality") don't silence each other.
     dup = await fetchone(
         """
         SELECT alert_id FROM Alerts
         WHERE alert_type = %s
           AND (cow_id = %s OR (cow_id IS NULL AND %s IS NULL))
+          AND message = %s
           AND is_resolved = FALSE
           AND created_at > NOW() - INTERVAL 10 MINUTE
         LIMIT 1
         """,
-        (alert_type, cow_id, cow_id),
+        (alert_type, cow_id, cow_id, message),
     )
     if dup:
         return

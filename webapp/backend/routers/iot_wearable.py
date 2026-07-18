@@ -53,16 +53,20 @@ async def _resolve_cow(rfid_tag: str) -> Optional[dict]:
 
 
 async def _log_alert(alert_type: str, cow_id, severity: str, message: str):
+    # Dedup on the exact message, not just (alert_type, cow_id) — otherwise a
+    # fever alert would silence an unrelated heart-rate alert fired moments
+    # later for the same cow, since both share alert_type="Health".
     dup = await fetchone(
         """
         SELECT alert_id FROM Alerts
         WHERE alert_type = %s
           AND (cow_id = %s OR (cow_id IS NULL AND %s IS NULL))
+          AND message = %s
           AND is_resolved = FALSE
           AND created_at > NOW() - INTERVAL 10 MINUTE
         LIMIT 1
         """,
-        (alert_type, cow_id, cow_id),
+        (alert_type, cow_id, cow_id, message),
     )
     if dup:
         return
