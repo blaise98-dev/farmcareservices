@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(timeout 12 ssh -i ~/.ssh/moome_tunnel -f -N -L 3307:127.0.0.1:3306 root@159.198.36.184 -o ConnectTimeout=8 -o StrictHostKeyChecking=accept-new)",
+      "Bash(echo \"exit code: $?\")",
+      "Bash(lsof -iTCP:3307 -sTCP:LISTEN)",
+      "Bash(ssh -i ~/.ssh/moome_tunnel -f -N -L 3307:127.0.0.1:3306 root@159.198.36.184 -o ConnectTimeout=8 -o StrictHostKeyChecking=accept-new -o BatchMode=yes)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(gh run *)"
+    ]
+  }
+}
