@@ -61,3 +61,51 @@ async def send_password_reset_email(to_email: str, name: str, reset_url: str) ->
         logger.info("Password reset email sent to %s", to_email)
     except Exception as exc:
         logger.error("Failed to send password reset email to %s: %s", to_email, exc)
+
+
+async def send_contact_message(name: str, email: str, phone: str, subject: str, message: str) -> None:
+    """Forward a public Contact Us submission to the configured inbox."""
+    mail_subject = f"[MooMe Contact] {subject or 'New message'} — {name}"
+    plain = (
+        f"New contact form submission\n\n"
+        f"Name: {name}\n"
+        f"Email: {email}\n"
+        f"Phone: {phone or '—'}\n"
+        f"Subject: {subject or '—'}\n\n"
+        f"Message:\n{message}\n"
+    )
+    html = f"""\
+<html><body style="font-family:sans-serif;color:#1a1a2e">
+  <h2 style="color:#1E4D7B">New Contact Form Submission</h2>
+  <p><strong>Name:</strong> {name}<br>
+     <strong>Email:</strong> {email}<br>
+     <strong>Phone:</strong> {phone or '—'}<br>
+     <strong>Subject:</strong> {subject or '—'}</p>
+  <p style="white-space:pre-wrap;border-left:3px solid #4CAF50;padding-left:12px">{message}</p>
+</body></html>"""
+
+    if not settings.SMTP_HOST:
+        logger.warning("SMTP not configured — contact message from %s <%s> logged only", name, email)
+        print(f"\n[CONTACT MESSAGE] From {name} <{email}>:\n{message}\n")
+        return
+
+    msg = MIMEMultipart("alternative")
+    msg["Subject"] = mail_subject
+    msg["From"] = settings.EMAIL_FROM
+    msg["To"] = settings.CONTACT_EMAIL
+    msg["Reply-To"] = email
+    msg.attach(MIMEText(plain, "plain"))
+    msg.attach(MIMEText(html, "html"))
+
+    try:
+        await aiosmtplib.send(
+            msg,
+            hostname=settings.SMTP_HOST,
+            port=settings.SMTP_PORT,
+            username=settings.SMTP_USER or None,
+            password=settings.SMTP_PASSWORD or None,
+            start_tls=settings.SMTP_USE_TLS,
+        )
+        logger.info("Contact message from %s forwarded to %s", email, settings.CONTACT_EMAIL)
+    except Exception as exc:
+        logger.error("Failed to forward contact message from %s: %s", email, exc)

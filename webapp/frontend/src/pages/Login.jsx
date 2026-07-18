@@ -50,13 +50,15 @@ export default function Login() {
 
         {/* Logo */}
         <div style={{ textAlign: 'center', color: '#fff', marginBottom: 8 }}>
-          <div style={{
-            width: 80, height: 80, borderRadius: '50%',
-            background: '#4CAF50',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontSize: 42, margin: '0 auto 16px',
-            boxShadow: '0 8px 32px rgba(76,175,80,.4)',
-          }}>🐄</div>
+          <Link to="/" style={{ display: 'inline-block', textDecoration: 'none' }}>
+            <div style={{
+              width: 80, height: 80, borderRadius: '50%',
+              background: '#4CAF50',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              fontSize: 42, margin: '0 auto 16px',
+              boxShadow: '0 8px 32px rgba(76,175,80,.4)',
+            }}>🐄</div>
+          </Link>
           <h1 style={{ fontWeight: 900, fontSize: 32, letterSpacing: .5, margin: 0 }}>FarmCareServices</h1>
           <p style={{ opacity: .75, fontSize: 14, marginTop: 4, letterSpacing: 1 }}>
             {farm?.farm_name || 'IoT-AI Smart Dairy Farm Platform'}
@@ -181,6 +183,13 @@ export default function Login() {
           }}>
             <strong>First run:</strong> Demo accounts accept any password.
             After login, change your password in Settings.
+          </div>
+
+          <div style={{ textAlign: 'center', marginTop: 18, fontSize: 13, color: '#5a6a7e' }}>
+            Don't have an account?{' '}
+            <Link to="/register" style={{ color: '#4CAF50', fontWeight: 700, textDecoration: 'none' }}>
+              Register here
+            </Link>
           </div>
         </div>
 

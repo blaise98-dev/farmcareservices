@@ -9,26 +9,26 @@ import { formatDistanceToNow } from 'date-fns';
 
 // ── Global search data ──────────────────────────────────────────────────────
 const SEARCH_PAGES = [
-  { label: 'Dashboard',        path: '/',               icon: '📊', tags: ['home', 'overview', 'dashboard'] },
-  { label: 'Herd Management',  path: '/herd',           icon: '🐄', tags: ['cows', 'herd', 'animals', 'cattle'] },
-  { label: 'Milk Production',  path: '/milk',           icon: '🥛', tags: ['milk', 'litres', 'production', 'milking'] },
-  { label: 'Feed & Fodder',    path: '/feed',           icon: '🌿', tags: ['feed', 'fodder', 'nutrition', 'silage'] },
-  { label: 'Feed Inventory',   path: '/feed-inventory', icon: '🏚', tags: ['inventory', 'stock', 'dry matter', 'hay'] },
-  { label: 'Reproduction',     path: '/reproduction',   icon: '🐣', tags: ['calving', 'pregnancy', 'vaccination', 'treatment', 'bcs'] },
-  { label: 'Groups',           path: '/groups',         icon: '👥', tags: ['groups', 'herd groups', 'categories'] },
-  { label: 'Environment',      path: '/environment',    icon: '🌡', tags: ['temperature', 'humidity', 'air quality', 'oxygen', 'sensor'] },
-  { label: 'Tanks',            path: '/tanks',          icon: '🚰', tags: ['tanks', 'water', 'milk tank', 'level'] },
-  { label: 'Alerts',           path: '/alerts',         icon: '🚨', tags: ['alerts', 'notifications', 'warnings', 'sms'] },
-  { label: 'AI Predictions',   path: '/predictions',    icon: '🤖', tags: ['prediction', 'ai', 'forecast', 'health risk'] },
-  { label: 'Weekly Plan',      path: '/weekly-plan',    icon: '📅', tags: ['tasks', 'schedule', 'weekly', 'plan', 'calendar'] },
-  { label: 'IoT Control',      path: '/iot-control',    icon: '⚙️', tags: ['iot', 'fan', 'pump', 'motor', 'device', 'control', 'calibration'] },
-  { label: 'Economics',        path: '/economics',      icon: '💰', tags: ['revenue', 'cost', 'roi', 'economics', 'income'] },
-  { label: 'Reports',          path: '/reports',        icon: '📋', tags: ['reports', 'analytics', 'export', 'csv', 'pdf'] },
-  { label: 'User Management',  path: '/users',          icon: '👤', tags: ['users', 'accounts', 'roles', 'admin'] },
-  { label: 'SMS Config',       path: '/sms-config',     icon: '📱', tags: ['sms', 'phone', 'alerts', 'notifications'] },
-  { label: 'Feedback',         path: '/feedback',       icon: '💬', tags: ['feedback', 'support', 'bug', 'feature'] },
-  { label: 'Help & Support',   path: '/help',           icon: '❓', tags: ['help', 'faq', 'contact', 'support', 'guide'] },
-  { label: 'Settings',         path: '/settings',       icon: '⚙', tags: ['settings', 'password', 'profile', 'language'] },
+  { label: 'Dashboard',        path: '/app',                icon: '📊', tags: ['home', 'overview', 'dashboard'] },
+  { label: 'Herd Management',  path: '/app/herd',           icon: '🐄', tags: ['cows', 'herd', 'animals', 'cattle'] },
+  { label: 'Milk Production',  path: '/app/milk',           icon: '🥛', tags: ['milk', 'litres', 'production', 'milking'] },
+  { label: 'Feed & Fodder',    path: '/app/feed',           icon: '🌿', tags: ['feed', 'fodder', 'nutrition', 'silage'] },
+  { label: 'Feed Inventory',   path: '/app/feed-inventory', icon: '🏚', tags: ['inventory', 'stock', 'dry matter', 'hay'] },
+  { label: 'Reproduction',     path: '/app/reproduction',   icon: '🐣', tags: ['calving', 'pregnancy', 'vaccination', 'treatment', 'bcs'] },
+  { label: 'Groups',           path: '/app/groups',         icon: '👥', tags: ['groups', 'herd groups', 'categories'] },
+  { label: 'Environment',      path: '/app/environment',    icon: '🌡', tags: ['temperature', 'humidity', 'air quality', 'oxygen', 'sensor'] },
+  { label: 'Tanks',            path: '/app/tanks',          icon: '🚰', tags: ['tanks', 'water', 'milk tank', 'level'] },
+  { label: 'Alerts',           path: '/app/alerts',         icon: '🚨', tags: ['alerts', 'notifications', 'warnings', 'sms'] },
+  { label: 'AI Predictions',   path: '/app/predictions',    icon: '🤖', tags: ['prediction', 'ai', 'forecast', 'health risk'] },
+  { label: 'Weekly Plan',      path: '/app/weekly-plan',    icon: '📅', tags: ['tasks', 'schedule', 'weekly', 'plan', 'calendar'] },
+  { label: 'IoT Control',      path: '/app/iot-control',    icon: '⚙️', tags: ['iot', 'fan', 'pump', 'motor', 'device', 'control', 'calibration'] },
+  { label: 'Economics',        path: '/app/economics',      icon: '💰', tags: ['revenue', 'cost', 'roi', 'economics', 'income'] },
+  { label: 'Reports',          path: '/app/reports',        icon: '📋', tags: ['reports', 'analytics', 'export', 'csv', 'pdf'] },
+  { label: 'User Management',  path: '/app/users',          icon: '👤', tags: ['users', 'accounts', 'roles', 'admin'] },
+  { label: 'SMS Config',       path: '/app/sms-config',     icon: '📱', tags: ['sms', 'phone', 'alerts', 'notifications'] },
+  { label: 'Feedback',         path: '/app/feedback',       icon: '💬', tags: ['feedback', 'support', 'bug', 'feature'] },
+  { label: 'Help & Support',   path: '/app/help',           icon: '❓', tags: ['help', 'faq', 'contact', 'support', 'guide'] },
+  { label: 'Settings',         path: '/app/settings',       icon: '⚙', tags: ['settings', 'password', 'profile', 'language'] },
 ];
 
 function SearchResults({ query, onSelect, navigate }) {
@@ -74,23 +74,23 @@ function SearchResults({ query, onSelect, navigate }) {
 }
 
 const TITLES = {
-  '/':               'Dashboard',
-  '/herd':           'Herd Management',
-  '/milk':           'Milk Production',
-  '/feed':           'Feed & Fodder',
-  '/feed-inventory': 'Feed Inventory',
-  '/environment':    'Environment Monitoring',
-  '/alerts':         'Alerts & Notifications',
-  '/economics':      'Farm Economics',
-  '/predictions':    'AI Predictions',
-  '/reproduction':   'Reproduction & Health',
-  '/groups':         'Animal Groups',
-  '/tanks':          'Tanks & Water',
-  '/weekly-plan':    'Weekly Plan',
-  '/feedback':       'Feedback',
-  '/settings':       'Settings',
-  '/reports':        'Reports',
-  '/users':          'User Management',
+  '/app':                'Dashboard',
+  '/app/herd':           'Herd Management',
+  '/app/milk':           'Milk Production',
+  '/app/feed':           'Feed & Fodder',
+  '/app/feed-inventory': 'Feed Inventory',
+  '/app/environment':    'Environment Monitoring',
+  '/app/alerts':         'Alerts & Notifications',
+  '/app/economics':      'Farm Economics',
+  '/app/predictions':    'AI Predictions',
+  '/app/reproduction':   'Reproduction & Health',
+  '/app/groups':         'Animal Groups',
+  '/app/tanks':          'Tanks & Water',
+  '/app/weekly-plan':    'Weekly Plan',
+  '/app/feedback':       'Feedback',
+  '/app/settings':       'Settings',
+  '/app/reports':        'Reports',
+  '/app/users':          'User Management',
 };
 
 const ROLE_COLOR = { Admin: '#FFD700', Farmer: '#81C784', Veterinarian: '#CE93D8', Technician: '#FFCC80' };
@@ -109,7 +109,7 @@ export default function Header({ onMenuClick }) {
   const qc = useQueryClient();
 
   const title = Object.entries(TITLES)
-    .filter(([path]) => pathname === path || (path !== '/' && pathname.startsWith(path)))
+    .filter(([path]) => pathname === path || (path !== '/app' && pathname.startsWith(path)))
     .sort((a, b) => b[0].length - a[0].length)[0]?.[1] || 'MooMe';
 
   const { data: notifications = [] } = useQuery({ queryKey: ['notifications'], queryFn: getNotifications, refetchInterval: 30000 });
@@ -242,7 +242,7 @@ export default function Header({ onMenuClick }) {
             </div>
 
             <div style={{ padding: '10px 18px', borderTop: '1px solid #f0f0f0', flexShrink: 0 }}>
-              <button onClick={() => { navigate('/alerts'); setShowNotifs(false); }}
+              <button onClick={() => { navigate('/app/alerts'); setShowNotifs(false); }}
                 style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: '#1E4D7B', fontWeight: 600, width: '100%', textAlign: 'center' }}>
                 View all alerts →
               </button>
@@ -252,7 +252,7 @@ export default function Header({ onMenuClick }) {
       </div>
 
       {/* Alert bell shortcut (red badge for unresolved alerts) */}
-      <div style={{ position: 'relative', cursor: 'pointer', flexShrink: 0 }} onClick={() => navigate('/alerts')}>
+      <div style={{ position: 'relative', cursor: 'pointer', flexShrink: 0 }} onClick={() => navigate('/app/alerts')}>
         {alertsCount > 0 && (
           <span style={{ background: '#F44336', color: '#fff', borderRadius: 10, padding: '2px 8px', fontSize: 11, fontWeight: 700 }}>
             🚨 {alertsCount}
@@ -262,7 +262,7 @@ export default function Header({ onMenuClick }) {
 
       {/* User chip */}
       {user && (
-        <div onClick={() => navigate('/settings')} style={{
+        <div onClick={() => navigate('/app/settings')} style={{
           background: 'rgba(0,0,0,.2)', borderRadius: 20, padding: '5px 12px',
           fontSize: 12, fontWeight: 600, display: 'flex', alignItems: 'center', gap: 6,
           cursor: 'pointer', flexShrink: 0, border: `1px solid ${ROLE_COLOR[user.role] || 'rgba(255,255,255,.3)'}`,

@@ -109,6 +109,15 @@ export const getVets             = () => api.get('/api/auth/vets').then(r => r.d
 export const createUser          = (body) => api.post('/api/auth/users/create', body).then(r => r.data);
 export const updateUser          = (id, body) => api.patch(`/api/auth/users/${id}`, body).then(r => r.data);
 
+// Auth — public self-registration + admin approval
+export const registerUser        = (body) => api.post('/api/auth/register', body).then(r => r.data);
+export const getPendingUsers     = () => api.get('/api/auth/users/pending').then(r => r.data);
+export const approveUser         = (id) => api.post(`/api/auth/users/${id}/approve`).then(r => r.data);
+export const rejectUser          = (id) => api.post(`/api/auth/users/${id}/reject`).then(r => r.data);
+
+// Public Contact Us form
+export const submitContact       = (body) => api.post('/api/contact/', body).then(r => r.data);
+
 // Auth — password reset (public, no login required)
 export const requestPasswordReset = (identifier) =>
   api.post('/api/auth/forgot-password', { identifier }).then(r => r.data);

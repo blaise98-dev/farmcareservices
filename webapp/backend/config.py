@@ -31,6 +31,9 @@ class Settings(BaseSettings):
     SMTP_USE_TLS: bool = True
     EMAIL_FROM: str = "noreply@moome.rw"
 
+    # Contact Us — inbox that receives public contact-form submissions
+    CONTACT_EMAIL: str = "bnindenkimana2@gmail.com"
+
     @property
     def cors_origins_list(self) -> List[str]:
         return [o.strip() for o in self.CORS_ORIGINS.split(",")]

@@ -118,7 +118,7 @@ export default function CowDetail() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
       {/* Back */}
-      <Link to="/herd" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--text-secondary)', textDecoration: 'none' }}>
+      <Link to="/app/herd" style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13, color: 'var(--text-secondary)', textDecoration: 'none' }}>
         <ArrowLeft size={16} /> Back to Herd
       </Link>
 
@@ -422,7 +422,7 @@ export default function CowDetail() {
               </div>
             ))
           }
-          <Link to="/reproduction" style={{ fontSize: 12, color: '#9C27B0', fontWeight: 600, textDecoration: 'none', display: 'inline-block', marginTop: 8 }}>
+          <Link to="/app/reproduction" style={{ fontSize: 12, color: '#9C27B0', fontWeight: 600, textDecoration: 'none', display: 'inline-block', marginTop: 8 }}>
             → Manage reproduction records
           </Link>
         </div>
@@ -453,7 +453,7 @@ export default function CowDetail() {
               </table>
             )
           }
-          <Link to="/reproduction" style={{ fontSize: 12, color: '#9C27B0', fontWeight: 600, textDecoration: 'none', display: 'inline-block', marginTop: 8 }}>
+          <Link to="/app/reproduction" style={{ fontSize: 12, color: '#9C27B0', fontWeight: 600, textDecoration: 'none', display: 'inline-block', marginTop: 8 }}>
             → Add treatments via Reproduction page
           </Link>
         </div>

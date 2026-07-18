@@ -43,6 +43,20 @@ class ResetPasswordRequest(BaseModel):
     new_password: str
 
 
+class RegisterRequest(BaseModel):
+    username: str
+    password: str
+    full_name: str
+    email: Optional[str] = None
+    phone_number: Optional[str] = None
+    role: str                     # Farmer, Veterinarian, Technician — not Admin
+    province: Optional[str] = None
+    district: Optional[str] = None
+    sector:   Optional[str] = None
+    cell:     Optional[str] = None
+    village:  Optional[str] = None
+
+
 FORGOT_PASSWORD_MSG = (
     "If an account with that email exists, a password reset link has been sent."
 )
@@ -113,7 +127,7 @@ async def get_current_user(token: str = Depends(oauth2_scheme)) -> dict:
 @router.post("/login", response_model=Token)
 async def login(form: OAuth2PasswordRequestForm = Depends()):
     user = await fetchone(
-        "SELECT * FROM Users WHERE username=%s AND is_active=TRUE",
+        "SELECT * FROM Users WHERE username=%s",
         (form.username,),
     )
     if not user:
@@ -128,6 +142,20 @@ async def login(form: OAuth2PasswordRequestForm = Depends()):
     if not valid:
         raise HTTPException(status_code=400, detail="Incorrect username or password")
 
+    # Only reveal approval-status detail once the password has checked out,
+    # so a wrong password never confirms whether a pending username exists.
+    approval = user.get("approval_status", "approved")
+    if approval == "pending":
+        raise HTTPException(
+            status_code=403,
+            detail="Your account is pending admin approval. You'll be able to sign in once an administrator approves your registration.",
+        )
+    if approval == "rejected" or not user["is_active"]:
+        raise HTTPException(
+            status_code=403,
+            detail="This account is inactive. Contact an administrator for details.",
+        )
+
     await execute(
         "UPDATE Users SET last_login=NOW() WHERE user_id=%s",
         (user["user_id"],),
@@ -135,6 +163,58 @@ async def login(form: OAuth2PasswordRequestForm = Depends()):
 
     token = create_token({"sub": user["username"], "role": user["role"]})
     return {"access_token": token, "token_type": "bearer", "user": _safe_user(user)}
+
+
+REGISTER_ROLES = {"Farmer", "Veterinarian", "Technician"}
+
+
+@router.post("/register")
+async def register(body: RegisterRequest):
+    """
+    Public self-registration. Accounts start with approval_status='pending'
+    and cannot log in until an Admin approves them via /users/pending/{id}/approve.
+    """
+    if body.role not in REGISTER_ROLES:
+        raise HTTPException(400, f"Role must be one of: {', '.join(sorted(REGISTER_ROLES))}")
+    if len(body.password) < 6:
+        raise HTTPException(400, "Password must be at least 6 characters")
+    if not body.username.strip() or not body.full_name.strip():
+        raise HTTPException(400, "Username and full name are required")
+
+    existing = await fetchone("SELECT user_id FROM Users WHERE username=%s", (body.username,))
+    if existing:
+        raise HTTPException(409, f"Username '{body.username}' is already taken")
+
+    hashed = pwd_ctx.hash(body.password)
+    uid = await execute(
+        """
+        INSERT INTO Users (username, password_hash, full_name, email, phone_number,
+                           role, farm_id, is_active, approval_status,
+                           province, district, sector, cell_name, village)
+        VALUES (%s, %s, %s, %s, %s, %s, %s, TRUE, 'pending', %s, %s, %s, %s, %s)
+        """,
+        (body.username, hashed, body.full_name, body.email,
+         body.phone_number, body.role, 1,
+         body.province, body.district, body.sector, body.cell, body.village),
+    )
+
+    # Notify every active admin so they see the pending request without polling.
+    admins = await fetchall("SELECT user_id FROM Users WHERE role='Admin' AND is_active=TRUE")
+    for a in admins:
+        await execute(
+            """
+            INSERT INTO Notifications (user_id, title, message, notif_type, ref_id)
+            VALUES (%s, %s, %s, 'UserRegistration', %s)
+            """,
+            (a["user_id"], "New user pending approval",
+             f"{body.full_name} ({body.username}) registered as {body.role} and is awaiting approval.",
+             uid),
+        )
+
+    return {
+        "ok": True,
+        "message": "Registration received. An administrator will review your account before you can sign in.",
+    }
 
 
 @router.get("/me")
@@ -267,9 +347,65 @@ async def list_users(current_user: dict = Depends(get_current_user)):
     if current_user["role"] != "Admin":
         raise HTTPException(403, "Admin only")
     rows = await fetchall(
-        "SELECT user_id, username, full_name, email, phone_number, role, farm_id, is_active, last_login FROM Users"
+        "SELECT user_id, username, full_name, email, phone_number, role, farm_id, "
+        "is_active, approval_status, last_login FROM Users"
     )
     return [_safe_user(r) for r in rows]
+
+
+@router.get("/users/pending")
+async def list_pending_users(current_user: dict = Depends(get_current_user)):
+    """Admin only — self-registered accounts awaiting approval."""
+    if current_user["role"] != "Admin":
+        raise HTTPException(403, "Admin only")
+    rows = await fetchall(
+        "SELECT user_id, username, full_name, email, phone_number, role, "
+        "province, district, sector, cell_name, village, created_at "
+        "FROM Users WHERE approval_status='pending' ORDER BY created_at ASC"
+    )
+    return [_safe_user(r) for r in rows]
+
+
+@router.post("/users/{user_id}/approve")
+async def approve_user(user_id: int, current_user: dict = Depends(get_current_user)):
+    """Admin only — approve a pending registration, granting login access."""
+    if current_user["role"] != "Admin":
+        raise HTTPException(403, "Admin only")
+    target = await fetchone("SELECT user_id, approval_status FROM Users WHERE user_id=%s", (user_id,))
+    if not target:
+        raise HTTPException(404, "User not found")
+    if target["approval_status"] != "pending":
+        raise HTTPException(400, f"User is already {target['approval_status']}")
+
+    await execute(
+        "UPDATE Users SET approval_status='approved', approved_by=%s, approved_at=NOW() "
+        "WHERE user_id=%s",
+        (current_user["user_id"], user_id),
+    )
+    await execute(
+        "INSERT INTO Notifications (user_id, title, message, notif_type) VALUES (%s, %s, %s, 'AccountApproved')",
+        (user_id, "Account approved", "Your account has been approved. You can now sign in."),
+    )
+    return {"ok": True}
+
+
+@router.post("/users/{user_id}/reject")
+async def reject_user(user_id: int, current_user: dict = Depends(get_current_user)):
+    """Admin only — reject a pending registration."""
+    if current_user["role"] != "Admin":
+        raise HTTPException(403, "Admin only")
+    target = await fetchone("SELECT user_id, approval_status FROM Users WHERE user_id=%s", (user_id,))
+    if not target:
+        raise HTTPException(404, "User not found")
+    if target["approval_status"] != "pending":
+        raise HTTPException(400, f"User is already {target['approval_status']}")
+
+    await execute(
+        "UPDATE Users SET approval_status='rejected', approved_by=%s, approved_at=NOW() "
+        "WHERE user_id=%s",
+        (current_user["user_id"], user_id),
+    )
+    return {"ok": True}
 
 
 # ── User management (Admin only) ──────────────────────────────

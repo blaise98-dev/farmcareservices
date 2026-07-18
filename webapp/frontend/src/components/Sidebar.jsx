@@ -28,78 +28,78 @@ const ROLE_LABEL = {
 function buildNav(p, role) {
   if (role === 'Farmer') {
     return [
-      { to: '/',               icon: LayoutDashboard, label: 'Dashboard',       show: true },
-      { to: '/herd',           icon: Beef,            label: 'My Cows',         show: true },
-      { to: '/groups',         icon: Users,           label: 'Groups',          show: true },
-      { to: '/milk',           icon: Droplets,        label: 'Milk Production', show: true },
-      { to: '/feed',           icon: Leaf,            label: 'Feed & Fodder',   show: true },
-      { to: '/feed-inventory', icon: Warehouse,       label: 'Feed Inventory',  show: true },
-      { to: '/weekly-plan',    icon: CalendarDays,    label: 'Weekly Plan',     show: true },
-      { to: '/environment',    icon: Wind,            label: 'Environment',     show: true },
-      { to: '/alerts',         icon: Bell,            label: 'Alerts',          show: true, badge: true },
-      { to: '/herd-analytics',  icon: BarChart2,       label: 'Herd Analytics',  show: true },
-      { to: '/cow-economics',  icon: TrendingUp,      label: 'Cow Economics',   show: true },
-      { to: '/feedback',       icon: MessageSquare,   label: 'Feedback',        show: true },
-      { to: '/help',           icon: HelpCircle,      label: 'Help',            show: true },
-      { to: '/settings',       icon: Settings,        label: 'Settings',        show: true },
+      { to: '/app',                icon: LayoutDashboard, label: 'Dashboard',       show: true },
+      { to: '/app/herd',           icon: Beef,            label: 'My Cows',         show: true },
+      { to: '/app/groups',         icon: Users,           label: 'Groups',          show: true },
+      { to: '/app/milk',           icon: Droplets,        label: 'Milk Production', show: true },
+      { to: '/app/feed',           icon: Leaf,            label: 'Feed & Fodder',   show: true },
+      { to: '/app/feed-inventory', icon: Warehouse,       label: 'Feed Inventory',  show: true },
+      { to: '/app/weekly-plan',    icon: CalendarDays,    label: 'Weekly Plan',     show: true },
+      { to: '/app/environment',    icon: Wind,            label: 'Environment',     show: true },
+      { to: '/app/alerts',         icon: Bell,            label: 'Alerts',          show: true, badge: true },
+      { to: '/app/herd-analytics', icon: BarChart2,       label: 'Herd Analytics',  show: true },
+      { to: '/app/cow-economics',  icon: TrendingUp,      label: 'Cow Economics',   show: true },
+      { to: '/app/feedback',       icon: MessageSquare,   label: 'Feedback',        show: true },
+      { to: '/app/help',           icon: HelpCircle,      label: 'Help',            show: true },
+      { to: '/app/settings',       icon: Settings,        label: 'Settings',        show: true },
     ];
   }
 
   if (role === 'Veterinarian') {
     return [
-      { to: '/',               icon: LayoutDashboard, label: 'Dashboard',        show: true },
-      { to: '/herd',           icon: Stethoscope,     label: 'Herd Health',      show: true },
-      { to: '/reproduction',   icon: Baby,            label: 'Reproduction',     show: true },
-      { to: '/milk',           icon: Droplets,        label: 'Milk Monitoring',  show: true },
-      { to: '/feed',           icon: Leaf,            label: 'Nutrition & Feed', show: true },
-      { to: '/environment',    icon: Wind,            label: 'Environment',      show: true },
-      { to: '/alerts',         icon: Bell,            label: 'Alerts & Health',  show: true, badge: true },
-      { to: '/herd-analytics',  icon: BarChart2,       label: 'Herd Analytics',   show: true },
-      { to: '/cow-economics',  icon: TrendingUp,      label: 'Treatment Costs',  show: true },
-      { to: '/predictions',    icon: TrendingUp,      label: 'AI Predictions',   show: true },
-      { to: '/weekly-plan',    icon: CalendarDays,    label: 'Weekly Plan',      show: true },
-      { to: '/feedback',       icon: MessageSquare,   label: 'Feedback',         show: true },
-      { to: '/help',           icon: HelpCircle,      label: 'Help',             show: true },
-      { to: '/settings',       icon: Settings,        label: 'Settings',         show: true },
+      { to: '/app',                icon: LayoutDashboard, label: 'Dashboard',        show: true },
+      { to: '/app/herd',           icon: Stethoscope,     label: 'Herd Health',      show: true },
+      { to: '/app/reproduction',   icon: Baby,            label: 'Reproduction',     show: true },
+      { to: '/app/milk',           icon: Droplets,        label: 'Milk Monitoring',  show: true },
+      { to: '/app/feed',           icon: Leaf,            label: 'Nutrition & Feed', show: true },
+      { to: '/app/environment',    icon: Wind,            label: 'Environment',      show: true },
+      { to: '/app/alerts',         icon: Bell,            label: 'Alerts & Health',  show: true, badge: true },
+      { to: '/app/herd-analytics', icon: BarChart2,       label: 'Herd Analytics',   show: true },
+      { to: '/app/cow-economics',  icon: TrendingUp,      label: 'Treatment Costs',  show: true },
+      { to: '/app/predictions',    icon: TrendingUp,      label: 'AI Predictions',   show: true },
+      { to: '/app/weekly-plan',    icon: CalendarDays,    label: 'Weekly Plan',      show: true },
+      { to: '/app/feedback',       icon: MessageSquare,   label: 'Feedback',         show: true },
+      { to: '/app/help',           icon: HelpCircle,      label: 'Help',             show: true },
+      { to: '/app/settings',       icon: Settings,        label: 'Settings',         show: true },
     ];
   }
 
   if (role === 'Admin') {
     return [
-      { to: '/',               icon: LayoutDashboard, label: 'Dashboard',        show: true },
-      { to: '/herd',           icon: Beef,            label: 'Herd',             show: true },
-      { to: '/groups',         icon: Users,           label: 'Groups',           show: true },
-      { to: '/reproduction',   icon: Baby,            label: 'Reproduction',     show: true },
-      { to: '/milk',           icon: Droplets,        label: 'Milk',             show: true },
-      { to: '/feed',           icon: Leaf,            label: 'Feed',             show: true },
-      { to: '/feed-inventory', icon: Warehouse,       label: 'Feed Inventory',   show: true },
-      { to: '/environment',    icon: Wind,            label: 'Environment',      show: true },
-      { to: '/tanks',          icon: Waves,           label: 'Tanks',            show: true },
-      { to: '/iot-control',    icon: Cpu,             label: 'IoT Control',      show: true },
-      { to: '/alerts',         icon: Bell,            label: 'Alerts',           show: true, badge: true },
-      { to: '/herd-analytics',  icon: BarChart2,       label: 'Herd Analytics',   show: true },
-      { to: '/cow-economics',  icon: TrendingUp,      label: 'Cow Economics',    show: true },
-      { to: '/predictions',    icon: TrendingUp,      label: 'AI Predictions',   show: true },
-      { to: '/weekly-plan',    icon: CalendarDays,    label: 'Weekly Plan',      show: true },
-      { to: '/reports',        icon: FileText,        label: 'Reports',          show: true },
-      { to: '/users',          icon: Users,           label: 'User Management',  show: true },
-      { to: '/sms-config',     icon: Phone,           label: 'SMS Config',       show: true },
-      { to: '/feedback',       icon: MessageSquare,   label: 'Feedback',         show: true },
-      { to: '/help',           icon: HelpCircle,      label: 'Help',             show: true },
-      { to: '/settings',       icon: Settings,        label: 'Settings',         show: true },
+      { to: '/app',                icon: LayoutDashboard, label: 'Dashboard',        show: true },
+      { to: '/app/herd',           icon: Beef,            label: 'Herd',             show: true },
+      { to: '/app/groups',         icon: Users,           label: 'Groups',           show: true },
+      { to: '/app/reproduction',   icon: Baby,            label: 'Reproduction',     show: true },
+      { to: '/app/milk',           icon: Droplets,        label: 'Milk',             show: true },
+      { to: '/app/feed',           icon: Leaf,            label: 'Feed',             show: true },
+      { to: '/app/feed-inventory', icon: Warehouse,       label: 'Feed Inventory',   show: true },
+      { to: '/app/environment',    icon: Wind,            label: 'Environment',      show: true },
+      { to: '/app/tanks',          icon: Waves,           label: 'Tanks',            show: true },
+      { to: '/app/iot-control',    icon: Cpu,             label: 'IoT Control',      show: true },
+      { to: '/app/alerts',         icon: Bell,            label: 'Alerts',           show: true, badge: true },
+      { to: '/app/herd-analytics', icon: BarChart2,       label: 'Herd Analytics',   show: true },
+      { to: '/app/cow-economics',  icon: TrendingUp,      label: 'Cow Economics',    show: true },
+      { to: '/app/predictions',    icon: TrendingUp,      label: 'AI Predictions',   show: true },
+      { to: '/app/weekly-plan',    icon: CalendarDays,    label: 'Weekly Plan',      show: true },
+      { to: '/app/reports',        icon: FileText,        label: 'Reports',          show: true },
+      { to: '/app/users',          icon: Users,           label: 'User Management',  show: true },
+      { to: '/app/sms-config',     icon: Phone,           label: 'SMS Config',       show: true },
+      { to: '/app/feedback',       icon: MessageSquare,   label: 'Feedback',         show: true },
+      { to: '/app/help',           icon: HelpCircle,      label: 'Help',             show: true },
+      { to: '/app/settings',       icon: Settings,        label: 'Settings',         show: true },
     ];
   }
 
   // Technician
   return [
-    { to: '/',               icon: LayoutDashboard, label: 'Dashboard',   show: true },
-    { to: '/environment',    icon: Wind,            label: 'Environment', show: true },
-    { to: '/tanks',          icon: Waves,           label: 'Tanks',       show: true },
-    { to: '/iot-control',    icon: Cpu,             label: 'IoT Control', show: true },
-    { to: '/weekly-plan',    icon: CalendarDays,    label: 'Weekly Plan', show: true },
-    { to: '/alerts',         icon: Bell,            label: 'Alerts',      show: true, badge: true },
-    { to: '/help',           icon: HelpCircle,      label: 'Help',        show: true },
-    { to: '/settings',       icon: Settings,        label: 'Settings',    show: true },
+    { to: '/app',                icon: LayoutDashboard, label: 'Dashboard',   show: true },
+    { to: '/app/environment',    icon: Wind,            label: 'Environment', show: true },
+    { to: '/app/tanks',          icon: Waves,           label: 'Tanks',       show: true },
+    { to: '/app/iot-control',    icon: Cpu,             label: 'IoT Control', show: true },
+    { to: '/app/weekly-plan',    icon: CalendarDays,    label: 'Weekly Plan', show: true },
+    { to: '/app/alerts',         icon: Bell,            label: 'Alerts',      show: true, badge: true },
+    { to: '/app/help',           icon: HelpCircle,      label: 'Help',        show: true },
+    { to: '/app/settings',       icon: Settings,        label: 'Settings',    show: true },
   ];
 }
 
@@ -211,7 +211,7 @@ export default function Sidebar({ open, onClose }) {
             <NavLink
               key={to + label}
               to={to}
-              end={to === '/'}
+              end={to === '/app'}
               onClick={() => window.innerWidth < 768 && onClose()}
               style={({ isActive }) => ({
                 display: 'flex', alignItems: 'center', gap: 12,

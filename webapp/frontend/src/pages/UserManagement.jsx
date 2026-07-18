@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getUsers, createUser, updateUser, deleteUser, adminResetPassword, getCows, getMilk, getFeed } from '../lib/api';
-import { Users, Plus, X, ShieldCheck, ToggleLeft, ToggleRight, Edit2, Trash2, Key, Eye } from 'lucide-react';
+import { getUsers, createUser, updateUser, deleteUser, adminResetPassword, getCows, getMilk, getFeed, getPendingUsers, approveUser, rejectUser } from '../lib/api';
+import { Users, Plus, X, ShieldCheck, ToggleLeft, ToggleRight, Edit2, Trash2, Key, Eye, UserCheck, UserX, Clock } from 'lucide-react';
 import { format } from 'date-fns';
 import RwandaLocationFields from '../components/RwandaLocationFields';
 
@@ -169,6 +169,23 @@ export default function UserManagement() {
     queryFn: getUsers,
   });
 
+  const { data: pendingUsers = [] } = useQuery({
+    queryKey: ['pending-users'],
+    queryFn: getPendingUsers,
+    refetchInterval: 30000,
+  });
+
+  const approveMut = useMutation({
+    mutationFn: approveUser,
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['pending-users'] }); qc.invalidateQueries({ queryKey: ['users'] }); },
+    onError: (e) => alert(e.response?.data?.detail || 'Approval failed'),
+  });
+  const rejectMut = useMutation({
+    mutationFn: rejectUser,
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['pending-users'] }),
+    onError: (e) => alert(e.response?.data?.detail || 'Rejection failed'),
+  });
+
   const createMut = useMutation({
     mutationFn: createUser,
     onSuccess: () => {
@@ -269,6 +286,72 @@ export default function UserManagement() {
           <Plus size={16} /> Add User
         </button>
       </div>
+
+      {/* Pending approvals */}
+      {pendingUsers.length > 0 && (
+        <div className="card" style={{ padding: 0, overflow: 'hidden', border: '2px solid #FF9800' }}>
+          <div style={{ padding: '14px 20px', background: '#fff8e1', display: 'flex', alignItems: 'center', gap: 10 }}>
+            <Clock size={18} color="#E65100" />
+            <h2 style={{ fontSize: 15, fontWeight: 800, color: '#E65100' }}>Pending Approval</h2>
+            <span style={{
+              fontSize: 11, fontWeight: 700, padding: '2px 10px', borderRadius: 20,
+              background: '#FF9800', color: '#fff',
+            }}>
+              {pendingUsers.length}
+            </span>
+          </div>
+          <div style={{ overflowX: 'auto' }}>
+            <table className="data-table">
+              <thead>
+                <tr><th>Name</th><th>Username</th><th>Email</th><th>Phone</th><th>Requested Role</th><th>Location</th><th>Registered</th><th>Actions</th></tr>
+              </thead>
+              <tbody>
+                {pendingUsers.map(u => (
+                  <tr key={u.user_id}>
+                    <td style={{ fontWeight: 600 }}>{u.full_name || '—'}</td>
+                    <td style={{ fontFamily: 'monospace', fontSize: 12 }}>@{u.username}</td>
+                    <td style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{u.email || '—'}</td>
+                    <td style={{ fontFamily: 'monospace', fontSize: 12 }}>{u.phone_number || '—'}</td>
+                    <td>
+                      <span style={{
+                        fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 20,
+                        background: ROLE_BG[u.role] || '#f0f0f0', color: ROLE_COLOR[u.role] || '#333',
+                        border: `1px solid ${ROLE_COLOR[u.role] || '#ccc'}44`,
+                      }}>
+                        {u.role}
+                      </span>
+                    </td>
+                    <td style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
+                      {[u.district, u.province].filter(Boolean).join(', ') || '—'}
+                    </td>
+                    <td style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
+                      {u.created_at ? format(new Date(u.created_at), 'MMM d, yyyy') : '—'}
+                    </td>
+                    <td>
+                      <div style={{ display: 'flex', gap: 6 }}>
+                        <button
+                          onClick={() => approveMut.mutate(u.user_id)}
+                          disabled={approveMut.isPending || rejectMut.isPending}
+                          className="btn"
+                          style={{ padding: '5px 12px', fontSize: 11, background: '#4CAF50', color: '#fff', border: 'none', display: 'flex', alignItems: 'center', gap: 4 }}>
+                          <UserCheck size={12} /> Approve
+                        </button>
+                        <button
+                          onClick={() => { if (window.confirm(`Reject registration for "${u.username}"?`)) rejectMut.mutate(u.user_id); }}
+                          disabled={approveMut.isPending || rejectMut.isPending}
+                          className="btn btn-ghost"
+                          style={{ padding: '5px 12px', fontSize: 11, color: '#c62828', display: 'flex', alignItems: 'center', gap: 4 }}>
+                          <UserX size={12} /> Reject
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
 
       {/* Role legend */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(220px,1fr))', gap: 12 }}>

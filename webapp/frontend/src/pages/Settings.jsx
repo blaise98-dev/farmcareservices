@@ -189,7 +189,7 @@ export default function Settings() {
             <div className="card">
               <h2 style={{ fontSize: 16, fontWeight: 700, marginBottom: 14 }}>Admin Quick Access</h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                <Link to="/users" style={{ textDecoration: 'none' }}>
+                <Link to="/app/users" style={{ textDecoration: 'none' }}>
                   <div style={{
                     display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px',
                     background: '#e8eef7', borderRadius: 10, border: '1px solid #1E4D7B22',
@@ -203,7 +203,7 @@ export default function Settings() {
                     <ExternalLink size={14} color="#1E4D7B" />
                   </div>
                 </Link>
-                <Link to="/reports" style={{ textDecoration: 'none' }}>
+                <Link to="/app/reports" style={{ textDecoration: 'none' }}>
                   <div style={{
                     display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px',
                     background: '#e8f5e9', borderRadius: 10, border: '1px solid #4CAF5022',

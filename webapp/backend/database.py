@@ -186,6 +186,45 @@ async def ensure_wearable_tables() -> None:
     )
 
 
+async def ensure_user_approval_columns() -> None:
+    """Add self-registration approval columns to Users if not already present."""
+    cols = await fetchall("SHOW COLUMNS FROM Users")
+    names = {c["Field"] for c in cols}
+    if "approval_status" not in names:
+        await execute(
+            "ALTER TABLE Users ADD COLUMN approval_status "
+            "ENUM('pending','approved','rejected') NOT NULL DEFAULT 'approved' "
+            "AFTER is_active"
+        )
+    if "approved_by" not in names:
+        await execute(
+            "ALTER TABLE Users ADD COLUMN approved_by INT NULL AFTER approval_status"
+        )
+    if "approved_at" not in names:
+        await execute(
+            "ALTER TABLE Users ADD COLUMN approved_at DATETIME NULL AFTER approved_by"
+        )
+
+
+async def ensure_contact_messages_table() -> None:
+    """Create ContactMessages if it does not exist (public Contact Us form submissions)."""
+    await execute(
+        """
+        CREATE TABLE IF NOT EXISTS ContactMessages (
+            message_id  INT AUTO_INCREMENT PRIMARY KEY,
+            name        VARCHAR(100) NOT NULL,
+            email       VARCHAR(100) NOT NULL,
+            phone       VARCHAR(20) NULL,
+            subject     VARCHAR(200) NULL,
+            message     TEXT NOT NULL,
+            is_read     TINYINT(1) NOT NULL DEFAULT 0,
+            created_at  DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+            INDEX idx_cm_created (created_at)
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4
+        """
+    )
+
+
 async def ensure_password_reset_table() -> None:
     """Create PasswordResetTokens table if it does not exist."""
     await execute(
