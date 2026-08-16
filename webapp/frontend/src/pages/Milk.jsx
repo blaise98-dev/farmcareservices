@@ -80,7 +80,7 @@ export default function Milk() {
 
         <ChartCard title="🏆 Top 5 Producers" sub="7-day cumulative milk output">
           <HBarChart
-            data={top.slice(0, 5).map((c, i) => ({ name: c.cow_name, value: Number(Number(c.total_weekly_milk).toFixed(1)) }))}
+            data={top.slice(0, 5).map(c => ({ name: c.cow_name, value: Number(Number(c.total_weekly_milk).toFixed(1)) }))}
             unit=" L" height={240}
             colorFn={(_, i) => ['#FFD700','#C0C0C0','#CD7F32','#4CAF50','#00BCD4'][i]}
           />

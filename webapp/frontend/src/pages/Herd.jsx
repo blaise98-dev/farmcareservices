@@ -15,7 +15,6 @@ const HEALTH_COLOR = {
   Healthy: '#4CAF50', Warning: '#FF9800', Critical: '#F44336', 'Under Treatment': '#9C27B0',
 };
 const BREED_COLOR = { Friesian: '#1E4D7B', Ayrshire: '#00BCD4', Jersey: '#FF9800' };
-const SEX_COLOR   = { Female: '#E91E63', Male: '#1565c0' };
 
 const COW_STAGES = [
   { value: 'Calf',          label: 'Calf',            sex: 'Both',   ageRange: 'Birth to ~6 months',            emoji: '🐣', color: '#00BCD4' },
@@ -261,7 +260,7 @@ function ChartPanel({ cows, counts, activeCharts, setActiveCharts }) {
       <ResponsiveContainer width="100%" height={200}>
         <PieChart>
           <Pie data={healthData} cx="50%" cy="50%" outerRadius={75} innerRadius={38} dataKey="value"
-            label={({ name, value }) => `${value}`} labelLine={false}>
+            label={({ value }) => `${value}`} labelLine={false}>
             {healthData.map((d, i) => <Cell key={i} fill={d.fill} />)}
           </Pie>
           <Tooltip formatter={(v, n) => [v + ' cows', n]} />
@@ -457,7 +456,7 @@ export default function Herd() {
     setShowModal(true); setEditCow(null); setFormErr('');
     setForm(EMPTY_FORM); setLocation(EMPTY_LOCATION);
     setRfidLoading(true);
-    try { const { rfid_tag } = await getNextRfid(); setForm(prev => ({ ...prev, rfid_tag })); } catch (_) {}
+    try { const { rfid_tag } = await getNextRfid(); setForm(prev => ({ ...prev, rfid_tag })); } catch { /* leave RFID blank, user can enter manually */ }
     setRfidLoading(false);
   };
 
@@ -503,7 +502,8 @@ export default function Herd() {
     };
 
     if (editCow) {
-      const { rfid_tag, ...updateFields } = payload;
+      const updateFields = { ...payload };
+      delete updateFields.rfid_tag;
       editMut.mutate({ id: editCow.cow_id, body: updateFields });
     } else {
       if (!form.rfid_tag.trim()) { setFormErr('RFID tag is required'); return; }
@@ -719,7 +719,7 @@ export default function Herd() {
                             <Edit2 size={12} /> Edit
                           </button>
                         )}
-                        <Link to={`/herd/${c.cow_id}`}>
+                        <Link to={`/app/herd/${c.cow_id}`}>
                           <button className="btn btn-ghost" style={{ padding: '4px 10px', fontSize: 11 }}>View →</button>
                         </Link>
                       </div>

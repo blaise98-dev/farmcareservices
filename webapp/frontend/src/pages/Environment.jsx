@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRealtime } from '../context/RealtimeContext';
 import { getEnvHistory, getEnvDailyAvg, getCowTemperatures, addEnvReading, getWaterQualityLatest, getWaterQualityHistory } from '../lib/api';
 import { usePermissions } from '../hooks/usePermissions';
-import { LineChart as ELine, BarChart as EBar, GaugeChart, ChartCard } from '../components/ChartKit';
+import { LineChart as ELine, ChartCard } from '../components/ChartKit';
 import { Thermometer, Wind, Droplets, Activity, Plus, X, Waves } from 'lucide-react';
 import { format } from 'date-fns';
 

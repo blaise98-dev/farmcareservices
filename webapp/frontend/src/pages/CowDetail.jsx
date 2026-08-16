@@ -5,7 +5,7 @@ import { getCow, updateCow, getCowRepro, getCowTreatments } from '../lib/api';
 import { usePermissions } from '../hooks/usePermissions';
 import { useRealtime } from '../context/RealtimeContext';
 import RoleGuard from '../components/RoleGuard';
-import { ArrowLeft, Thermometer, Droplets, Activity, Save, Lock, HeartPulse, MapPin, Waves } from 'lucide-react';
+import { ArrowLeft, Activity, Save, Lock, HeartPulse, MapPin, Waves } from 'lucide-react';
 import { LineChart as ELine, BarChart as EBar, ChartCard } from '../components/ChartKit';
 import { format } from 'date-fns';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
@@ -24,7 +24,6 @@ L.Icon.Default.mergeOptions({
 const HEALTH_COLOR = {
   Healthy: '#4CAF50', Warning: '#FF9800', Critical: '#F44336', 'Under Treatment': '#9C27B0'
 };
-const TEMP_COLOR = { Normal: '#4CAF50', Elevated: '#FF9800', High: '#FF5722', Fever: '#F44336' };
 const HEALTH_STATUSES = ['Healthy', 'Warning', 'Critical', 'Under Treatment'];
 
 function FieldRow({ label, val, locked }) {

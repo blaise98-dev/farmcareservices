@@ -196,8 +196,7 @@ export function StackedAreaChart({ data = [], xKey = 'date', series = [], height
 // ─────────────────────────────────────────────────────────────────────────────
 //  6. GAUGE — single KPI with arc visual
 // ─────────────────────────────────────────────────────────────────────────────
-export function GaugeChart({ value = 0, max = 100, label = '', unit = '', color = '#1E4D7B', height = 180, warn, warnThreshold }) {
-  const pct = Math.min(100, Math.max(0, (value / max) * 100));
+export function GaugeChart({ value = 0, max = 100, label = '', unit = '', color = '#1E4D7B', height = 180, warn }) {
   const col = warn ? '#F44336' : color;
   const option = {
     series: [{
