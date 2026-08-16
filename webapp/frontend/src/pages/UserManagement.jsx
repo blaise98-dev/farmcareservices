@@ -223,7 +223,7 @@ export default function UserManagement() {
     e.preventDefault();
     setCreateErr('');
     if (!createForm.username.trim()) { setCreateErr('Username is required'); return; }
-    if (createForm.password.length < 6) { setCreateErr('Password must be at least 6 characters'); return; }
+    if (createForm.password.length < 10) { setCreateErr('Password must be at least 10 characters'); return; }
     if (!createForm.full_name.trim()) { setCreateErr('Full name is required'); return; }
     createMut.mutate({
       ...createForm,
@@ -516,7 +516,7 @@ export default function UserManagement() {
 
               {/* Password */}
               <div>
-                <label style={LABEL_STYLE}>Password * (min 6 characters)</label>
+                <label style={LABEL_STYLE}>Password * (min 10 characters)</label>
                 <input type="password" name="password" value={createForm.password} onChange={handleCreateChange}
                   placeholder="Secure password" style={INPUT_STYLE}
                   onFocus={e => e.target.style.borderColor = '#4CAF50'}
@@ -713,7 +713,7 @@ export default function UserManagement() {
             </div>
             <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 14 }}>
               <div>
-                <label style={LABEL_STYLE}>New Password (min 6 characters)</label>
+                <label style={LABEL_STYLE}>New Password (min 10 characters)</label>
                 <input type="password" value={resetPw} onChange={e => setResetPw(e.target.value)}
                   placeholder="Enter new password…"
                   style={{ width: '100%', padding: '9px 12px', borderRadius: 8, border: '2px solid var(--border)', fontSize: 13, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }}
@@ -727,7 +727,7 @@ export default function UserManagement() {
               )}
               <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
                 <button onClick={() => setResetTarget(null)} className="btn" style={{ padding: '9px 18px', fontSize: 13 }}>Cancel</button>
-                <button disabled={resetPw.length < 6 || resetMut.isPending} className="btn btn-primary"
+                <button disabled={resetPw.length < 10 || resetMut.isPending} className="btn btn-primary"
                   onClick={() => resetMut.mutate({ id: resetTarget.user_id, pw: resetPw })}
                   style={{ padding: '9px 22px', fontSize: 13, background: '#E65100', border: 'none' }}>
                   {resetMut.isPending ? 'Resetting…' : 'Reset Password'}

@@ -116,6 +116,7 @@ sudo -u "${APP_USER}" "${BACKEND_DIR}/venv/bin/pip" install --quiet -r "${BACKEN
 
 # Write backend .env
 sudo -u "${APP_USER}" tee "${BACKEND_DIR}/.env" > /dev/null << EOF
+ENV=production
 DB_HOST=localhost
 DB_PORT=3306
 DB_USER=${DB_USER}
