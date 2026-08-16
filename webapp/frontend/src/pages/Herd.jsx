@@ -719,7 +719,7 @@ export default function Herd() {
                             <Edit2 size={12} /> Edit
                           </button>
                         )}
-                        <Link to={`/herd/${c.cow_id}`}>
+                        <Link to={`/app/herd/${c.cow_id}`}>
                           <button className="btn btn-ghost" style={{ padding: '4px 10px', fontSize: 11 }}>View →</button>
                         </Link>
                       </div>

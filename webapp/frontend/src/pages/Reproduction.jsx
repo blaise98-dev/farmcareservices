@@ -306,7 +306,7 @@ export default function Reproduction() {
             <tbody>
               {records.map(r => (
                 <tr key={r.repro_id}>
-                  <td><Link to={`/herd/${r.cow_id}`} style={{ fontWeight: 700, color: '#1E4D7B', textDecoration: 'none' }}>{r.cow_name}</Link></td>
+                  <td><Link to={`/app/herd/${r.cow_id}`} style={{ fontWeight: 700, color: '#1E4D7B', textDecoration: 'none' }}>{r.cow_name}</Link></td>
                   <td>{fmt(r.calving_date)}</td>
                   <td>{r.days_in_lactation != null ? <span style={{ fontWeight: 700, color: '#00BCD4' }}>{r.days_in_lactation}d</span> : '—'}</td>
                   <td>{fmt(r.insemination_date)}<br /><span style={{ fontSize: 11, color: '#aaa' }}>{r.insemination_method}</span></td>
@@ -338,7 +338,7 @@ export default function Reproduction() {
             <tbody>
               {treatments.map(t => (
                 <tr key={t.treatment_id}>
-                  <td><Link to={`/herd/${t.cow_id}`} style={{ fontWeight: 700, color: '#1E4D7B', textDecoration: 'none' }}>{t.cow_name}</Link></td>
+                  <td><Link to={`/app/herd/${t.cow_id}`} style={{ fontWeight: 700, color: '#1E4D7B', textDecoration: 'none' }}>{t.cow_name}</Link></td>
                   <td>{fmt(t.treatment_date)}</td>
                   <td style={{ fontWeight: 600 }}>{t.diagnosis}</td>
                   <td style={{ color: '#9C27B0', fontWeight: 600 }}>{t.drug_name}</td>
@@ -389,7 +389,7 @@ export default function Reproduction() {
               <tbody>
                 {vaccinations.map(v => (
                   <tr key={v.vax_id}>
-                    <td><Link to={`/herd/${v.cow_id}`} style={{ fontWeight: 700, color: '#1E4D7B', textDecoration: 'none' }}>{v.cow_name}</Link></td>
+                    <td><Link to={`/app/herd/${v.cow_id}`} style={{ fontWeight: 700, color: '#1E4D7B', textDecoration: 'none' }}>{v.cow_name}</Link></td>
                     <td style={{ fontWeight: 600 }}>{v.vaccine_name}</td>
                     <td>{fmt(v.vaccination_date)}</td>
                     <td style={{ color: '#FF9800', fontWeight: 600 }}>{fmt(v.next_due_date)}</td>
@@ -441,7 +441,7 @@ export default function Reproduction() {
               <tbody>
                 {bcsRecords.map(b => (
                   <tr key={b.bcs_id}>
-                    <td><Link to={`/herd/${b.cow_id}`} style={{ fontWeight: 700, color: '#1E4D7B', textDecoration: 'none' }}>{b.cow_name}</Link></td>
+                    <td><Link to={`/app/herd/${b.cow_id}`} style={{ fontWeight: 700, color: '#1E4D7B', textDecoration: 'none' }}>{b.cow_name}</Link></td>
                     <td><span className={`badge badge-${(b.health_status || '').toLowerCase().replace(' ', '')}`}>{b.health_status}</span></td>
                     <td style={{ fontWeight: 800, fontSize: 18, color: b.score < 2.5 ? '#F44336' : b.score < 3 ? '#FF9800' : b.score <= 3.75 ? '#4CAF50' : '#FF9800' }}>{Number(b.score).toFixed(1)}</td>
                     <td style={{ minWidth: 140 }}><BCSBar score={b.score} /></td>
