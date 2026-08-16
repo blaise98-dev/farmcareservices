@@ -14,6 +14,10 @@ export function useWebSocket() {
   const [lastEvent, setLastEvent] = useState(null);
   const listeners = useRef({});
   const pingTimer = useRef(null);
+  // Reconnect goes through a ref rather than closing over `connect` directly,
+  // so the reconnect timer always calls the current function without a
+  // self-referencing closure inside its own initializer.
+  const connectRef = useRef(null);
 
   const connect = useCallback(() => {
     if (ws.current?.readyState === WebSocket.OPEN) return;
@@ -37,18 +41,22 @@ export function useWebSocket() {
         handlers.forEach(fn => fn(msg.data));
         // Also call wildcard listeners
         (listeners.current['*'] || []).forEach(fn => fn(msg));
-      } catch {}
+      } catch { /* ignore malformed message */ }
     };
 
     socket.onclose = () => {
       setConnected(false);
       clearInterval(pingTimer.current);
       // Reconnect after 3s
-      setTimeout(connect, 3000);
+      setTimeout(() => connectRef.current?.(), 3000);
     };
 
     socket.onerror = () => socket.close();
   }, []);
+
+  useEffect(() => {
+    connectRef.current = connect;
+  }, [connect]);
 
   useEffect(() => {
     connect();

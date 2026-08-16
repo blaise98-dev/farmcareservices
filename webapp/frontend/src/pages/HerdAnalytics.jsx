@@ -3,7 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { getHerdAnalytics } from '../lib/api';
 import {
   DonutChart, BarChart as EBar, HBarChart, RadarChart as ERadar,
-  TreemapChart, HeatmapChart, ScatterChart as EScatter, ChartCard,
+  TreemapChart, HeatmapChart, ChartCard,
   HEALTH_COLORS, BREED_COLORS, SEX_COLORS, STAGE_COLORS, PALETTE,
 } from '../components/ChartKit';
 import { BarChart2, Filter, RefreshCw } from 'lucide-react';
@@ -55,16 +55,6 @@ function KpiCard({ label, value, sub, color = '#1E4D7B' }) {
     </div>
   );
 }
-
-function SectionHeader({ title, sub }) {
-  return (
-    <div style={{ marginBottom: 12 }}>
-      <h2 style={{ fontSize: 15, fontWeight: 800, margin: 0 }}>{title}</h2>
-      {sub && <p style={{ fontSize: 11, color: 'var(--text-secondary)', margin: '3px 0 0' }}>{sub}</p>}
-    </div>
-  );
-}
-
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 
@@ -182,18 +172,6 @@ export default function HerdAnalytics() {
       .sort((a, b) => b.milk_30d - a.milk_30d).slice(0, 10)
       .map(c => ({ name: c.cow_name, liters: Number(c.milk_30d).toFixed(0), stage: c.cow_stage })),
     [cows]);
-
-  // Health × Stage heatmap data
-  const healthStage = useMemo(() => {
-    const stages = [...new Set(cows.map(c => c.cow_stage || 'Unknown'))];
-    return stages.map(stage => {
-      const obj = { name: stage };
-      ['Healthy', 'Warning', 'Critical', 'Under Treatment'].forEach(h => {
-        obj[h] = cows.filter(c => (c.cow_stage || 'Unknown') === stage && c.health_status === h).length;
-      });
-      return obj;
-    });
-  }, [cows]);
 
   // Radar: stage diversity
   const radarData = useMemo(() =>

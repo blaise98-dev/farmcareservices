@@ -37,7 +37,9 @@ export default function ResetPassword() {
   const navigate = useNavigate();
   const token = searchParams.get('token') || '';
 
-  const [validating, setValidating] = useState(true);
+  // No token means nothing to validate — start already resolved instead of
+  // setting state synchronously inside the effect below.
+  const [validating, setValidating] = useState(!!token);
   const [tokenValid, setTokenValid] = useState(false);
   const [password, setPassword] = useState('');
   const [confirm, setConfirm] = useState('');
@@ -47,11 +49,7 @@ export default function ResetPassword() {
   const [done, setDone] = useState(false);
 
   useEffect(() => {
-    if (!token) {
-      setValidating(false);
-      setTokenValid(false);
-      return;
-    }
+    if (!token) return;
     validateResetToken(token)
       .then(res => setTokenValid(res.valid))
       .catch(() => setTokenValid(false))
