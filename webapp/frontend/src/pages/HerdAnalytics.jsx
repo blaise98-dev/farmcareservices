@@ -6,7 +6,10 @@ import {
   TreemapChart, HeatmapChart, ChartCard,
   HEALTH_COLORS, BREED_COLORS, SEX_COLORS, STAGE_COLORS, PALETTE,
 } from '../components/ChartKit';
-import { BarChart2, Filter, RefreshCw } from 'lucide-react';
+import {
+  BarChart2, Filter, RefreshCw, Beef, Users, Dna, Pill, CalendarDays,
+  HeartPulse, Scale, Radar, Microscope, Map, MapPin, Droplets, ClipboardList,
+} from 'lucide-react';
 
 // Colour aliases imported from ChartKit: STAGE_COLORS, BREED_COLORS, HEALTH_COLORS, SEX_COLORS, PALETTE
 
@@ -281,19 +284,19 @@ export default function HerdAnalytics() {
 
       {/* Row 1: Donut triptych */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 20 }}>
-        <ChartCard title="🐄 Category Distribution">
+        <ChartCard title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Beef size={14} /> Category Distribution</span>}>
           <DonutChart data={byStage.map(d => ({ ...d, color: STAGE_COLORS[d.name] }))} centerValue={total} centerLabel="cows" height={240} />
         </ChartCard>
-        <ChartCard title="♀♂ Sex Distribution">
+        <ChartCard title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Users size={14} /> Sex Distribution</span>}>
           <DonutChart data={bySex.map(d => ({ ...d, color: SEX_COLORS[d.name] }))} height={240} />
         </ChartCard>
-        <ChartCard title="🧬 Breed Distribution">
+        <ChartCard title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Dna size={14} /> Breed Distribution</span>}>
           <DonutChart data={byBreed.map(d => ({ ...d, color: BREED_COLORS[d.name] }))} height={240} />
         </ChartCard>
       </div>
 
       {/* Row 2: Stage × Sex grouped bar */}
-      <ChartCard title="📊 Category × Sex Breakdown" sub="Number of animals per stage split by sex">
+      <ChartCard title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><BarChart2 size={14} /> Category × Sex Breakdown</span>} sub="Number of animals per stage split by sex">
         <EBar data={stageSexMatrix} xKey="name"
           series={[{ key: 'Female', name: 'Female', color: '#E91E63' }, { key: 'Male', name: 'Male', color: '#1565c0' }]}
           stacked height={260} />
@@ -301,10 +304,10 @@ export default function HerdAnalytics() {
 
       {/* Row 3: Health donut + Age bar */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
-        <ChartCard title="💊 Health Status Distribution">
+        <ChartCard title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Pill size={14} /> Health Status Distribution</span>}>
           <DonutChart data={byHealth.map(d => ({ ...d, color: HEALTH_COLORS[d.name] }))} height={240} />
         </ChartCard>
-        <ChartCard title="📅 Age Distribution" sub="Bucketed by months/years">
+        <ChartCard title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><CalendarDays size={14} /> Age Distribution</span>} sub="Bucketed by months/years">
           <EBar data={byAgeGroup} xKey="name" series={[{ key: 'value', name: 'Cows', color: '#1E4D7B' }]} showLabel height={240} />
         </ChartCard>
       </div>
@@ -319,7 +322,7 @@ export default function HerdAnalytics() {
           });
         });
         return (
-          <ChartCard title="🏥 Health × Stage Heatmap" sub="Number of cows at each health/stage intersection">
+          <ChartCard title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><HeartPulse size={14} /> Health × Stage Heatmap</span>} sub="Number of cows at each health/stage intersection">
             <HeatmapChart xData={['Healthy','Warning','Critical','Under Treatment']} yData={stages} data={heatData} height={Math.max(200, stages.length * 40)} />
           </ChartCard>
         );
@@ -327,45 +330,45 @@ export default function HerdAnalytics() {
 
       {/* Row 5: Breed × Sex + Weight */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
-        <ChartCard title="🧬 Breed × Sex" sub="Sex distribution within each breed">
+        <ChartCard title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Dna size={14} /> Breed × Sex</span>} sub="Sex distribution within each breed">
           <EBar data={breedSex} xKey="name"
             series={[{ key: 'Female', name: 'Female', color: '#E91E63' }, { key: 'Male', name: 'Male', color: '#1565c0' }]}
             height={240} />
         </ChartCard>
-        <ChartCard title="⚖️ Weight Distribution" sub="Cow weight ranges across herd">
+        <ChartCard title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Scale size={14} /> Weight Distribution</span>} sub="Cow weight ranges across herd">
           <EBar data={byWeight} xKey="name" series={[{ key: 'value', name: 'Cows', color: '#4CAF50' }]} showLabel height={240} />
         </ChartCard>
       </div>
 
       {/* Row 6: Radar + Breed concentration */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
-        <ChartCard title="🕸 Stage Diversity Radar" sub="Coverage across top 8 stages">
+        <ChartCard title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Radar size={14} /> Stage Diversity Radar</span>} sub="Coverage across top 8 stages">
           <ERadar
             indicators={radarData.map(d => ({ name: d.subject, max: Math.max(...radarData.map(r => r.count), 1) }))}
             series={[{ name: 'Count', values: radarData.map(d => d.count), color: '#1E4D7B' }]}
             height={280}
           />
         </ChartCard>
-        <ChartCard title="🔬 Breed Concentration" sub="Cross-breed concentration distribution">
+        <ChartCard title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Microscope size={14} /> Breed Concentration</span>} sub="Cross-breed concentration distribution">
           <EBar data={byConcentration} xKey="name" series={[{ key: 'value', name: 'Cows', color: '#9C27B0' }]} showLabel height={280} />
         </ChartCard>
       </div>
 
       {/* Row 7: Treemap */}
-      <ChartCard title="🗺 Category Treemap" sub="Size proportional to number of animals per stage">
+      <ChartCard title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Map size={14} /> Category Treemap</span>} sub="Size proportional to number of animals per stage">
         <TreemapChart data={byStage.map((d, i) => ({ name: d.name, value: d.value, color: STAGE_COLORS[d.name] || PALETTE[i % PALETTE.length] }))} height={280} />
       </ChartCard>
 
       {/* Row 8: Province + Top milk */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
         {byProvince.length > 0
-          ? <ChartCard title="📍 Distribution by Province" sub="Registered cows per province">
+          ? <ChartCard title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><MapPin size={14} /> Distribution by Province</span>} sub="Registered cows per province">
               <HBarChart data={byProvince} unit=" cows" color="#00BCD4" height={Math.max(180, byProvince.length * 42)} />
             </ChartCard>
           : <div className="card"><p style={{ color: 'var(--text-secondary)', fontSize: 13, padding: 16 }}>No location data available</p></div>
         }
         {topMilk.length > 0
-          ? <ChartCard title="🥛 Top Milk Producers (30d)" sub="Total litres produced — last 30 days">
+          ? <ChartCard title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Droplets size={14} /> Top Milk Producers (30d)</span>} sub="Total litres produced — last 30 days">
               <HBarChart data={topMilk.map(r => ({ name: r.name, value: Number(r.liters) }))} unit=" L" color="#2196F3" height={Math.max(180, topMilk.length * 42)} />
             </ChartCard>
           : <div className="card"><p style={{ color: 'var(--text-secondary)', fontSize: 13, padding: 16 }}>No milk data in current filter</p></div>
@@ -375,7 +378,7 @@ export default function HerdAnalytics() {
       {/* Detail table */}
       <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
         <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 10 }}>
-          <h2 style={{ fontSize: 15, fontWeight: 700, flex: 1 }}>📋 Cow Detail Table ({total})</h2>
+          <h2 style={{ fontSize: 15, fontWeight: 700, flex: 1, display: 'flex', alignItems: 'center', gap: 8 }}><ClipboardList size={16} /> Cow Detail Table ({total})</h2>
         </div>
         <div style={{ overflowX: 'auto', maxHeight: 360, overflowY: 'auto' }}>
           <table className="data-table">
