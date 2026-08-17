@@ -43,7 +43,7 @@ function AlertList({ alerts }) {
   return (
     <div className="card" style={{ maxHeight: 340, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
       <div className="section-header">
-        <h2>🚨 Active Alerts</h2>
+        <h2 style={{ display: 'flex', alignItems: 'center', gap: 8 }}><AlertTriangle size={18} color="#F44336" /> Active Alerts</h2>
         {alerts.length > 0 && <span className="live-dot red" />}
       </div>
       <div style={{ overflowY: 'auto', flex: 1 }}>

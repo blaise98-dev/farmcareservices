@@ -14,10 +14,10 @@ const ROLE_COLOR    = { Admin: '#FFD700', Farmer: '#81C784', Veterinarian: '#CE9
 const ROLE_BG       = { Admin: 'rgba(255,215,0,.15)', Farmer: 'rgba(129,199,132,.15)', Veterinarian: 'rgba(206,147,216,.15)', Technician: 'rgba(255,204,128,.15)' };
 
 const ROLE_LABEL = {
-  Admin:        '🛡 System Administrator',
-  Farmer:       '🌾 Farm Operator',
-  Veterinarian: '🩺 Veterinarian',
-  Technician:   '⚙️ IoT Technician',
+  Admin:        'System Administrator',
+  Farmer:       'Farm Operator',
+  Veterinarian: 'Veterinarian',
+  Technician:   'IoT Technician',
 };
 
 /**
