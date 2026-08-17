@@ -8,7 +8,7 @@ import {
 } from '../lib/api';
 import {
   Beef, Droplets, Bell, Users, Cpu,
-  AlertTriangle, Activity, FileText, Search, Download, Printer,
+  AlertTriangle, Activity, FileText, Search, Download, Printer, BarChart2,
 } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -100,10 +100,10 @@ export default function AdminReports() {
   });
 
   const TABS = [
-    { id: 'summary', label: '📊 Platform Summary' },
-    { id: 'users',   label: '👥 User Activity' },
-    { id: 'alerts',  label: '🚨 Alert History' },
-    { id: 'logs',    label: '⚙️ Activity Logs' },
+    { id: 'summary', label: 'Platform Summary', icon: BarChart2 },
+    { id: 'users',   label: 'User Activity', icon: Users },
+    { id: 'alerts',  label: 'Alert History', icon: AlertTriangle },
+    { id: 'logs',    label: 'Activity Logs', icon: FileText },
   ];
 
   // Platform summary cards
@@ -188,13 +188,13 @@ export default function AdminReports() {
           <button key={t.id} onClick={() => setActiveTab(t.id)}
             className="btn"
             style={{
-              padding: '8px 18px', fontSize: 13,
+              padding: '8px 18px', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6,
               background: activeTab === t.id ? '#1E4D7B' : 'var(--bg)',
               color: activeTab === t.id ? '#fff' : 'var(--text-secondary)',
               border: '1px solid var(--border)',
               fontWeight: activeTab === t.id ? 700 : 400,
             }}>
-            {t.label}
+            <t.icon size={14} /> {t.label}
           </button>
         ))}
       </div>
