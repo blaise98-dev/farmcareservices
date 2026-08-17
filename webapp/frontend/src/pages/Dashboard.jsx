@@ -14,6 +14,7 @@ import {
 import {
   AlertTriangle, CheckCircle, Thermometer, Droplets, Beef,
   Activity, Users, Cpu, HeartPulse, TrendingUp, Wind,
+  Radio, BarChart2, Leaf, Stethoscope, Bot, ShieldCheck, Settings,
 } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -73,13 +74,14 @@ function AlertList({ alerts }) {
   );
 }
 
-function MilkChart({ milkTrend }) {
+function MilkChart({ milkTrend, isLoading, isError }) {
   const data = milkTrend.map(r => ({
     date:   r.milk_date ? format(new Date(r.milk_date), 'MMM d') : '',
     liters: Number(r.total_liters).toFixed(1),
   }));
   return (
-    <ChartCard title="🥛 Milk Production — 7 Days" action={<span className="live-dot teal" />}>
+    <ChartCard title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Droplets size={14} /> Milk Production — 7 Days</span>} action={<span className="live-dot teal" />}
+      isLoading={isLoading} isError={isError} height={220}>
       <ELine data={data} xKey="date"
         series={[{ key: 'liters', name: 'Milk (L)', color: '#00BCD4' }]}
         area smooth height={220} unit=" L" />
@@ -87,14 +89,15 @@ function MilkChart({ milkTrend }) {
   );
 }
 
-function EnvChart({ envTrend }) {
+function EnvChart({ envTrend, isLoading, isError }) {
   const data = envTrend.map(r => ({
     time:     `${r.r_date ? format(new Date(r.r_date), 'MMM d') : ''} ${r.r_hour}:00`,
     temp:     Number(r.avg_temp).toFixed(1),
     humidity: Number(r.avg_hum).toFixed(1),
   }));
   return (
-    <ChartCard title="🌡 Environment — 24 Hours" action={<span className="live-dot" />}>
+    <ChartCard title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Thermometer size={14} /> Environment — 24 Hours</span>} action={<span className="live-dot" />}
+      isLoading={isLoading} isError={isError} height={220}>
       <ELine data={data} xKey="time"
         series={[{ key: 'temp', name: 'Temp °C', color: '#FF9800' }, { key: 'humidity', name: 'Humidity %', color: '#00BCD4' }]}
         smooth height={220} />
@@ -120,7 +123,7 @@ function LiveSensors({ liveEnv }) {
   return (
     <div className="card">
       <div className="section-header">
-        <h2>📡 Live Sensor Readings</h2>
+        <h2 style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Radio size={16} /> Live Sensor Readings</h2>
         <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 12, color: 'var(--text-secondary)' }}>
           <span className="live-dot" /> Real-time IoT feed
         </div>
@@ -159,7 +162,7 @@ function LiveSensors({ liveEnv }) {
 function SysLogsTable({ sysLogs }) {
   return (
     <div className="card" style={{ maxHeight: 340, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-      <div className="section-header"><h2>⚙️ System Control Log</h2></div>
+      <div className="section-header"><h2 style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Settings size={16} /> System Control Log</h2></div>
       <div style={{ overflowY: 'auto', flex: 1 }}>
         <table className="data-table">
           <thead>
@@ -201,13 +204,13 @@ function HerdCompositionCharts({ counts }) {
 
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 20 }}>
-      <ChartCard title="🐄 Category Distribution">
+      <ChartCard title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Beef size={14} /> Category Distribution</span>}>
         <DonutChart data={byCat.map(d => ({ ...d, color: STAGE_COLORS[d.name] || '#999' }))} height={200} />
       </ChartCard>
-      <ChartCard title="♀♂ Sex Distribution">
+      <ChartCard title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Users size={14} /> Sex Distribution</span>}>
         <DonutChart data={bySex.map(d => ({ ...d, color: SEX_COLORS[d.name] }))} height={200} />
       </ChartCard>
-      <ChartCard title="📊 Category × Sex">
+      <ChartCard title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><BarChart2 size={14} /> Category × Sex</span>}>
         <EBar data={stageGender} xKey="name"
           series={[{ key: 'Female', name: 'Female', color: '#E91E63' }, { key: 'Male', name: 'Male', color: '#1565c0' }]}
           stacked height={200} />
@@ -220,7 +223,7 @@ function HerdCompositionCharts({ counts }) {
 //  Role-specific dashboard sections
 // ─────────────────────────────────────────────────────────────────────────
 
-function FarmerDashboard({ summary, alerts, milkTrend, envTrend, liveEnv, alertsCount }) {
+function FarmerDashboard({ summary, alerts, milkTrend, envTrend, liveEnv, alertsCount, milkLoading, milkError, envLoading, envError }) {
   const farm = summary?.farm || {};
   const herd = summary?.herd || {};
   const milkToday = summary?.milk_today || {};
@@ -250,7 +253,7 @@ function FarmerDashboard({ summary, alerts, milkTrend, envTrend, liveEnv, alerts
       {farm.farm_name && (
         <div style={{ background: 'linear-gradient(135deg,#1E4D7B,#2e6fa3)', borderRadius: 12, padding: '14px 20px', color: '#fff', display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 18, fontWeight: 800 }}>🌾 {farm.farm_name}</div>
+            <div style={{ fontSize: 18, fontWeight: 800, display: 'flex', alignItems: 'center', gap: 8 }}><Leaf size={18} /> {farm.farm_name}</div>
             <div style={{ fontSize: 12, opacity: .8, marginTop: 2 }}>{farm.location} · Est. {farm.established_year} · {farm.total_area_hectares} ha</div>
           </div>
         </div>
@@ -261,17 +264,17 @@ function FarmerDashboard({ summary, alerts, milkTrend, envTrend, liveEnv, alerts
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '300px 1fr', gap: 20 }}>
-        <ChartCard title="🐄 Herd Health">
+        <ChartCard title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Beef size={14} /> Herd Health</span>}>
           <DonutChart data={herdPie} centerValue={herdPie.reduce((s,d)=>s+d.value,0)} centerLabel="cows" height={220} />
         </ChartCard>
-        <MilkChart milkTrend={milkTrend} />
+        <MilkChart milkTrend={milkTrend} isLoading={milkLoading} isError={milkError} />
       </div>
 
       <HerdCompositionCharts counts={counts} />
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
         <AlertList alerts={alerts} />
-        <EnvChart envTrend={envTrend} />
+        <EnvChart envTrend={envTrend} isLoading={envLoading} isError={envError} />
       </div>
 
       <LiveSensors liveEnv={liveEnv} />
@@ -285,7 +288,8 @@ function VetDashboard({ summary, alerts }) {
   const { data: healthRisks = [] } = useQuery({ queryKey: ['health-risks'],    queryFn: getHealthRisks });
   const { data: cowTemps = [] }   = useQuery({ queryKey: ['cow-temps'],        queryFn: getCowTemperatures });
   const { data: herdHealth }      = useQuery({ queryKey: ['herd-health-trend'],queryFn: getHerdHealthTrend });
-  const { data: envTrend = [] }   = useQuery({ queryKey: ['env-trend'],        queryFn: getEnvTrend });
+  const { data: envTrend = [], isLoading: envLoading, isError: envError }
+    = useQuery({ queryKey: ['env-trend'], queryFn: getEnvTrend });
   const { data: cowActivity = [] } = useQuery({ queryKey: ['cow-activity'],    queryFn: getCowActivity, refetchInterval: 30000 });
 
   const feverCows = cowTemps.filter(c => c.body_temp_celsius != null && Number(c.body_temp_celsius) > 39.5);
@@ -320,7 +324,7 @@ function VetDashboard({ summary, alerts }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
       <div style={{ background: 'linear-gradient(135deg,#9C27B0,#ba68c8)', borderRadius: 12, padding: '14px 20px', color: '#fff' }}>
-        <div style={{ fontSize: 18, fontWeight: 800 }}>🩺 Veterinarian Dashboard</div>
+        <div style={{ fontSize: 18, fontWeight: 800, display: 'flex', alignItems: 'center', gap: 8 }}><Stethoscope size={18} /> Veterinarian Dashboard</div>
         <div style={{ fontSize: 12, opacity: .8, marginTop: 4 }}>Herd health monitoring — body temps, treatments, health risks</div>
       </div>
 
@@ -330,7 +334,7 @@ function VetDashboard({ summary, alerts }) {
 
       {/* Body temperature bar chart */}
       <div className="card">
-        <div className="section-header"><h2>🌡 Body Temperatures per Cow</h2><span className="live-dot" /></div>
+        <div className="section-header"><h2 style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Thermometer size={16} /> Body Temperatures per Cow</h2><span className="live-dot" /></div>
         {tempChart.length === 0
           ? <div className="empty-state"><Thermometer size={36} /><span>No temperature readings</span></div>
           : <HBarChart
@@ -342,7 +346,7 @@ function VetDashboard({ summary, alerts }) {
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 20 }}>
-        <ChartCard title="❤️ Herd Health Status" sub="Active cows by status">
+        <ChartCard title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><HeartPulse size={14} /> Herd Health Status</span>} sub="Active cows by status">
           {!herdHealth?.by_health?.length
             ? <div className="empty-state"><CheckCircle size={36} /><span>No health data</span></div>
             : <DonutChart
@@ -352,7 +356,7 @@ function VetDashboard({ summary, alerts }) {
           }
         </ChartCard>
 
-        <ChartCard title="🤖 AI Health Risk %" sub="Alert ≥85% · Warning ≥70%">
+        <ChartCard title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Bot size={14} /> AI Health Risk %</span>} sub="Alert ≥85% · Warning ≥70%">
           {riskChart.length === 0
             ? <div className="empty-state"><CheckCircle size={36} /><span>No high-risk predictions</span></div>
             : <HBarChart
@@ -366,7 +370,7 @@ function VetDashboard({ summary, alerts }) {
         {/* Health alerts */}
         <div className="card" style={{ maxHeight: 280, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
           <div className="section-header">
-            <h2>❤️ Health & Temp Alerts</h2>
+            <h2 style={{ display: 'flex', alignItems: 'center', gap: 8 }}><HeartPulse size={16} /> Health & Temp Alerts</h2>
             {healthAlerts.length > 0 && <span className="live-dot red" />}
           </div>
           <div style={{ overflowY: 'auto', flex: 1 }}>
@@ -388,12 +392,12 @@ function VetDashboard({ summary, alerts }) {
         </div>
       </div>
 
-      <EnvChart envTrend={envTrend} />
+      <EnvChart envTrend={envTrend} isLoading={envLoading} isError={envError} />
 
       {/* Activity sensor per cow */}
       {cowActivity.length > 0 && (
         <div className="card">
-          <div className="section-header"><h2>🏃 Activity Rate per Cow</h2><span className="live-dot" style={{ background: '#9C27B0' }} /></div>
+          <div className="section-header"><h2 style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Activity size={16} /> Activity Rate per Cow</h2><span className="live-dot" style={{ background: '#9C27B0' }} /></div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(180px,1fr))', gap: 10 }}>
             {cowActivity.map(c => {
               const actColor = c.activity_level === 'Low' ? '#F44336' : c.activity_level === 'High' ? '#FF9800' : '#4CAF50';
@@ -417,7 +421,7 @@ function VetDashboard({ summary, alerts }) {
   );
 }
 
-function AdminDashboard({ summary, alerts, milkTrend, envTrend, liveEnv, alertsCount, sysLogs }) {
+function AdminDashboard({ summary, alerts, milkTrend, envTrend, liveEnv, alertsCount, sysLogs, milkLoading, milkError, envLoading, envError }) {
   const farm = summary?.farm || {};
   const herd = summary?.herd || {};
   const milkToday = summary?.milk_today || {};
@@ -460,7 +464,7 @@ function AdminDashboard({ summary, alerts, milkTrend, envTrend, liveEnv, alertsC
       {farm.farm_name && (
         <div style={{ background: 'linear-gradient(135deg,#1E4D7B,#2e6fa3)', borderRadius: 12, padding: '14px 20px', color: '#fff', display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 18, fontWeight: 800, letterSpacing: .3 }}>🛡 {farm.farm_name} — Admin Dashboard</div>
+            <div style={{ fontSize: 18, fontWeight: 800, letterSpacing: .3, display: 'flex', alignItems: 'center', gap: 8 }}><ShieldCheck size={18} /> {farm.farm_name} — Admin Dashboard</div>
             <div style={{ fontSize: 12, opacity: .8, marginTop: 2 }}>{farm.location} · Est. {farm.established_year} · {farm.total_area_hectares} ha</div>
           </div>
           {summary?.avg_body_temp && (
@@ -477,17 +481,17 @@ function AdminDashboard({ summary, alerts, milkTrend, envTrend, liveEnv, alertsC
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '280px 1fr 1fr', gap: 20 }}>
-        <ChartCard title="🐄 Herd Health">
+        <ChartCard title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Beef size={14} /> Herd Health</span>}>
           <DonutChart data={herdPie.map(d => ({ name: d.name, value: d.value, color: d.fill }))}
             centerValue={herdPie.reduce((s,d)=>s+d.value,0)} centerLabel="cows" height={200} />
         </ChartCard>
-        <MilkChart milkTrend={milkTrend} />
-        <EnvChart envTrend={envTrend} />
+        <MilkChart milkTrend={milkTrend} isLoading={milkLoading} isError={milkError} />
+        <EnvChart envTrend={envTrend} isLoading={envLoading} isError={envError} />
       </div>
 
       <HerdCompositionCharts counts={counts} />
 
-      <ChartCard title="👥 Users by Role" sub="Active vs inactive accounts">
+      <ChartCard title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Users size={14} /> Users by Role</span>} sub="Active vs inactive accounts">
         <EBar data={roleChart} xKey="role"
           series={[{ key: 'active', name: 'Active', color: '#4CAF50' }, { key: 'inactive', name: 'Inactive', color: '#e0e0e0' }]}
           stacked height={180} />
@@ -503,7 +507,7 @@ function AdminDashboard({ summary, alerts, milkTrend, envTrend, liveEnv, alertsC
   );
 }
 
-function TechnicianDashboard({ liveEnv, sysLogs, envTrend }) {
+function TechnicianDashboard({ liveEnv, sysLogs, envTrend, envLoading, envError }) {
   const { data: economics } = useQuery({ queryKey: ['economics-summary'], queryFn: getEconomicsSummary });
 
   const STATS = [
@@ -516,7 +520,7 @@ function TechnicianDashboard({ liveEnv, sysLogs, envTrend }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
       <div style={{ background: 'linear-gradient(135deg,#E65100,#FF9800)', borderRadius: 12, padding: '14px 20px', color: '#fff' }}>
-        <div style={{ fontSize: 18, fontWeight: 800 }}>⚙️ Technician Dashboard</div>
+        <div style={{ fontSize: 18, fontWeight: 800, display: 'flex', alignItems: 'center', gap: 8 }}><Cpu size={18} /> Technician Dashboard</div>
         <div style={{ fontSize: 12, opacity: .8, marginTop: 4 }}>IoT systems status, environment monitoring, component health</div>
       </div>
 
@@ -524,7 +528,7 @@ function TechnicianDashboard({ liveEnv, sysLogs, envTrend }) {
         {STATS.map(s => <StatCard key={s.label} {...s} />)}
       </div>
 
-      <EnvChart envTrend={envTrend} />
+      <EnvChart envTrend={envTrend} isLoading={envLoading} isError={envError} />
       <LiveSensors liveEnv={liveEnv} />
       <SysLogsTable sysLogs={sysLogs} />
     </div>
@@ -541,13 +545,18 @@ export default function Dashboard() {
 
   const { data: summary }        = useQuery({ queryKey: ['dashboard-summary'], queryFn: getDashboardSummary });
   const { data: alerts = [] }    = useQuery({ queryKey: ['recent-alerts'],    queryFn: getRecentAlerts });
-  const { data: milkTrend = [] } = useQuery({ queryKey: ['milk-trend'],       queryFn: getMilkTrend });
-  const { data: envTrend = [] }  = useQuery({ queryKey: ['env-trend'],        queryFn: getEnvTrend });
+  const { data: milkTrend = [], isLoading: milkLoading, isError: milkError }
+    = useQuery({ queryKey: ['milk-trend'], queryFn: getMilkTrend });
+  const { data: envTrend = [], isLoading: envLoading, isError: envError }
+    = useQuery({ queryKey: ['env-trend'], queryFn: getEnvTrend });
   const { data: sysLogs = [] }   = useQuery({ queryKey: ['system-logs'],      queryFn: getSystemLogs });
 
   const liveEnv = env || summary?.environment || {};
 
-  const shared = { summary, alerts, milkTrend, envTrend, liveEnv, alertsCount, sysLogs };
+  const shared = {
+    summary, alerts, milkTrend, envTrend, liveEnv, alertsCount, sysLogs,
+    milkLoading, milkError, envLoading, envError,
+  };
 
   if (p.isFarmer)     return <FarmerDashboard {...shared} />;
   if (p.isVet)        return <VetDashboard {...shared} />;
