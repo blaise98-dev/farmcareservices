@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getTanks, getTankHistory, addTankReading, createTank } from '../lib/api';
 import { usePermissions } from '../hooks/usePermissions';
 import EntryMeta from '../components/EntryMeta';
-import { Plus, X, Droplets } from 'lucide-react';
+import { Plus, X, Droplets, Waves, AlertTriangle, MapPin, TrendingUp, ClipboardList } from 'lucide-react';
 import { format } from 'date-fns';
 import { LineChart as ELine, ChartCard } from '../components/ChartKit';
 
@@ -22,8 +22,8 @@ export default function Tanks() {
   const qc = useQueryClient();
   const canWrite = p.isAdmin || p.isTechnician;
 
-  const { data: tanks = []   } = useQuery({ queryKey: ['tanks'],                     queryFn: getTanks });
-  const { data: history = []  } = useQuery({ queryKey: ['tank-history', selectedTank?.tank_id], queryFn: () => getTankHistory(selectedTank.tank_id), enabled: !!selectedTank });
+  const { data: tanks = [], isLoading: tanksLoading } = useQuery({ queryKey: ['tanks'],                     queryFn: getTanks });
+  const { data: history = [], isLoading: histLoading, isError: histError } = useQuery({ queryKey: ['tank-history', selectedTank?.tank_id], queryFn: () => getTankHistory(selectedTank.tank_id), enabled: !!selectedTank });
 
   const readingMut = useMutation({
     mutationFn: addTankReading,
@@ -47,7 +47,7 @@ export default function Tanks() {
       {/* Header */}
       <div style={{ background: 'linear-gradient(135deg,#0277BD,#00BCD4)', borderRadius: 12, padding: '14px 20px', color: '#fff', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
         <div>
-          <div style={{ fontSize: 18, fontWeight: 800 }}>🚰 Tanks & Water Systems</div>
+          <div style={{ fontSize: 18, fontWeight: 800, display: 'flex', alignItems: 'center', gap: 8 }}><Waves size={18} /> Tanks & Water Systems</div>
           <div style={{ fontSize: 12, opacity: .8, marginTop: 4 }}>Monitor water and milk tank levels in real-time</div>
         </div>
         {canWrite && (
@@ -76,7 +76,7 @@ export default function Tanks() {
                 <span style={{ fontWeight: 700, fontSize: 15 }}>{t.tank_name}</span>
                 <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 20, background: `${color}22`, color, fontWeight: 600 }}>{t.tank_type}</span>
               </div>
-              {isLow && <div style={{ fontSize: 11, color: '#F44336', fontWeight: 700, marginBottom: 8 }}>⚠ LEVEL LOW</div>}
+              {isLow && <div style={{ fontSize: 11, color: '#F44336', fontWeight: 700, marginBottom: 8, display: 'flex', alignItems: 'center', gap: 4 }}><AlertTriangle size={12} /> LEVEL LOW</div>}
               <div style={{ fontSize: 28, fontWeight: 900, color, marginBottom: 8 }}>{fillPct.toFixed(0)}%</div>
               <div className="gauge-bar" style={{ height: 12, borderRadius: 6 }}>
                 <div style={{ height: '100%', width: `${fillPct}%`, background: isLow ? '#F44336' : color, borderRadius: 6, transition: 'width .5s' }} />
@@ -85,16 +85,18 @@ export default function Tanks() {
                 <span style={{ color: 'var(--text-secondary)' }}>{Number(t.current_level_liters).toFixed(0)} L</span>
                 <span style={{ color: 'var(--text-secondary)' }}>/ {Number(t.capacity_liters).toFixed(0)} L</span>
               </div>
-              {t.location && <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 4 }}>📍 {t.location}</div>}
+              {t.location && <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 4, display: 'flex', alignItems: 'center', gap: 4 }}><MapPin size={11} /> {t.location}</div>}
             </div>
           );
         })}
-        {tanks.length === 0 && <div className="empty-state"><Droplets size={40} /><span>No tanks configured</span></div>}
+        {tanksLoading && <div className="skeleton" style={{ height: 160, width: '100%' }} />}
+        {!tanksLoading && tanks.length === 0 && <div className="empty-state"><Droplets size={40} /><span>No tanks configured</span></div>}
       </div>
 
       {/* Tank history chart */}
       {selectedTank && histChart.length > 0 && (
-        <ChartCard title={`📈 ${selectedTank.tank_name} — Level History`} sub="Tank level readings over time">
+        <ChartCard title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><TrendingUp size={14} /> {selectedTank.tank_name} — Level History</span>} sub="Tank level readings over time"
+          isLoading={histLoading} isError={histError} height={200}>
           <ELine data={histChart} xKey="time"
             series={[{ key: 'level', name: 'Level (L)', color: '#00BCD4' }]}
             area smooth height={220} unit=" L"
@@ -106,7 +108,7 @@ export default function Tanks() {
       {selectedTank && (
         <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
           <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--border)' }}>
-            <h2 style={{ fontSize: 15, fontWeight: 700 }}>📋 {selectedTank.tank_name} — Recent Readings</h2>
+            <h2 style={{ fontSize: 15, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}><ClipboardList size={15} /> {selectedTank.tank_name} — Recent Readings</h2>
           </div>
           <table className="data-table">
             <thead><tr><th>Level (L)</th><th>Action</th><th>Notes</th><th>By</th><th>Time</th></tr></thead>
@@ -130,7 +132,7 @@ export default function Tanks() {
         <div style={{ position: 'fixed', inset: 0, zIndex: 999, background: 'rgba(0,0,0,.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
           <div style={{ background: '#fff', borderRadius: 16, width: '100%', maxWidth: 440, boxShadow: '0 20px 60px rgba(0,0,0,.25)' }}>
             <div style={{ padding: '18px 24px', background: 'linear-gradient(135deg,#0277BD,#00BCD4)', color: '#fff', borderRadius: '16px 16px 0 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h2 style={{ fontSize: 17, fontWeight: 800, margin: 0 }}>🚰 Log Tank Reading</h2>
+              <h2 style={{ fontSize: 17, fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}><Droplets size={16} /> Log Tank Reading</h2>
               <button onClick={() => setShowReading(false)} style={{ background: 'rgba(255,255,255,.2)', border: 'none', color: '#fff', borderRadius: 8, padding: '5px 8px', cursor: 'pointer' }}><X size={16} /></button>
             </div>
             <form onSubmit={e => { e.preventDefault(); if (!readingForm.tank_id || !readingForm.level_liters) { setErr('Tank and level are required'); return; } readingMut.mutate({ ...readingForm, tank_id: Number(readingForm.tank_id), level_liters: Number(readingForm.level_liters) }); }}
@@ -167,7 +169,7 @@ export default function Tanks() {
         <div style={{ position: 'fixed', inset: 0, zIndex: 999, background: 'rgba(0,0,0,.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
           <div style={{ background: '#fff', borderRadius: 16, width: '100%', maxWidth: 440, boxShadow: '0 20px 60px rgba(0,0,0,.25)' }}>
             <div style={{ padding: '18px 24px', background: 'linear-gradient(135deg,#0277BD,#00BCD4)', color: '#fff', borderRadius: '16px 16px 0 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h2 style={{ fontSize: 17, fontWeight: 800, margin: 0 }}>🚰 New Tank</h2>
+              <h2 style={{ fontSize: 17, fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}><Waves size={16} /> New Tank</h2>
               <button onClick={() => setShowCreate(false)} style={{ background: 'rgba(255,255,255,.2)', border: 'none', color: '#fff', borderRadius: 8, padding: '5px 8px', cursor: 'pointer' }}><X size={16} /></button>
             </div>
             <form onSubmit={e => {
