@@ -4,7 +4,7 @@ import { useRealtime } from '../context/RealtimeContext';
 import { getEnvHistory, getEnvDailyAvg, getCowTemperatures, addEnvReading, getWaterQualityLatest, getWaterQualityHistory } from '../lib/api';
 import { usePermissions } from '../hooks/usePermissions';
 import { LineChart as ELine, ChartCard } from '../components/ChartKit';
-import { Thermometer, Wind, Droplets, Activity, Plus, X, Waves } from 'lucide-react';
+import { Thermometer, Wind, Droplets, Activity, Plus, X, Waves, Radio, TrendingUp, BarChart2 } from 'lucide-react';
 import { format } from 'date-fns';
 
 const TEMP_COLOR = { Normal: '#4CAF50', Elevated: '#FF9800', High: '#FF5722', Fever: '#F44336', Low: '#2196F3' };
@@ -24,13 +24,13 @@ export default function Environment() {
     onError: (e) => setAddErr(e.response?.data?.detail || 'Failed'),
   });
 
-  const { data: history = [] } = useQuery({
+  const { data: history = [], isLoading: histLoading, isError: histError } = useQuery({
     queryKey: ['env-history', hours], queryFn: () => getEnvHistory(hours),
   });
   const { data: dailyAvg = [] } = useQuery({ queryKey: ['env-daily'], queryFn: getEnvDailyAvg });
   const { data: cowTemps = [] } = useQuery({ queryKey: ['cow-temps'], queryFn: getCowTemperatures, refetchInterval: 15000 });
   const { data: wqLatest } = useQuery({ queryKey: ['wq-latest'], queryFn: () => getWaterQualityLatest(), refetchInterval: 15000 });
-  const { data: wqHistory = [] } = useQuery({ queryKey: ['wq-history', hours], queryFn: () => getWaterQualityHistory(hours) });
+  const { data: wqHistory = [], isLoading: wqLoading, isError: wqError } = useQuery({ queryKey: ['wq-history', hours], queryFn: () => getWaterQualityHistory(hours) });
 
   const histChart = history.map(r => ({
     time: r.recorded_at ? format(new Date(r.recorded_at), 'HH:mm') : '',
@@ -116,7 +116,8 @@ export default function Environment() {
             <span style={{ fontSize: 10, color: 'var(--text-secondary)' }}>Collar sensor {wq.device_id ? `— ${wq.device_id}` : ''}</span>
           </div>
         </div>
-        <ChartCard title="💧 Water Quality Trend" sub="TDS ppm — Warn ≥1000 / Critical ≥2000">
+        <ChartCard title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Waves size={14} /> Water Quality Trend</span>} sub="TDS ppm — Warn ≥1000 / Critical ≥2000"
+          isLoading={wqLoading} isError={wqError} height={200}>
           <ELine data={wqChart} xKey="time"
             series={[{ key: 'tds', name: 'TDS (ppm)', color: '#00838F' }]}
             smooth height={200} unit=" ppm"
@@ -126,9 +127,10 @@ export default function Environment() {
       </div>
 
       {/* Trend chart */}
-      <div className="card">
-        <div className="section-header">
-          <h2>📈 Environment History</h2>
+      <ChartCard
+        title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><TrendingUp size={14} /> Environment History</span>}
+        isLoading={histLoading} isError={histError} height={260}
+        action={
           <div style={{ display: 'flex', gap: 6 }}>
             {[6, 12, 24, 48].map(h => (
               <button key={h} onClick={() => setHours(h)}
@@ -138,17 +140,19 @@ export default function Environment() {
               </button>
             ))}
           </div>
-        </div>
+        }
+      >
         <ELine data={histChart} xKey="time"
           series={[{ key: 'temp', name: 'Temp °C', color: '#FF9800' }, { key: 'hum', name: 'Humidity %', color: '#00BCD4' }]}
           area smooth height={260} unit=""
           markLine={[{ yAxis: 32, label: { formatter: () => 'Alert 32°C', position: 'end' } }]}
         />
-      </div>
+      </ChartCard>
 
       {/* Air quality */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
-        <ChartCard title="🌬 Air Quality Trend" sub="ppm — Alert ≥600 / Warn ≥450">
+        <ChartCard title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Wind size={14} /> Air Quality Trend</span>} sub="ppm — Alert ≥600 / Warn ≥450"
+          isLoading={histLoading} isError={histError} height={200}>
           <ELine data={histChart} xKey="time"
             series={[{ key: 'aq', name: 'Air Quality (ppm)', color: '#9C27B0' }]}
             smooth height={200} unit=" ppm"
@@ -158,7 +162,7 @@ export default function Environment() {
 
         {/* Per-cow temperatures */}
         <div className="card" style={{ maxHeight: 280, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-          <div className="section-header"><h2>🌡 Cow Body Temps</h2></div>
+          <div className="section-header"><h2 style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Thermometer size={16} /> Cow Body Temps</h2></div>
           <div style={{ overflowY: 'auto', flex: 1 }}>
             {cowTemps.map(c => (
               <div key={c.cow_id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0', borderBottom: '1px solid #f0f0f0' }}>
@@ -190,7 +194,7 @@ export default function Environment() {
         <div style={{ position: 'fixed', inset: 0, zIndex: 999, background: 'rgba(0,0,0,.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
           <div style={{ background: '#fff', borderRadius: 16, width: '100%', maxWidth: 440, boxShadow: '0 20px 60px rgba(0,0,0,.25)' }}>
             <div style={{ padding: '18px 24px', background: 'linear-gradient(135deg,#E65100,#FF9800)', color: '#fff', borderRadius: '16px 16px 0 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h2 style={{ fontSize: 17, fontWeight: 800, margin: 0 }}>📡 Log Manual Sensor Reading</h2>
+              <h2 style={{ fontSize: 17, fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}><Radio size={17} /> Log Manual Sensor Reading</h2>
               <button onClick={() => setShowAdd(false)} style={{ background: 'rgba(255,255,255,.2)', border: 'none', color: '#fff', borderRadius: 8, padding: '5px 8px', cursor: 'pointer' }}><X size={16} /></button>
             </div>
             <form onSubmit={e => { e.preventDefault(); if (!addForm.temperature_celsius || !addForm.humidity_percent) { setAddErr('Temperature and humidity are required'); return; } addMut.mutate({ temperature_celsius: Number(addForm.temperature_celsius), humidity_percent: Number(addForm.humidity_percent), air_quality_ppm: addForm.air_quality_ppm ? Number(addForm.air_quality_ppm) : null, oxygen_percent: addForm.oxygen_percent ? Number(addForm.oxygen_percent) : null }); }}
@@ -225,7 +229,7 @@ export default function Environment() {
       {/* 7-day averages table */}
       <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
         <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)' }}>
-          <h2 style={{ fontSize: 16, fontWeight: 700 }}>📊 7-Day Daily Averages</h2>
+          <h2 style={{ fontSize: 16, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}><BarChart2 size={16} /> 7-Day Daily Averages</h2>
         </div>
         <div style={{ overflowX: 'auto' }}>
           <table className="data-table">
