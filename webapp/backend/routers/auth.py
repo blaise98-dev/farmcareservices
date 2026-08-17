@@ -7,7 +7,7 @@ import secrets
 from datetime import datetime, timedelta
 from typing import Optional
 
-from fastapi import APIRouter, HTTPException, Depends, status, BackgroundTasks
+from fastapi import APIRouter, HTTPException, Depends, status, BackgroundTasks, Request
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
 from passlib.context import CryptContext
@@ -16,6 +16,9 @@ from pydantic import BaseModel
 from config import settings
 from database import fetchone, execute, fetchall
 from email_service import send_password_reset_email
+from rate_limit import check_rate_limit, client_ip
+
+MIN_PASSWORD_LENGTH = 10
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
@@ -125,7 +128,9 @@ async def get_current_user(token: str = Depends(oauth2_scheme)) -> dict:
 
 # ── Routes ────────────────────────────────────────────────────
 @router.post("/login", response_model=Token)
-async def login(form: OAuth2PasswordRequestForm = Depends()):
+async def login(request: Request, form: OAuth2PasswordRequestForm = Depends()):
+    check_rate_limit(f"login:{client_ip(request)}:{form.username}", max_attempts=5, window_seconds=300)
+
     user = await fetchone(
         "SELECT * FROM Users WHERE username=%s",
         (form.username,),
@@ -176,8 +181,8 @@ async def register(body: RegisterRequest):
     """
     if body.role not in REGISTER_ROLES:
         raise HTTPException(400, f"Role must be one of: {', '.join(sorted(REGISTER_ROLES))}")
-    if len(body.password) < 6:
-        raise HTTPException(400, "Password must be at least 6 characters")
+    if len(body.password) < MIN_PASSWORD_LENGTH:
+        raise HTTPException(400, f"Password must be at least {MIN_PASSWORD_LENGTH} characters")
     if not body.username.strip() or not body.full_name.strip():
         raise HTTPException(400, "Username and full name are required")
 
@@ -228,8 +233,8 @@ async def change_password(
     current_user: dict = Depends(get_current_user),
 ):
     new_pw = body.get("new_password", "")
-    if len(new_pw) < 6:
-        raise HTTPException(400, "Password must be at least 6 characters")
+    if len(new_pw) < MIN_PASSWORD_LENGTH:
+        raise HTTPException(400, f"Password must be at least {MIN_PASSWORD_LENGTH} characters")
     hashed = pwd_ctx.hash(new_pw)
     await execute(
         "UPDATE Users SET password_hash=%s WHERE user_id=%s",
@@ -240,6 +245,7 @@ async def change_password(
 
 @router.post("/forgot-password")
 async def forgot_password(
+    request: Request,
     body: ForgotPasswordRequest,
     background_tasks: BackgroundTasks,
 ):
@@ -247,6 +253,8 @@ async def forgot_password(
     identifier = body.identifier.strip()
     if not identifier:
         raise HTTPException(400, "Email or username is required")
+
+    check_rate_limit(f"forgot:{client_ip(request)}:{identifier}", max_attempts=3, window_seconds=900)
 
     user = await _find_user_by_identifier(identifier)
     if user and user.get("email"):
@@ -298,8 +306,8 @@ async def validate_reset_token(token: str):
 async def reset_password(body: ResetPasswordRequest):
     """Set a new password using a valid reset token."""
     new_pw = body.new_password
-    if len(new_pw) < 6:
-        raise HTTPException(400, "Password must be at least 6 characters")
+    if len(new_pw) < MIN_PASSWORD_LENGTH:
+        raise HTTPException(400, f"Password must be at least {MIN_PASSWORD_LENGTH} characters")
 
     row = await fetchone(
         """
@@ -535,8 +543,8 @@ async def admin_reset_password(
     if current_user["role"] != "Admin":
         raise HTTPException(403, "Admin only")
     new_pw = body.get("new_password", "")
-    if len(new_pw) < 6:
-        raise HTTPException(400, "Password must be at least 6 characters")
+    if len(new_pw) < MIN_PASSWORD_LENGTH:
+        raise HTTPException(400, f"Password must be at least {MIN_PASSWORD_LENGTH} characters")
     target = await fetchone("SELECT user_id FROM Users WHERE user_id=%s", (user_id,))
     if not target:
         raise HTTPException(404, "User not found")
