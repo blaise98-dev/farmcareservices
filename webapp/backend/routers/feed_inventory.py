@@ -45,7 +45,7 @@ class InventoryUpdate(BaseModel):
 
 
 @router.get("/")
-async def list_inventory(_=Depends(require_any())):
+async def list_inventory(_=Depends(require_admin_or_farmer())):
     rows = await fetchall(
         "SELECT * FROM FeedInventory ORDER BY category, item_name"
     )
@@ -53,7 +53,7 @@ async def list_inventory(_=Depends(require_any())):
 
 
 @router.get("/summary")
-async def inventory_summary(_=Depends(require_any())):
+async def inventory_summary(_=Depends(require_admin_or_farmer())):
     """Totals: dry matter (kg), crude protein (kg), total stock value."""
     row = await fetchone(
         """

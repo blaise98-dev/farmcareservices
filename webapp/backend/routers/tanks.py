@@ -38,7 +38,7 @@ class TankCreate(BaseModel):
 
 
 @router.get("/")
-async def list_tanks(_=Depends(require_any())):
+async def list_tanks(_=Depends(require_admin_or_technician())):
     rows = await fetchall(
         """
         SELECT t.*,
@@ -53,7 +53,7 @@ async def list_tanks(_=Depends(require_any())):
 
 
 @router.get("/{tank_id}/history")
-async def tank_history(tank_id: int, _=Depends(require_any())):
+async def tank_history(tank_id: int, _=Depends(require_admin_or_technician())):
     rows = await fetchall(
         """
         SELECT * FROM TankReadings

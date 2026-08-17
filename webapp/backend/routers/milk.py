@@ -116,14 +116,14 @@ async def add_milk_record(
         INSERT INTO MilkProductionRecords
         (cow_id, milk_amount_liters, milking_session, milk_quality,
          milk_sold_liters, milk_consumed_liters, milk_calves_liters,
-         milk_lost_liters, price_per_liter_rwf, entry_date)
-        VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
+         milk_lost_liters, price_per_liter_rwf, entry_date, recorded_by)
+        VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s)
         """,
         (entry.cow_id, entry.milk_amount_liters, entry.milking_session,
          entry.milk_quality, entry.milk_sold_liters or 0,
          entry.milk_consumed_liters or 0, entry.milk_calves_liters or 0,
          entry.milk_lost_liters or 0, entry.price_per_liter_rwf or 400,
-         entry.entry_date),
+         entry.entry_date, current_user["username"]),
     )
     await execute("UPDATE Cows SET last_milk_date=CURDATE() WHERE cow_id=%s", (entry.cow_id,))
     await manager.broadcast("milk_update", {
