@@ -39,7 +39,7 @@ async def list_feed(days: int = 7, _=Depends(require_any())):
         """
         SELECT f.*, c.cow_name
         FROM FeedingRecords f
-        JOIN Cows c ON f.cow_id = c.cow_id
+        LEFT JOIN Cows c ON f.cow_id = c.cow_id
         WHERE f.recorded_at >= DATE_SUB(NOW(), INTERVAL %s DAY)
         ORDER BY f.recorded_at DESC
         """,
@@ -132,12 +132,12 @@ async def add_feed_record(
         """
         INSERT INTO FeedingRecords
         (cow_id, group_id, feed_amount_kg, feed_type, methane_impact,
-         dispensed_by_system, prescription_notes, entry_date)
-        VALUES (%s,%s,%s,%s,%s,%s,%s,%s)
+         dispensed_by_system, prescription_notes, entry_date, recorded_by)
+        VALUES (%s,%s,%s,%s,%s,%s,%s,%s,%s)
         """,
         (entry.cow_id, entry.group_id, entry.feed_amount_kg, entry.feed_type,
          entry.methane_impact, entry.dispensed_by_system,
-         entry.prescription_notes, entry.entry_date),
+         entry.prescription_notes, entry.entry_date, current_user["username"]),
     )
     await manager.broadcast("feed_update", {
         "cow_id": entry.cow_id,

@@ -12,7 +12,7 @@
  *   </RoleGuard>
  *
  *   // Full page redirect variant (for route-level guarding):
- *   <RoleGuard allowed={p.canViewEconomics} redirect="/" />
+ *   <RoleGuard allowed={p.canViewCowEconomics} redirect="/" />
  */
 import { Navigate } from 'react-router-dom';
 

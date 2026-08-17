@@ -102,7 +102,7 @@ function UserActivityPanel({ user, onClose }) {
 
           {tab === 'Milk (7d)' && (
             <table className="data-table">
-              <thead><tr><th>Cow</th><th>Date</th><th>Session</th><th>Amount (L)</th><th>Quality</th></tr></thead>
+              <thead><tr><th>Cow</th><th>Date</th><th>Session</th><th>Amount (L)</th><th>Quality</th><th>Logged By</th></tr></thead>
               <tbody>
                 {milkRecs.map((r, i) => (
                   <tr key={i}>
@@ -111,20 +111,21 @@ function UserActivityPanel({ user, onClose }) {
                     <td>{r.milking_session}</td>
                     <td style={{ fontWeight: 700, color: '#00BCD4' }}>{Number(r.milk_amount_liters).toFixed(1)}</td>
                     <td>{r.milk_quality}</td>
+                    <td style={{ fontSize: 12 }}>{r.recorded_by || '—'}</td>
                   </tr>
                 ))}
-                {milkRecs.length === 0 && <tr><td colSpan={5} style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: 24 }}>No milk records</td></tr>}
+                {milkRecs.length === 0 && <tr><td colSpan={6} style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: 24 }}>No milk records</td></tr>}
               </tbody>
             </table>
           )}
 
           {tab === 'Feed (7d)' && (
             <table className="data-table">
-              <thead><tr><th>Cow</th><th>Date</th><th>Feed Type</th><th>Amount (kg)</th><th>Methane Impact</th></tr></thead>
+              <thead><tr><th>Cow</th><th>Date</th><th>Feed Type</th><th>Amount (kg)</th><th>Methane Impact</th><th>Logged By</th></tr></thead>
               <tbody>
                 {feedRecs.map((r, i) => (
                   <tr key={i}>
-                    <td style={{ fontWeight: 600 }}>{r.cow_name || r.cow_id}</td>
+                    <td style={{ fontWeight: 600 }}>{r.cow_name || r.cow_id || '—'}</td>
                     <td style={{ color: 'var(--text-secondary)', fontSize: 12 }}>{r.recorded_at ? format(new Date(r.recorded_at), 'MMM d') : '—'}</td>
                     <td>{r.feed_type}</td>
                     <td style={{ fontWeight: 700, color: '#4CAF50' }}>{Number(r.feed_amount_kg).toFixed(1)}</td>
@@ -134,9 +135,10 @@ function UserActivityPanel({ user, onClose }) {
                         color: r.methane_impact === 'Increases' ? '#c62828' : r.methane_impact === 'Reduces' ? '#2E7D32' : '#666'
                       }}>{r.methane_impact || 'Neutral'}</span>
                     </td>
+                    <td style={{ fontSize: 12 }}>{r.recorded_by || '—'}</td>
                   </tr>
                 ))}
-                {feedRecs.length === 0 && <tr><td colSpan={5} style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: 24 }}>No feed records</td></tr>}
+                {feedRecs.length === 0 && <tr><td colSpan={6} style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: 24 }}>No feed records</td></tr>}
               </tbody>
             </table>
           )}

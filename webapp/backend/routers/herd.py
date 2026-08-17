@@ -6,6 +6,7 @@ from rbac import (
     require_any, require_can_update_health,
     require_can_retire_cow, require_admin_or_vet,
     require_admin_or_farmer, require_farmer_only,
+    require_not_technician,
 )
 
 router = APIRouter(prefix="/api/herd", tags=["herd"])
@@ -131,7 +132,7 @@ async def herd_counts(_=Depends(require_any())):
 
 
 @router.get("/analytics")
-async def herd_analytics(_=Depends(require_any())):
+async def herd_analytics(_=Depends(require_not_technician())):
     """Full analytics dataset for the Herd Analytics dashboard."""
     cows = await fetchall(
         """

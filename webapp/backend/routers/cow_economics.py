@@ -7,7 +7,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
 from typing import Optional
 from database import fetchall, fetchone, execute
-from rbac import require_any, require_admin_or_farmer
+from rbac import require_any, require_admin_or_farmer, require_not_technician
 
 router = APIRouter(prefix="/api/cow-economics", tags=["cow_economics"])
 
@@ -47,7 +47,7 @@ class RevenueEntry(BaseModel):
 # ── Summary per cow ───────────────────────────────────────────────────────────
 
 @router.get("/summary")
-async def economics_summary(_=Depends(require_any())):
+async def economics_summary(_=Depends(require_not_technician())):
     """Lifetime P&L summary per cow — total costs, revenues, profit."""
     rows = await fetchall(
         """
@@ -88,7 +88,7 @@ async def economics_summary(_=Depends(require_any())):
 
 
 @router.get("/cow/{cow_id}")
-async def cow_detail(cow_id: int, _=Depends(require_any())):
+async def cow_detail(cow_id: int, _=Depends(require_not_technician())):
     """Full cost + revenue breakdown for one cow."""
     cow = await fetchone(
         """
@@ -157,7 +157,7 @@ async def cow_detail(cow_id: int, _=Depends(require_any())):
 
 
 @router.get("/fleet")
-async def fleet_overview(_=Depends(require_any())):
+async def fleet_overview(_=Depends(require_not_technician())):
     """Aggregated fleet-level analytics for the executive dashboard."""
     total = await fetchone(
         """
