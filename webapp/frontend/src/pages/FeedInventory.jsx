@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getFeedInventory, getFeedInventorySummary, addFeedInventoryItem, updateFeedInventoryItem, deleteFeedInventoryItem } from '../lib/api';
 import { usePermissions } from '../hooks/usePermissions';
 import EntryMeta from '../components/EntryMeta';
-import { Plus, X, Leaf, Edit2, Trash2 } from 'lucide-react';
+import { Plus, X, Leaf, Edit2, Trash2, BarChart2, ClipboardList } from 'lucide-react';
 import { format } from 'date-fns';
 import { HBarChart, ChartCard } from '../components/ChartKit';
 
@@ -26,8 +26,8 @@ export default function FeedInventory() {
   const qc = useQueryClient();
   const canWrite = p.isAdmin || p.isFarmer;
 
-  const { data: items = []   } = useQuery({ queryKey: ['feed-inventory'],         queryFn: getFeedInventory });
-  const { data: summary      } = useQuery({ queryKey: ['feed-inventory-summary'], queryFn: getFeedInventorySummary });
+  const { data: items = [], isLoading: itemsLoading } = useQuery({ queryKey: ['feed-inventory'],         queryFn: getFeedInventory });
+  const { data: summary } = useQuery({ queryKey: ['feed-inventory-summary'], queryFn: getFeedInventorySummary });
 
   const addMut = useMutation({
     mutationFn: addFeedInventoryItem,
@@ -74,7 +74,7 @@ export default function FeedInventory() {
       {/* Header */}
       <div style={{ background: 'linear-gradient(135deg,#388E3C,#4CAF50)', borderRadius: 12, padding: '14px 20px', color: '#fff', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
         <div>
-          <div style={{ fontSize: 18, fontWeight: 800 }}>🌿 Feed Inventory</div>
+          <div style={{ fontSize: 18, fontWeight: 800, display: 'flex', alignItems: 'center', gap: 8 }}><Leaf size={18} /> Feed Inventory</div>
           <div style={{ fontSize: 12, opacity: .8, marginTop: 4 }}>Stock levels, dry matter & crude protein totals</div>
         </div>
         {canWrite && (
@@ -101,8 +101,9 @@ export default function FeedInventory() {
       </div>
 
       {/* Stock by category chart */}
-      {byCat.length > 0 && (
-        <ChartCard title="📊 Stock by Category" sub="Current inventory levels in kg">
+      {(itemsLoading || byCat.length > 0) && (
+        <ChartCard title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><BarChart2 size={14} /> Stock by Category</span>} sub="Current inventory levels in kg"
+          isLoading={itemsLoading} height={Math.max(180, byCat.length * 46 || 180)}>
           <HBarChart
             data={byCat.map(c => ({ name: c.category, value: Number(Number(c.kg).toFixed(0)) }))}
             unit=" kg"
@@ -115,7 +116,7 @@ export default function FeedInventory() {
       {/* Items table */}
       <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
         <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--border)' }}>
-          <h2 style={{ fontSize: 16, fontWeight: 700 }}>📋 Inventory Items</h2>
+          <h2 style={{ fontSize: 16, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}><ClipboardList size={16} /> Inventory Items</h2>
         </div>
         <div style={{ overflowX: 'auto' }}>
           <table className="data-table">
@@ -162,7 +163,7 @@ export default function FeedInventory() {
         <div style={{ position: 'fixed', inset: 0, zIndex: 999, background: 'rgba(0,0,0,.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
           <div style={{ background: '#fff', borderRadius: 16, width: '100%', maxWidth: 520, maxHeight: '90vh', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(0,0,0,.25)' }}>
             <div style={{ padding: '18px 24px', background: 'linear-gradient(135deg,#388E3C,#4CAF50)', color: '#fff', borderRadius: '16px 16px 0 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h2 style={{ fontSize: 17, fontWeight: 800, margin: 0 }}>{editItem ? '✏️ Update Item' : '🌿 New Feed Inventory Entry'}</h2>
+              <h2 style={{ fontSize: 17, fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>{editItem ? <><Edit2 size={16} /> Update Item</> : <><Leaf size={16} /> New Feed Inventory Entry</>}</h2>
               <button onClick={closeModal} style={{ background: 'rgba(255,255,255,.2)', border: 'none', color: '#fff', borderRadius: 8, padding: '5px 8px', cursor: 'pointer' }}><X size={16} /></button>
             </div>
             <form onSubmit={handleSubmit} style={{ padding: 24, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 14 }}>
