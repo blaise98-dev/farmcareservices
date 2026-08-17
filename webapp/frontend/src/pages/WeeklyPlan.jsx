@@ -2,7 +2,10 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getWeeklyTasks, getTodayTasks, createTask, updateTask, deleteTask, getCows, getGroups } from '../lib/api';
 import EntryMeta from '../components/EntryMeta';
-import { Plus, X, Calendar, CheckCircle, Trash2 } from 'lucide-react';
+import {
+  Plus, X, Calendar, CheckCircle, Trash2, Leaf, Droplets, Stethoscope,
+  Sparkles, Wrench, Syringe, ClipboardList, Clock, User, Beef, Users,
+} from 'lucide-react';
 import { format } from 'date-fns';
 
 const LABEL = { display: 'block', fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: .5, marginBottom: 5 };
@@ -20,8 +23,8 @@ export default function WeeklyPlan() {
   const [err, setErr]           = useState('');
   const qc = useQueryClient();
 
-  const { data: weekTasks = []  } = useQuery({ queryKey: ['weekly-tasks', 7], queryFn: () => getWeeklyTasks(7), enabled: view === 'week' });
-  const { data: todayTasks = [] } = useQuery({ queryKey: ['today-tasks'],      queryFn: getTodayTasks,          enabled: view === 'today' });
+  const { data: weekTasks = [], isLoading: weekLoading }  = useQuery({ queryKey: ['weekly-tasks', 7], queryFn: () => getWeeklyTasks(7), enabled: view === 'week' });
+  const { data: todayTasks = [], isLoading: todayLoading } = useQuery({ queryKey: ['today-tasks'],      queryFn: getTodayTasks,          enabled: view === 'today' });
   const { data: cows = []       } = useQuery({ queryKey: ['cows'],             queryFn: getCows });
   const { data: groups = []     } = useQuery({ queryKey: ['groups'],           queryFn: getGroups });
 
@@ -40,6 +43,7 @@ export default function WeeklyPlan() {
   });
 
   const tasks = view === 'week' ? weekTasks : todayTasks;
+  const tasksLoading = view === 'week' ? weekLoading : todayLoading;
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -52,7 +56,7 @@ export default function WeeklyPlan() {
     });
   };
 
-  const typeIcon = { Feeding: '🌿', Milking: '🥛', VetVisit: '🩺', Cleaning: '🧹', Maintenance: '🔧', Vaccination: '💉', Other: '📋' };
+  const typeIcon = { Feeding: Leaf, Milking: Droplets, VetVisit: Stethoscope, Cleaning: Sparkles, Maintenance: Wrench, Vaccination: Syringe, Other: ClipboardList };
 
   // Group tasks by date
   const byDate = tasks.reduce((acc, t) => {
@@ -71,7 +75,7 @@ export default function WeeklyPlan() {
       {/* Header */}
       <div style={{ background: 'linear-gradient(135deg,#E65100,#FF9800)', borderRadius: 12, padding: '14px 20px', color: '#fff', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
         <div>
-          <div style={{ fontSize: 18, fontWeight: 800 }}>📅 Weekly Plan</div>
+          <div style={{ fontSize: 18, fontWeight: 800, display: 'flex', alignItems: 'center', gap: 8 }}><Calendar size={18} /> Weekly Plan</div>
           <div style={{ fontSize: 12, opacity: .8, marginTop: 4 }}>Schedule and track farm tasks</div>
         </div>
         <button className="btn" onClick={() => { setShowModal(true); setErr(''); }} style={{ background: '#fff', color: '#E65100', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px' }}>
@@ -96,11 +100,11 @@ export default function WeeklyPlan() {
 
       {/* View toggle */}
       <div style={{ display: 'flex', gap: 8 }}>
-        {[{ id: 'today', label: "📅 Today's Tasks" }, { id: 'week', label: '📆 7-Day Plan' }].map(v => (
+        {[{ id: 'today', label: "Today's Tasks", icon: Clock }, { id: 'week', label: '7-Day Plan', icon: Calendar }].map(v => (
           <button key={v.id} onClick={() => setView(v.id)}
             className="btn"
-            style={{ padding: '8px 18px', fontSize: 13, background: view === v.id ? '#FF9800' : 'var(--bg)', color: view === v.id ? '#fff' : 'var(--text-secondary)', border: '1px solid var(--border)', fontWeight: view === v.id ? 700 : 400 }}>
-            {v.label}
+            style={{ padding: '8px 18px', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6, background: view === v.id ? '#FF9800' : 'var(--bg)', color: view === v.id ? '#fff' : 'var(--text-secondary)', border: '1px solid var(--border)', fontWeight: view === v.id ? 700 : 400 }}>
+            <v.icon size={14} /> {v.label}
           </button>
         ))}
       </div>
@@ -118,7 +122,9 @@ export default function WeeklyPlan() {
                 opacity: t.status === 'Completed' ? .7 : 1,
                 alignItems: 'center',
               }}>
-                <div style={{ fontSize: 22, flexShrink: 0 }}>{typeIcon[t.task_type] || '📋'}</div>
+                {(() => { const TypeIcon = typeIcon[t.task_type] || ClipboardList; return (
+                  <div style={{ flexShrink: 0, color: 'var(--text-secondary)' }}><TypeIcon size={22} /></div>
+                ); })()}
                 <div style={{ flex: 1, minWidth: 0 }}>
                   <div style={{ display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap', marginBottom: 4 }}>
                     <span style={{ fontWeight: 700, fontSize: 14, textDecoration: t.status === 'Completed' ? 'line-through' : 'none' }}>{t.title}</span>
@@ -126,10 +132,10 @@ export default function WeeklyPlan() {
                     <span style={{ fontSize: 11, padding: '1px 7px', borderRadius: 20, background: `${STATUS_COLOR[t.status] || '#999'}22`, color: STATUS_COLOR[t.status] || '#333', fontWeight: 600 }}>{t.status}</span>
                   </div>
                   <div style={{ display: 'flex', gap: 12, fontSize: 12, color: 'var(--text-secondary)', flexWrap: 'wrap' }}>
-                    {t.due_time && <span>⏰ {t.due_time.substring(0, 5)}</span>}
-                    {t.assigned_to && <span>👤 Assigned to {t.assigned_to}</span>}
-                    {t.cow_name && <span>🐄 {t.cow_name}</span>}
-                    {t.group_name && <span>👥 {t.group_name}</span>}
+                    {t.due_time && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><Clock size={12} /> {t.due_time.substring(0, 5)}</span>}
+                    {t.assigned_to && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><User size={12} /> Assigned to {t.assigned_to}</span>}
+                    {t.cow_name && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><Beef size={12} /> {t.cow_name}</span>}
+                    {t.group_name && <span style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><Users size={12} /> {t.group_name}</span>}
                     {t.created_by && <EntryMeta by={t.created_by} />}
                   </div>
                   {t.description && <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 4 }}>{t.description}</div>}
@@ -157,14 +163,15 @@ export default function WeeklyPlan() {
           </div>
         </div>
       ))}
-      {tasks.length === 0 && <div className="empty-state"><Calendar size={40} /><span>No tasks scheduled</span></div>}
+      {tasksLoading && <div className="skeleton" style={{ height: 120, width: '100%' }} />}
+      {!tasksLoading && tasks.length === 0 && <div className="empty-state"><Calendar size={40} /><span>No tasks scheduled</span></div>}
 
       {/* Create Modal */}
       {showModal && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 999, background: 'rgba(0,0,0,.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
           <div style={{ background: '#fff', borderRadius: 16, width: '100%', maxWidth: 520, maxHeight: '90vh', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(0,0,0,.25)' }}>
             <div style={{ padding: '18px 24px', background: 'linear-gradient(135deg,#E65100,#FF9800)', color: '#fff', borderRadius: '16px 16px 0 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
-              <h2 style={{ fontSize: 17, fontWeight: 800, margin: 0 }}>📅 Create Task</h2>
+              <h2 style={{ fontSize: 17, fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}><Calendar size={16} /> Create Task</h2>
               <button onClick={() => setShowModal(false)} style={{ background: 'rgba(255,255,255,.2)', border: 'none', color: '#fff', borderRadius: 8, padding: '5px 8px', cursor: 'pointer' }}><X size={16} /></button>
             </div>
             <form onSubmit={handleSubmit} style={{ padding: 24, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 14 }}>
