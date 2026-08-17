@@ -14,7 +14,7 @@ from fastapi.middleware.cors import CORSMiddleware
 logger = logging.getLogger(__name__)
 
 from config import settings
-from database import get_pool, close_pool, fetchone, execute, log_remote_connection, ensure_password_reset_table, ensure_sensor_readings_table, ensure_wearable_tables, ensure_user_approval_columns, ensure_contact_messages_table
+from database import get_pool, close_pool, fetchone, execute, log_remote_connection, ensure_password_reset_table, ensure_sensor_readings_table, ensure_wearable_tables, ensure_user_approval_columns, ensure_contact_messages_table, ensure_milk_feed_attribution_columns
 from ws_manager import manager
 from routers import dashboard, herd, milk, feed, environment, alerts, economics, predictions, admin
 from routers.auth import router as auth_router
@@ -42,6 +42,7 @@ async def lifespan(app: FastAPI):
     await ensure_wearable_tables()
     await ensure_user_approval_columns()
     await ensure_contact_messages_table()
+    await ensure_milk_feed_attribution_columns()
     await log_remote_connection()
     task = asyncio.create_task(realtime_poller())
     yield
