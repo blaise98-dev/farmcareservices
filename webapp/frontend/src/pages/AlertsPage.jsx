@@ -4,7 +4,7 @@ import { useRealtime } from '../context/RealtimeContext';
 import { getAlerts, resolveAlert, createAlert, getSmsLogs, getAlertStats, getCows } from '../lib/api';
 import { usePermissions } from '../hooks/usePermissions';
 import { HBarChart, ChartCard } from '../components/ChartKit';
-import { CheckCircle, AlertTriangle, MessageSquare, Plus, X } from 'lucide-react';
+import { CheckCircle, AlertTriangle, MessageSquare, Plus, X, BarChart2, Radio, Beef, Smartphone } from 'lucide-react';
 import { format, formatDistanceToNow } from 'date-fns';
 
 const SEV_CONFIG = {
@@ -34,7 +34,7 @@ export default function AlertsPage() {
   const { data: smsLogs = [] } = useQuery({
     queryKey: ['sms-logs'], queryFn: getSmsLogs, enabled: tab === 'sms',
   });
-  const { data: stats = [] } = useQuery({ queryKey: ['alert-stats'], queryFn: getAlertStats });
+  const { data: stats = [], isLoading: statsLoading, isError: statsError } = useQuery({ queryKey: ['alert-stats'], queryFn: getAlertStats });
 
   const { data: cows = [] } = useQuery({ queryKey: ['cows'], queryFn: getCows });
 
@@ -89,7 +89,8 @@ export default function AlertsPage() {
 
       {/* Stats chart */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
-        <ChartCard title="📊 Alerts by Type" sub="Last 7 days — by category">
+        <ChartCard title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><BarChart2 size={14} /> Alerts by Type</span>} sub="Last 7 days — by category"
+          isLoading={statsLoading} isError={statsError} height={220}>
           <HBarChart
             data={chartData.map(d => ({ name: d.type, value: d.total }))}
             colorFn={(d) => TYPE_COLOR[d.name] || '#1E4D7B'}
@@ -100,7 +101,7 @@ export default function AlertsPage() {
         {/* Live notifications feed */}
         <div className="card">
           <div className="section-header">
-            <h2>📡 Real-time Feed</h2>
+            <h2 style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Radio size={16} /> Real-time Feed</h2>
             <span className="live-dot red" />
           </div>
           <div style={{ maxHeight: 200, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -132,19 +133,19 @@ export default function AlertsPage() {
       <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
         <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)', display: 'flex', gap: 8, alignItems: 'center' }}>
           {[
-            { id: 'active', label: '🚨 Active', count: activeAlerts.length },
-            { id: 'resolved', label: '✅ Resolved' },
-            { id: 'sms', label: '📱 SMS Log' },
+            { id: 'active', label: 'Active', icon: AlertTriangle, count: activeAlerts.length },
+            { id: 'resolved', label: 'Resolved', icon: CheckCircle },
+            { id: 'sms', label: 'SMS Log', icon: MessageSquare },
           ].map(t => (
             <button key={t.id} onClick={() => setTab(t.id)}
               className="btn"
               style={{
-                padding: '6px 14px', fontSize: 13,
+                padding: '6px 14px', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6,
                 background: tab === t.id ? '#1E4D7B' : 'var(--bg)',
                 color: tab === t.id ? '#fff' : 'var(--text-secondary)',
                 border: '1px solid var(--border)',
               }}>
-              {t.label}
+              <t.icon size={13} /> {t.label}
               {t.count > 0 && <span style={{ background: '#F44336', color: '#fff', borderRadius: 10, padding: '0 6px', fontSize: 10, marginLeft: 4 }}>{t.count}</span>}
             </button>
           ))}
@@ -191,8 +192,8 @@ export default function AlertsPage() {
                         fontSize: 11, padding: '1px 8px', borderRadius: 20, fontWeight: 600,
                         background: `${TYPE_COLOR[a.alert_type] || '#999'}22`, color: TYPE_COLOR[a.alert_type] || '#333'
                       }}>{a.alert_type}</span>
-                      {a.cow_name && <span style={{ fontSize: 12, color: '#1E4D7B', fontWeight: 600 }}>🐄 {a.cow_name}</span>}
-                      {a.is_sent_sms && <span style={{ fontSize: 11, color: '#4CAF50' }}>📱 SMS sent</span>}
+                      {a.cow_name && <span style={{ fontSize: 12, color: '#1E4D7B', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 4 }}><Beef size={12} /> {a.cow_name}</span>}
+                      {a.is_sent_sms && <span style={{ fontSize: 11, color: '#4CAF50', display: 'inline-flex', alignItems: 'center', gap: 4 }}><Smartphone size={12} /> SMS sent</span>}
                     </div>
                     <div style={{ fontSize: 13, color: 'var(--text)' }}>{a.message}</div>
                     <div style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 4 }}>
@@ -221,7 +222,7 @@ export default function AlertsPage() {
         <div style={{ position: 'fixed', inset: 0, zIndex: 999, background: 'rgba(0,0,0,.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
           <div style={{ background: '#fff', borderRadius: 16, width: '100%', maxWidth: 460, boxShadow: '0 20px 60px rgba(0,0,0,.25)' }}>
             <div style={{ padding: '18px 24px', background: 'linear-gradient(135deg,#c62828,#e53935)', color: '#fff', borderRadius: '16px 16px 0 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h2 style={{ fontSize: 17, fontWeight: 800, margin: 0 }}>🚨 Create Alert</h2>
+              <h2 style={{ fontSize: 17, fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}><AlertTriangle size={17} /> Create Alert</h2>
               <button onClick={() => setShowCreate(false)} style={{ background: 'rgba(255,255,255,.2)', border: 'none', color: '#fff', borderRadius: 8, padding: '5px 8px', cursor: 'pointer' }}><X size={16} /></button>
             </div>
             <form onSubmit={e => { e.preventDefault(); if (!createForm.message.trim()) { setCreateErr('Message is required'); return; } createMut.mutate({ ...createForm, cow_id: createForm.cow_id ? Number(createForm.cow_id) : null }); }}
