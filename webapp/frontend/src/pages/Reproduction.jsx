@@ -11,7 +11,7 @@ import {
 import { usePermissions } from '../hooks/usePermissions';
 import EntryMeta from '../components/EntryMeta';
 import { format } from 'date-fns';
-import { Plus, X, Baby, HeartPulse, Syringe, CheckCircle, AlertTriangle, Bell, Lock } from 'lucide-react';
+import { Plus, X, Baby, HeartPulse, Syringe, CheckCircle, AlertTriangle, Bell, Lock, Beef, Pill, Ruler, BarChart2 } from 'lucide-react';
 
 const LABEL = { display: 'block', fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: .5, marginBottom: 5 };
 const INPUT = { width: '100%', padding: '8px 12px', borderRadius: 8, border: '2px solid var(--border)', fontSize: 13, outline: 'none', fontFamily: 'inherit', background: '#fff', boxSizing: 'border-box' };
@@ -143,7 +143,7 @@ export default function Reproduction() {
       {/* Header */}
       <div style={{ background: 'linear-gradient(135deg,#9C27B0,#ba68c8)', borderRadius: 12, padding: '14px 20px', color: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
         <div>
-          <div style={{ fontSize: 18, fontWeight: 800 }}>🐄 Reproduction & Health Records</div>
+          <div style={{ fontSize: 18, fontWeight: 800, display: 'flex', alignItems: 'center', gap: 8 }}><Beef size={18} /> Reproduction & Health Records</div>
           <div style={{ fontSize: 12, opacity: .8, marginTop: 4 }}>
             {canWrite ? 'Veterinarian — full read/write access' : 'Read-only view — contact Veterinarian for health actions'}
           </div>
@@ -246,7 +246,7 @@ export default function Reproduction() {
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                       <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 10, background: `${sevColor}22`, color: sevColor }}>{sev}</span>
-                      {r.cow_name && <span style={{ fontSize: 12, fontWeight: 700, color: '#1E4D7B' }}>🐄 {r.cow_name}</span>}
+                      {r.cow_name && <span style={{ fontSize: 12, fontWeight: 700, color: '#1E4D7B', display: 'inline-flex', alignItems: 'center', gap: 4 }}><Beef size={12} /> {r.cow_name}</span>}
                       {r.created_by && <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>from {r.created_by}</span>}
                       <span style={{ fontSize: 11, color: '#aaa', marginLeft: 'auto' }}>{r.created_at ? format(new Date(r.created_at), 'MMM d, HH:mm') : ''}</span>
                     </div>
@@ -278,13 +278,16 @@ export default function Reproduction() {
 
       {/* Tabs */}
       <div style={{ display: 'flex', gap: 8 }}>
-        {TABS.map(t => (
-          <button key={t} onClick={() => setTab(t)}
-            className="btn"
-            style={{ padding: '8px 18px', fontSize: 13, background: tab === t ? '#9C27B0' : 'var(--bg)', color: tab === t ? '#fff' : 'var(--text-secondary)', border: '1px solid var(--border)', fontWeight: tab === t ? 700 : 400 }}>
-            {t === 'Reproduction' ? '🐄' : t === 'Treatments' ? '💊' : '💉'} {t}
-          </button>
-        ))}
+        {TABS.map(t => {
+          const TabIcon = t === 'Reproduction' ? Baby : t === 'Treatments' ? Pill : t === 'Vaccinations' ? Syringe : Ruler;
+          return (
+            <button key={t} onClick={() => setTab(t)}
+              className="btn"
+              style={{ padding: '8px 18px', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6, background: tab === t ? '#9C27B0' : 'var(--bg)', color: tab === t ? '#fff' : 'var(--text-secondary)', border: '1px solid var(--border)', fontWeight: tab === t ? 700 : 400 }}>
+              <TabIcon size={13} /> {t}
+            </button>
+          );
+        })}
         {canWrite ? (
           <button className="btn btn-primary" onClick={() => { setShowModal(true); setErr(''); }}
             style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6 }}>
@@ -412,7 +415,7 @@ export default function Reproduction() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           {/* BCS scale legend */}
           <div className="card" style={{ padding: '14px 20px' }}>
-            <h2 style={{ fontSize: 14, fontWeight: 700, marginBottom: 10 }}>📏 BCS Scale Reference (1.0–5.0)</h2>
+            <h2 style={{ fontSize: 14, fontWeight: 700, marginBottom: 10, display: 'flex', alignItems: 'center', gap: 8 }}><Ruler size={14} /> BCS Scale Reference (1.0–5.0)</h2>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5,1fr)', gap: 8 }}>
               {[
                 { score: '1.0–1.5', label: 'Emaciated',  color: '#F44336' },
@@ -431,7 +434,7 @@ export default function Reproduction() {
           {/* BCS records table */}
           <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
             <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h2 style={{ fontSize: 15, fontWeight: 700 }}>📊 Latest BCS per Cow</h2>
+              <h2 style={{ fontSize: 15, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}><BarChart2 size={15} /> Latest BCS per Cow</h2>
               {canWrite && (
                 <button className="btn btn-primary" style={{ fontSize: 12, padding: '6px 14px', background: '#9C27B0', border: 'none', display: 'flex', alignItems: 'center', gap: 5 }}
                   onClick={() => { setShowModal(true); setErr(''); }}>
@@ -465,8 +468,8 @@ export default function Reproduction() {
         <div style={{ position: 'fixed', inset: 0, zIndex: 999, background: 'rgba(0,0,0,.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
           <div style={{ background: '#fff', borderRadius: 16, width: '100%', maxWidth: 520, maxHeight: '90vh', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(0,0,0,.25)' }}>
             <div style={{ padding: '18px 24px', background: 'linear-gradient(135deg,#9C27B0,#ba68c8)', color: '#fff', borderRadius: '16px 16px 0 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h2 style={{ fontSize: 17, fontWeight: 800, margin: 0 }}>
-                {tab === 'Reproduction' ? '🐄 Add Reproduction Record' : tab === 'Treatments' ? '💊 Add Treatment' : tab === 'BCS' ? '📏 Record BCS' : '💉 Add Vaccination'}
+              <h2 style={{ fontSize: 17, fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
+                {tab === 'Reproduction' ? <><Baby size={16} /> Add Reproduction Record</> : tab === 'Treatments' ? <><Pill size={16} /> Add Treatment</> : tab === 'BCS' ? <><Ruler size={16} /> Record BCS</> : <><Syringe size={16} /> Add Vaccination</>}
               </h2>
               <button onClick={() => setShowModal(false)} style={{ background: 'rgba(255,255,255,.2)', border: 'none', color: '#fff', borderRadius: 8, padding: '5px 8px', cursor: 'pointer' }}><X size={16} /></button>
             </div>
