@@ -13,7 +13,7 @@ import {
 } from '../components/ChartKit';
 import {
   TrendingUp, TrendingDown, DollarSign, Plus, X, Trash2,
-  RefreshCw,
+  RefreshCw, Beef, ClipboardList, BarChart2, Calendar,
 } from 'lucide-react';
 
 // ─── Palettes ─────────────────────────────────────────────────────────────────
@@ -95,7 +95,7 @@ function FleetDashboard({ fleet, filteredSummary }) {
 
       {/* Monthly P&L trend */}
       {monthly.length > 0 && (
-        <ChartCard title="📈 Monthly Costs vs Revenues" sub="Costs vs revenues and net profit over time (RWF)">
+        <ChartCard title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><TrendingUp size={14} /> Monthly Costs vs Revenues</span>} sub="Costs vs revenues and net profit over time (RWF)">
           <ELine data={monthly} xKey="month"
             series={[
               { key: 'Revenues', name: 'Revenues (RWF)', color: '#4CAF50' },
@@ -110,17 +110,17 @@ function FleetDashboard({ fleet, filteredSummary }) {
 
       {/* Cost + Revenue donuts */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
-        <ChartCard title="💸 Cost Breakdown by Category">
+        <ChartCard title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><TrendingDown size={14} /> Cost Breakdown by Category</span>}>
           <DonutChart data={costPie.map((d, i) => ({ ...d, color: COST_COLOR[d.name] || PALETTE[i % PALETTE.length] }))} height={240} />
         </ChartCard>
-        <ChartCard title="💰 Revenue Breakdown by Source">
+        <ChartCard title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><DollarSign size={14} /> Revenue Breakdown by Source</span>}>
           <DonutChart data={revPie.map((d, i) => ({ ...d, color: REV_COLOR[d.name] || PALETTE[i % PALETTE.length] }))} height={240} />
         </ChartCard>
       </div>
 
       {/* Per-cow net profit */}
       {perCow.length > 0 && (
-        <ChartCard title="🐄 Net Profit per Cow (top 15)" sub="Green = profitable · Red = loss-making">
+        <ChartCard title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Beef size={14} /> Net Profit per Cow (top 15)</span>} sub="Green = profitable · Red = loss-making">
           <HBarChart
             data={perCow.map(c => ({ name: c.name, value: c.profit }))}
             unit=" RWF" colorFn={(d) => Number(d.value) >= 0 ? '#4CAF50' : '#F44336'}
@@ -132,7 +132,7 @@ function FleetDashboard({ fleet, filteredSummary }) {
       {/* Summary table */}
       <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
         <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--border)' }}>
-          <SectionTitle title={`📋 Cow P&L Summary (${filteredSummary.length} cows)`} />
+          <SectionTitle title={<span style={{ display: 'flex', alignItems: 'center', gap: 8 }}><ClipboardList size={15} /> Cow P&L Summary ({filteredSummary.length} cows)</span>} />
         </div>
         <div style={{ overflowX: 'auto', maxHeight: 380, overflowY: 'auto' }}>
           <table className="data-table">
@@ -222,7 +222,7 @@ function CowDrillDown({ cowId, onClose, p }) {
         {/* Header */}
         <div style={{ padding: '18px 24px', background: 'linear-gradient(135deg,#1E4D7B,#2e6fa3)', color: '#fff', borderRadius: '16px 16px 0 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
-            <h2 style={{ fontSize: 18, fontWeight: 800, margin: 0 }}>🐄 {cow.cow_name} — Lifetime Economics</h2>
+            <h2 style={{ fontSize: 18, fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}><Beef size={18} /> {cow.cow_name} — Lifetime Economics</h2>
             <p style={{ margin: '3px 0 0', fontSize: 12, opacity: .8 }}>{cow.rfid_tag} · {cow.breed} · {cow.cow_stage} · {cow.age_months} months old</p>
           </div>
           <button onClick={onClose} style={{ background: 'rgba(255,255,255,.2)', border: 'none', color: '#fff', borderRadius: 8, padding: '6px 8px', cursor: 'pointer' }}><X size={18} /></button>
@@ -246,14 +246,18 @@ function CowDrillDown({ cowId, onClose, p }) {
 
         {/* Tabs */}
         <div style={{ display: 'flex', borderBottom: '1px solid var(--border)', background: '#f7f9fc' }}>
-          {['overview', 'costs', 'revenues', 'timeline'].map(t => (
-            <button key={t} onClick={() => setActiveTab(t)}
-              style={{ padding: '10px 20px', fontSize: 13, fontWeight: activeTab === t ? 700 : 400, border: 'none', background: 'none',
-                borderBottom: activeTab === t ? '2px solid #1E4D7B' : '2px solid transparent',
-                color: activeTab === t ? '#1E4D7B' : 'var(--text-secondary)', cursor: 'pointer', textTransform: 'capitalize' }}>
-              {t === 'overview' ? '📊 Overview' : t === 'costs' ? '💸 Costs' : t === 'revenues' ? '💰 Revenues' : '📅 Timeline'}
-            </button>
-          ))}
+          {['overview', 'costs', 'revenues', 'timeline'].map(t => {
+            const TabIcon = t === 'overview' ? BarChart2 : t === 'costs' ? TrendingDown : t === 'revenues' ? DollarSign : Calendar;
+            return (
+              <button key={t} onClick={() => setActiveTab(t)}
+                style={{ padding: '10px 20px', fontSize: 13, fontWeight: activeTab === t ? 700 : 400, border: 'none', background: 'none',
+                  display: 'flex', alignItems: 'center', gap: 6,
+                  borderBottom: activeTab === t ? '2px solid #1E4D7B' : '2px solid transparent',
+                  color: activeTab === t ? '#1E4D7B' : 'var(--text-secondary)', cursor: 'pointer', textTransform: 'capitalize' }}>
+                <TabIcon size={14} /> {t}
+              </button>
+            );
+          })}
         </div>
 
         <div style={{ overflowY: 'auto', flex: 1, padding: 20 }}>
@@ -522,7 +526,7 @@ export default function CowEconomics() {
 
       {/* Cow cards grid — click to drill down */}
       <div>
-        <h2 style={{ fontSize: 15, fontWeight: 800, marginBottom: 12 }}>🐄 Click a cow to view its full P&L breakdown</h2>
+        <h2 style={{ fontSize: 15, fontWeight: 800, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}><Beef size={15} /> Click a cow to view its full P&L breakdown</h2>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(240px,1fr))', gap: 12 }}>
           {filteredSummary.map(c => {
             const net    = Number(c.net_profit_rwf || 0);
