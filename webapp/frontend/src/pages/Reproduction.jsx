@@ -9,6 +9,7 @@ import {
   getCows, createAlert, getVets, getVetReports, resolveAlert,
 } from '../lib/api';
 import { usePermissions } from '../hooks/usePermissions';
+import EntryMeta from '../components/EntryMeta';
 import { format } from 'date-fns';
 import { Plus, X, Baby, HeartPulse, Syringe, CheckCircle, AlertTriangle, Bell, Lock } from 'lucide-react';
 
@@ -301,7 +302,7 @@ export default function Reproduction() {
         <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
           <table className="data-table">
             <thead>
-              <tr><th>Cow</th><th>Calving Date</th><th>Days Lactation</th><th>Insem. Date</th><th>Expected Calving</th><th>Days to Calving</th><th>Pregnancies</th><th>Confirmed</th>{canWrite && <th></th>}</tr>
+              <tr><th>Cow</th><th>Calving Date</th><th>Days Lactation</th><th>Insem. Date</th><th>Expected Calving</th><th>Days to Calving</th><th>Pregnancies</th><th>Confirmed</th><th>Recorded By</th>{canWrite && <th></th>}</tr>
             </thead>
             <tbody>
               {records.map(r => (
@@ -314,6 +315,7 @@ export default function Reproduction() {
                   <td>{r.days_to_calving != null ? <span style={{ fontWeight: 700, color: r.days_to_calving < 14 ? '#F44336' : r.days_to_calving < 30 ? '#FF9800' : '#4CAF50' }}>{r.days_to_calving}d</span> : '—'}</td>
                   <td style={{ fontWeight: 700 }}>{r.total_calvings}</td>
                   <td>{r.pregnancy_confirmed ? <span className="badge badge-healthy">Yes</span> : <span className="badge badge-warning">No</span>}</td>
+                  <td><EntryMeta by={r.recorded_by} /></td>
                   {canWrite && (
                     <td>
                       <button className="btn btn-ghost" style={{ padding: '3px 8px', fontSize: 11, color: '#c62828' }}
@@ -334,7 +336,7 @@ export default function Reproduction() {
       {tab === 'Treatments' && (
         <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
           <table className="data-table">
-            <thead><tr><th>Cow</th><th>Date</th><th>Diagnosis</th><th>Drug</th><th>Dose</th><th>Days</th><th>Follow-up</th><th>Status</th>{canWrite && <th></th>}</tr></thead>
+            <thead><tr><th>Cow</th><th>Date</th><th>Diagnosis</th><th>Drug</th><th>Dose</th><th>Days</th><th>Follow-up</th><th>Status</th><th>Administered By</th>{canWrite && <th></th>}</tr></thead>
             <tbody>
               {treatments.map(t => (
                 <tr key={t.treatment_id}>
@@ -350,6 +352,7 @@ export default function Reproduction() {
                       {t.is_completed ? 'Done' : 'Active'}
                     </span>
                   </td>
+                  <td><EntryMeta by={t.administered_by} /></td>
                   {canWrite && !t.is_completed && (
                     <td>
                       <button className="btn btn-ghost" style={{ padding: '3px 8px', fontSize: 11, color: '#4CAF50' }}
@@ -394,7 +397,7 @@ export default function Reproduction() {
                     <td>{fmt(v.vaccination_date)}</td>
                     <td style={{ color: '#FF9800', fontWeight: 600 }}>{fmt(v.next_due_date)}</td>
                     <td style={{ fontFamily: 'monospace', fontSize: 12 }}>{v.batch_number || '—'}</td>
-                    <td style={{ fontSize: 12 }}>{v.administered_by}</td>
+                    <td><EntryMeta by={v.administered_by} /></td>
                   </tr>
                 ))}
               </tbody>
@@ -445,7 +448,7 @@ export default function Reproduction() {
                     <td><span className={`badge badge-${(b.health_status || '').toLowerCase().replace(' ', '')}`}>{b.health_status}</span></td>
                     <td style={{ fontWeight: 800, fontSize: 18, color: b.score < 2.5 ? '#F44336' : b.score < 3 ? '#FF9800' : b.score <= 3.75 ? '#4CAF50' : '#FF9800' }}>{Number(b.score).toFixed(1)}</td>
                     <td style={{ minWidth: 140 }}><BCSBar score={b.score} /></td>
-                    <td style={{ fontSize: 12 }}>{b.assessed_by || '—'}</td>
+                    <td><EntryMeta by={b.assessed_by} /></td>
                     <td style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{b.assessed_at ? format(new Date(b.assessed_at), 'MMM d, yyyy') : '—'}</td>
                     <td style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{b.notes || '—'}</td>
                   </tr>

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getTanks, getTankHistory, addTankReading, createTank } from '../lib/api';
 import { usePermissions } from '../hooks/usePermissions';
+import EntryMeta from '../components/EntryMeta';
 import { Plus, X, Droplets } from 'lucide-react';
 import { format } from 'date-fns';
 import { LineChart as ELine, ChartCard } from '../components/ChartKit';
@@ -115,7 +116,7 @@ export default function Tanks() {
                   <td style={{ fontWeight: 700, color: '#00BCD4' }}>{Number(h.level_liters).toFixed(0)} L</td>
                   <td><span className={`badge badge-${h.action === 'Refill' ? 'healthy' : 'normal'}`}>{h.action}</span></td>
                   <td style={{ fontSize: 12 }}>{h.notes || '—'}</td>
-                  <td style={{ fontSize: 12 }}>{h.recorded_by || '—'}</td>
+                  <td><EntryMeta by={h.recorded_by} /></td>
                   <td style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{h.recorded_at ? format(new Date(h.recorded_at), 'MMM d HH:mm') : '—'}</td>
                 </tr>
               ))}

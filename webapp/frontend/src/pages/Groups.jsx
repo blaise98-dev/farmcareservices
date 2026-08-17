@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getGroups, getGroupMembers, createGroup, addGroupMembers, removeGroupMember, deleteGroup, getCows } from '../lib/api';
 import { usePermissions } from '../hooks/usePermissions';
+import EntryMeta from '../components/EntryMeta';
 import { Link } from 'react-router-dom';
 import { Plus, X, Users, Trash2, UserMinus } from 'lucide-react';
 
@@ -92,7 +93,10 @@ export default function Groups() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 10 }}>
               <div>
                 <h2 style={{ fontSize: 18, fontWeight: 800, marginBottom: 4 }}>{selectedGroup.group_name}</h2>
-                <span style={{ fontSize: 12, padding: '2px 10px', borderRadius: 20, background: `${TYPE_COLOR[selectedGroup.group_type] || '#999'}22`, color: TYPE_COLOR[selectedGroup.group_type] || '#333', fontWeight: 600 }}>{selectedGroup.group_type}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontSize: 12, padding: '2px 10px', borderRadius: 20, background: `${TYPE_COLOR[selectedGroup.group_type] || '#999'}22`, color: TYPE_COLOR[selectedGroup.group_type] || '#333', fontWeight: 600 }}>{selectedGroup.group_type}</span>
+                  {selectedGroup.created_by && <EntryMeta by={selectedGroup.created_by} />}
+                </div>
               </div>
               {canWrite && (
                 <div style={{ display: 'flex', gap: 8 }}>

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getFeedInventory, getFeedInventorySummary, addFeedInventoryItem, updateFeedInventoryItem, deleteFeedInventoryItem } from '../lib/api';
 import { usePermissions } from '../hooks/usePermissions';
+import EntryMeta from '../components/EntryMeta';
 import { Plus, X, Leaf, Edit2, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 import { HBarChart, ChartCard } from '../components/ChartKit';
@@ -119,7 +120,7 @@ export default function FeedInventory() {
         <div style={{ overflowX: 'auto' }}>
           <table className="data-table">
             <thead>
-              <tr><th>Item</th><th>Category</th><th>Qty (kg)</th><th>DM%</th><th>CP%</th><th>Unit Cost</th><th>Supplier</th><th>Purchased</th>{canWrite && <th></th>}</tr>
+              <tr><th>Item</th><th>Category</th><th>Qty (kg)</th><th>DM%</th><th>CP%</th><th>Unit Cost</th><th>Supplier</th><th>Purchased</th><th>Recorded By</th>{canWrite && <th></th>}</tr>
             </thead>
             <tbody>
               {items.map(item => (
@@ -136,6 +137,7 @@ export default function FeedInventory() {
                   <td style={{ fontFamily: 'monospace' }}>{Number(item.unit_cost_rwf).toLocaleString()} RWF</td>
                   <td style={{ fontSize: 12 }}>{item.supplier || '—'}</td>
                   <td style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{item.purchase_date ? format(new Date(item.purchase_date), 'MMM d, yyyy') : '—'}</td>
+                  <td><EntryMeta by={item.recorded_by} /></td>
                   {canWrite && (
                     <td>
                       <div style={{ display: 'flex', gap: 4 }}>

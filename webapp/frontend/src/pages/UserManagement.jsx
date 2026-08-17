@@ -4,6 +4,7 @@ import { getUsers, createUser, updateUser, deleteUser, adminResetPassword, getCo
 import { Users, Plus, X, ShieldCheck, ToggleLeft, ToggleRight, Edit2, Trash2, Key, Eye, UserCheck, UserX, Clock } from 'lucide-react';
 import { format } from 'date-fns';
 import RwandaLocationFields from '../components/RwandaLocationFields';
+import EntryMeta from '../components/EntryMeta';
 
 const ROLES = ['Admin', 'Farmer', 'Veterinarian', 'Technician'];
 
@@ -111,7 +112,7 @@ function UserActivityPanel({ user, onClose }) {
                     <td>{r.milking_session}</td>
                     <td style={{ fontWeight: 700, color: '#00BCD4' }}>{Number(r.milk_amount_liters).toFixed(1)}</td>
                     <td>{r.milk_quality}</td>
-                    <td style={{ fontSize: 12 }}>{r.recorded_by || '—'}</td>
+                    <td><EntryMeta by={r.recorded_by} /></td>
                   </tr>
                 ))}
                 {milkRecs.length === 0 && <tr><td colSpan={6} style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: 24 }}>No milk records</td></tr>}
@@ -135,7 +136,7 @@ function UserActivityPanel({ user, onClose }) {
                         color: r.methane_impact === 'Increases' ? '#c62828' : r.methane_impact === 'Reduces' ? '#2E7D32' : '#666'
                       }}>{r.methane_impact || 'Neutral'}</span>
                     </td>
-                    <td style={{ fontSize: 12 }}>{r.recorded_by || '—'}</td>
+                    <td><EntryMeta by={r.recorded_by} /></td>
                   </tr>
                 ))}
                 {feedRecs.length === 0 && <tr><td colSpan={6} style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: 24 }}>No feed records</td></tr>}

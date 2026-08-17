@@ -6,6 +6,7 @@ import {
   addCowCost, addCowRevenue, deleteCowCost, deleteCowRevenue,
 } from '../lib/api';
 import { usePermissions } from '../hooks/usePermissions';
+import EntryMeta from '../components/EntryMeta';
 import {
   DonutChart, BarChart as EBar, HBarChart, LineChart as ELine,
   ChartCard, PALETTE,
@@ -328,7 +329,7 @@ function CowDrillDown({ cowId, onClose, p }) {
                       <td><span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 10, background: `${COST_COLOR[r.cost_category] || '#999'}20`, color: COST_COLOR[r.cost_category] || '#666' }}>{r.cost_category}</span></td>
                       <td style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{r.description || '—'}</td>
                       <td style={{ fontWeight: 700, color: '#F44336' }}>{fmt(r.amount_rwf)}</td>
-                      <td style={{ fontSize: 11, color: 'var(--text-secondary)' }}>{r.recorded_by}</td>
+                      <td><EntryMeta by={r.recorded_by} size={11} /></td>
                       <td><button onClick={() => { if (window.confirm('Delete?')) delCostMut.mutate(r.cost_id); }}
                         className="btn btn-ghost" style={{ padding: '3px 8px', color: '#c62828', fontSize: 11 }}>
                         <Trash2 size={12} /></button></td>
@@ -390,7 +391,7 @@ function CowDrillDown({ cowId, onClose, p }) {
                       <td><span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 10, background: `${REV_COLOR[r.revenue_category] || '#999'}20`, color: REV_COLOR[r.revenue_category] || '#666' }}>{r.revenue_category}</span></td>
                       <td style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{r.description || '—'}</td>
                       <td style={{ fontWeight: 700, color: '#4CAF50' }}>{fmt(r.amount_rwf)}</td>
-                      <td style={{ fontSize: 11, color: 'var(--text-secondary)' }}>{r.recorded_by}</td>
+                      <td><EntryMeta by={r.recorded_by} size={11} /></td>
                       <td><button onClick={() => { if (window.confirm('Delete?')) delRevMut.mutate(r.revenue_id); }}
                         className="btn btn-ghost" style={{ padding: '3px 8px', color: '#c62828', fontSize: 11 }}>
                         <Trash2 size={12} /></button></td>
