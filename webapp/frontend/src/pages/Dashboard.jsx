@@ -1,5 +1,5 @@
 import { useQuery } from '@tanstack/react-query';
-import { useRealtime } from '../context/RealtimeContext';
+import { useRealtime } from '../hooks/useRealtime';
 import { usePermissions } from '../hooks/usePermissions';
 import {
   getDashboardSummary, getRecentAlerts, getMilkTrend, getEnvTrend,
@@ -9,8 +9,9 @@ import {
 } from '../lib/api';
 import {
   LineChart as ELine, BarChart as EBar, DonutChart, HBarChart,
-  GaugeChart, ChartCard, HEALTH_COLORS, STAGE_COLORS, SEX_COLORS,
+  GaugeChart, ChartCard,
 } from '../components/ChartKit';
+import { HEALTH_COLORS, STAGE_COLORS, SEX_COLORS } from '../components/chartColors';
 import {
   AlertTriangle, CheckCircle, Thermometer, Droplets, Beef,
   Activity, Users, Cpu, HeartPulse, TrendingUp, Wind,

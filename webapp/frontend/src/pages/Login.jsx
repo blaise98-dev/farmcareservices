@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 import { Eye, EyeOff, Loader2 } from 'lucide-react';
 import { getFarmInfo } from '../lib/api';
 

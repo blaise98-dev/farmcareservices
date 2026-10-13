@@ -1,7 +1,6 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useWebSocket } from '../hooks/useWebSocket';
-
-const RealtimeCtx = createContext(null);
+import { RealtimeCtx } from '../hooks/useRealtime';
 
 export function RealtimeProvider({ children }) {
   const { connected, on } = useWebSocket();
@@ -38,5 +37,3 @@ export function RealtimeProvider({ children }) {
     </RealtimeCtx.Provider>
   );
 }
-
-export const useRealtime = () => useContext(RealtimeCtx);

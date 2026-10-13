@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useRealtime } from '../context/RealtimeContext';
+import { useRealtime } from '../hooks/useRealtime';
 import { getEnvHistory, getEnvDailyAvg, getCowTemperatures, addEnvReading, getWaterQualityLatest, getWaterQualityHistory } from '../lib/api';
 import { usePermissions } from '../hooks/usePermissions';
 import { LineChart as ELine, ChartCard } from '../components/ChartKit';

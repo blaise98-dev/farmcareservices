@@ -1,13 +1,12 @@
-import { createContext, useContext, useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import axios from 'axios';
-
-const AuthCtx = createContext(null);
+import { AuthCtx } from '../hooks/useAuth';
 
 const TOKEN_KEY = 'moome_token';
 const USER_KEY  = 'moome_user';
 
 // Shared axios instance with auth header injection
-export const authApi = axios.create({ baseURL: '' });
+const authApi = axios.create({ baseURL: '' });
 
 authApi.interceptors.request.use((config) => {
   const token = localStorage.getItem(TOKEN_KEY);
@@ -67,5 +66,3 @@ export function AuthProvider({ children }) {
     </AuthCtx.Provider>
   );
 }
-
-export const useAuth = () => useContext(AuthCtx);

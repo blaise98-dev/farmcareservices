@@ -4,7 +4,7 @@
  * Permission matrix mirrors the backend rbac.py table exactly.
  * Import `usePermissions` in any component to gate UI elements.
  */
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from './useAuth';
 
 const ADMIN = 'Admin';
 const FARMER = 'Farmer';

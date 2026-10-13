@@ -1,6 +1,6 @@
 import { NavLink } from 'react-router-dom';
-import { useRealtime } from '../context/RealtimeContext';
-import { useAuth } from '../context/AuthContext';
+import { useRealtime } from '../hooks/useRealtime';
+import { useAuth } from '../hooks/useAuth';
 import { usePermissions } from '../hooks/usePermissions';
 import {
   LayoutDashboard, Beef, Droplets, Leaf, Wind,

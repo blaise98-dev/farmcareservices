@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { useRealtime } from '../context/RealtimeContext';
+import { useRealtime } from '../hooks/useRealtime';
 import { getAlerts, resolveAlert, createAlert, getSmsLogs, getAlertStats, getCows } from '../lib/api';
 import { usePermissions } from '../hooks/usePermissions';
 import { HBarChart, ChartCard } from '../components/ChartKit';

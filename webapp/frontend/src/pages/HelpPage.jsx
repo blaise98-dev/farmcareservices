@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { HelpCircle, Phone, Mail, MessageSquare, ChevronDown, ChevronRight, Book, Zap, Users, Bell } from 'lucide-react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 
 const FAQS = [
   {

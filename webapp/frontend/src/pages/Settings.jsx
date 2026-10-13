@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { Link } from 'react-router-dom';
-import { useAuth } from '../context/AuthContext';
+import { useAuth } from '../hooks/useAuth';
 import { usePermissions } from '../hooks/usePermissions';
 import { CheckCircle, User, Lock, ShieldCheck, Users, FileText, ExternalLink, Globe, Camera } from 'lucide-react';
 import { updateAvatar } from '../lib/api';
