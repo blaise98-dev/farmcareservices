@@ -391,7 +391,7 @@ export function PublicFooter() {
                 gap: 8,
               }}
             >
-              <Phone size={14} /> +250 783530924
+              <Phone size={14} /> +250 78 000 001
             </a>
             <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <MapPin size={14} /> Kigali, Rwanda 🇷🇼
