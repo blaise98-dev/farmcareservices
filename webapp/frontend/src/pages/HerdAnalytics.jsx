@@ -4,8 +4,8 @@ import { getHerdAnalytics } from '../lib/api';
 import {
   DonutChart, BarChart as EBar, HBarChart, RadarChart as ERadar,
   TreemapChart, HeatmapChart, ChartCard,
-  HEALTH_COLORS, BREED_COLORS, SEX_COLORS, STAGE_COLORS, PALETTE,
 } from '../components/ChartKit';
+import { HEALTH_COLORS, BREED_COLORS, SEX_COLORS, STAGE_COLORS, PALETTE } from '../components/chartColors';
 import {
   BarChart2, Filter, RefreshCw, Beef, Users, Dna, Pill, CalendarDays,
   HeartPulse, Scale, Radar, Microscope, Map, MapPin, Droplets, ClipboardList,

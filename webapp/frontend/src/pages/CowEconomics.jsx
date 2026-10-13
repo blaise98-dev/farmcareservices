@@ -9,8 +9,9 @@ import { usePermissions } from '../hooks/usePermissions';
 import EntryMeta from '../components/EntryMeta';
 import {
   DonutChart, BarChart as EBar, HBarChart, LineChart as ELine,
-  ChartCard, PALETTE,
+  ChartCard,
 } from '../components/ChartKit';
+import { PALETTE } from '../components/chartColors';
 import {
   TrendingUp, TrendingDown, DollarSign, Plus, X, Trash2,
   RefreshCw, Beef, ClipboardList, BarChart2, Calendar,

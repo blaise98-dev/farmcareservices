@@ -6,8 +6,8 @@ import {
   MessageSquare, HelpCircle, Settings as SettingsIcon,
   Thermometer, AlertTriangle,
 } from 'lucide-react';
-import { useRealtime } from '../context/RealtimeContext';
-import { useAuth } from '../context/AuthContext';
+import { useRealtime } from '../hooks/useRealtime';
+import { useAuth } from '../hooks/useAuth';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getNotifications, getUnreadCount, markNotifRead, markAllNotifRead } from '../lib/api';

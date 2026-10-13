@@ -3,7 +3,7 @@ import { useParams, Link } from 'react-router-dom';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { getCow, updateCow, getCowRepro, getCowTreatments } from '../lib/api';
 import { usePermissions } from '../hooks/usePermissions';
-import { useRealtime } from '../context/RealtimeContext';
+import { useRealtime } from '../hooks/useRealtime';
 import RoleGuard from '../components/RoleGuard';
 import {
   ArrowLeft, Activity, Save, Lock, HeartPulse, MapPin, Waves,
