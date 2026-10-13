@@ -56,7 +56,7 @@ export default function Settings() {
     e.preventDefault();
     setMsg(''); setErr('');
     if (pw.new !== pw.confirm) { setErr('Passwords do not match'); return; }
-    if (pw.new.length < 6) { setErr('Minimum 6 characters'); return; }
+    if (pw.new.length < 10) { setErr('Minimum 10 characters'); return; }
     setSaving(true);
     try {
       await changePassword(pw.new);
@@ -158,7 +158,7 @@ export default function Settings() {
             </h2>
             <form onSubmit={handleChangePassword} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               {[
-                { label: 'New Password',     key: 'new',     placeholder: 'Minimum 6 characters' },
+                { label: 'New Password',     key: 'new',     placeholder: 'Minimum 10 characters' },
                 { label: 'Confirm Password', key: 'confirm', placeholder: 'Repeat new password' },
               ].map(({ label, key, placeholder }) => (
                 <div key={key}>

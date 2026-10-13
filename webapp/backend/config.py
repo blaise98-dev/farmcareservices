@@ -9,6 +9,11 @@ _INSECURE_SECRET = "moome-secret-key-change-in-production"
 
 
 class Settings(BaseSettings):
+    # "development" (default) or "production" — set ENV=production in the
+    # deployed .env so an insecure SECRET_KEY refuses to boot instead of
+    # just warning.
+    ENV: str = "development"
+
     # Connect via SSH tunnel: localhost:DB_PORT → remote MySQL
     DB_HOST: str = "localhost"
     DB_PORT: int = 3306
@@ -45,8 +50,16 @@ class Settings(BaseSettings):
 
 settings = Settings()
 
-# Warn loudly if running with insecure defaults in a production-like environment
+# Refuse to boot with the shipped default SECRET_KEY once ENV=production —
+# JWTs signed with a publicly-known key are forgeable. Local dev keeps the
+# soft warning so a fresh checkout still runs without any .env.
 if settings.SECRET_KEY == _INSECURE_SECRET:
+    if settings.ENV == "production":
+        raise RuntimeError(
+            "SECURITY: refusing to start with the default SECRET_KEY while ENV=production. "
+            "Set a strong SECRET_KEY in backend/.env (see rotate-secrets.yml or "
+            "`openssl rand -hex 32`)."
+        )
     logger.warning(
         "SECURITY WARNING: SECRET_KEY is set to the insecure default. "
         "Set a strong SECRET_KEY in your .env file before deploying to production."

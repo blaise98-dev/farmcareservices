@@ -30,7 +30,7 @@ export default function Register() {
     e.preventDefault();
     setErr('');
     if (form.password !== form.confirmPassword) { setErr('Passwords do not match.'); return; }
-    if (form.password.length < 6) { setErr('Password must be at least 6 characters.'); return; }
+    if (form.password.length < 10) { setErr('Password must be at least 10 characters.'); return; }
 
     const body = { ...form };
     delete body.confirmPassword;
@@ -104,7 +104,7 @@ export default function Register() {
                 <div style={{ position: 'relative' }}>
                   <input required type={showPw ? 'text' : 'password'} value={form.password}
                     onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
-                    placeholder="At least 6 characters" style={{ ...inputStyle, paddingRight: 44 }} />
+                    placeholder="At least 10 characters" style={{ ...inputStyle, paddingRight: 44 }} />
                   <button type="button" onClick={() => setShowPw(s => !s)}
                     style={{ position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', color: '#999', padding: 4 }}>
                     {showPw ? <EyeOff size={16} /> : <Eye size={16} />}

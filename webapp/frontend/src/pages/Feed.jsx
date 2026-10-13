@@ -4,7 +4,7 @@ import { getFeedDailySummary, getWaterToday, addFeedRecord, getCows, getGroups, 
 import { usePermissions } from '../hooks/usePermissions';
 import RoleGuard from '../components/RoleGuard';
 import { BarChart as EBar, HBarChart, ChartCard } from '../components/ChartKit';
-import { Plus, Leaf, Lock, Wind } from 'lucide-react';
+import { Plus, Leaf, Lock, Wind, Waves, ClipboardList, Beef, Users } from 'lucide-react';
 import { format } from 'date-fns';
 
 // Feed types with their methane impact classification
@@ -54,8 +54,8 @@ export default function Feed() {
   const [feedMode, setFeedMode] = useState('cow');
   const qc = useQueryClient();
 
-  const { data: feedSummary = []  } = useQuery({ queryKey: ['feed-daily'],     queryFn: getFeedDailySummary });
-  const { data: waterToday = []   } = useQuery({ queryKey: ['water-today'],    queryFn: getWaterToday });
+  const { data: feedSummary = [], isLoading: feedLoading, isError: feedError } = useQuery({ queryKey: ['feed-daily'],     queryFn: getFeedDailySummary });
+  const { data: waterToday = [], isLoading: waterLoading, isError: waterError } = useQuery({ queryKey: ['water-today'],    queryFn: getWaterToday });
   const { data: cows = []         } = useQuery({ queryKey: ['cows'],           queryFn: getCows });
   const { data: groups = []       } = useQuery({ queryKey: ['groups'],         queryFn: getGroups });
   const { data: methaneSummary = [] } = useQuery({ queryKey: ['methane-summary'], queryFn: getMethaneSummary });
@@ -117,13 +117,15 @@ export default function Feed() {
 
       {/* Charts */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
-        <ChartCard title="🌿 Daily Feed Totals" sub="Total feed dispensed per day (kg)">
+        <ChartCard title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Leaf size={14} /> Daily Feed Totals</span>} sub="Total feed dispensed per day (kg)"
+          isLoading={feedLoading} isError={feedError} height={240}>
           <EBar data={chartData} xKey="date"
             series={[{ key: 'total', name: 'Feed (kg)', color: '#4CAF50' }]}
             unit=" kg" showLabel height={240} />
         </ChartCard>
 
-        <ChartCard title="💧 Water Intake Today" sub="Per-cow consumption — threshold 30 L">
+        <ChartCard title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Waves size={14} /> Water Intake Today</span>} sub="Per-cow consumption — threshold 30 L"
+          isLoading={waterLoading} isError={waterError} height={240}>
           <HBarChart
             data={waterToday.map(w => ({ name: w.cow_name, value: Number(Number(w.total_liters).toFixed(0)) }))}
             unit=" L" height={240}
@@ -165,7 +167,7 @@ export default function Feed() {
       {/* Feed Records Table */}
       <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
         <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 12 }}>
-          <h2 style={{ fontSize: 16, fontWeight: 700, flex: 1 }}>📋 Feed Records (7 days)</h2>
+          <h2 style={{ fontSize: 16, fontWeight: 700, flex: 1, display: 'flex', alignItems: 'center', gap: 8 }}><ClipboardList size={16} /> Feed Records (7 days)</h2>
           <RoleGuard
             allowed={p.canLogFeed}
             fallback={
@@ -187,8 +189,8 @@ export default function Feed() {
               {['cow', 'group'].map(m => (
                 <button key={m} type="button" className="btn"
                   onClick={() => { setFeedMode(m); setForm(f => ({ ...f, cow_id: '', group_id: '' })); }}
-                  style={{ padding: '5px 14px', fontSize: 12, background: feedMode === m ? '#4CAF50' : 'var(--bg)', color: feedMode === m ? '#fff' : 'var(--text-secondary)', border: '1px solid var(--border)' }}>
-                  {m === 'cow' ? '🐄 Per Cow' : '👥 Group Feed'}
+                  style={{ padding: '5px 14px', fontSize: 12, display: 'flex', alignItems: 'center', gap: 6, background: feedMode === m ? '#4CAF50' : 'var(--bg)', color: feedMode === m ? '#fff' : 'var(--text-secondary)', border: '1px solid var(--border)' }}>
+                  {m === 'cow' ? <><Beef size={13} /> Per Cow</> : <><Users size={13} /> Group Feed</>}
                 </button>
               ))}
             </div>

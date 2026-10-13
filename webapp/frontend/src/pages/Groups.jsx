@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getGroups, getGroupMembers, createGroup, addGroupMembers, removeGroupMember, deleteGroup, getCows } from '../lib/api';
 import { usePermissions } from '../hooks/usePermissions';
+import EntryMeta from '../components/EntryMeta';
 import { Link } from 'react-router-dom';
 import { Plus, X, Users, Trash2, UserMinus } from 'lucide-react';
 
@@ -22,7 +23,7 @@ export default function Groups() {
   const qc = useQueryClient();
   const canWrite = p.isAdmin || p.isFarmer;
 
-  const { data: groups = [] } = useQuery({ queryKey: ['groups'], queryFn: getGroups });
+  const { data: groups = [], isLoading: groupsLoading } = useQuery({ queryKey: ['groups'], queryFn: getGroups });
   const { data: members = [] } = useQuery({ queryKey: ['group-members', selectedGroup?.group_id], queryFn: () => getGroupMembers(selectedGroup.group_id), enabled: !!selectedGroup });
   const { data: cows = []   } = useQuery({ queryKey: ['cows'], queryFn: getCows });
 
@@ -55,7 +56,7 @@ export default function Groups() {
       {/* Header */}
       <div style={{ background: 'linear-gradient(135deg,#1E4D7B,#2e6fa3)', borderRadius: 12, padding: '14px 20px', color: '#fff', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 12 }}>
         <div>
-          <div style={{ fontSize: 18, fontWeight: 800 }}>👥 Animal Groups</div>
+          <div style={{ fontSize: 18, fontWeight: 800, display: 'flex', alignItems: 'center', gap: 8 }}><Users size={18} /> Animal Groups</div>
           <div style={{ fontSize: 12, opacity: .8, marginTop: 4 }}>Manage herd categories and group-based feeding</div>
         </div>
         {canWrite && (
@@ -83,7 +84,8 @@ export default function Groups() {
               </div>
             </div>
           ))}
-          {groups.length === 0 && <div className="empty-state"><Users size={32} /><span>No groups yet</span></div>}
+          {groupsLoading && <div className="skeleton" style={{ height: 100, width: '100%' }} />}
+          {!groupsLoading && groups.length === 0 && <div className="empty-state"><Users size={32} /><span>No groups yet</span></div>}
         </div>
 
         {/* Group detail */}
@@ -92,7 +94,10 @@ export default function Groups() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, flexWrap: 'wrap', gap: 10 }}>
               <div>
                 <h2 style={{ fontSize: 18, fontWeight: 800, marginBottom: 4 }}>{selectedGroup.group_name}</h2>
-                <span style={{ fontSize: 12, padding: '2px 10px', borderRadius: 20, background: `${TYPE_COLOR[selectedGroup.group_type] || '#999'}22`, color: TYPE_COLOR[selectedGroup.group_type] || '#333', fontWeight: 600 }}>{selectedGroup.group_type}</span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  <span style={{ fontSize: 12, padding: '2px 10px', borderRadius: 20, background: `${TYPE_COLOR[selectedGroup.group_type] || '#999'}22`, color: TYPE_COLOR[selectedGroup.group_type] || '#333', fontWeight: 600 }}>{selectedGroup.group_type}</span>
+                  {selectedGroup.created_by && <EntryMeta by={selectedGroup.created_by} />}
+                </div>
               </div>
               {canWrite && (
                 <div style={{ display: 'flex', gap: 8 }}>
@@ -150,7 +155,7 @@ export default function Groups() {
         <div style={{ position: 'fixed', inset: 0, zIndex: 999, background: 'rgba(0,0,0,.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
           <div style={{ background: '#fff', borderRadius: 16, width: '100%', maxWidth: 460, boxShadow: '0 20px 60px rgba(0,0,0,.25)' }}>
             <div style={{ padding: '18px 24px', background: 'linear-gradient(135deg,#1E4D7B,#2e6fa3)', color: '#fff', borderRadius: '16px 16px 0 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h2 style={{ fontSize: 17, fontWeight: 800, margin: 0 }}>👥 Create New Group</h2>
+              <h2 style={{ fontSize: 17, fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}><Users size={16} /> Create New Group</h2>
               <button onClick={() => setShowCreateModal(false)} style={{ background: 'rgba(255,255,255,.2)', border: 'none', color: '#fff', borderRadius: 8, padding: '5px 8px', cursor: 'pointer' }}><X size={16} /></button>
             </div>
             <form onSubmit={e => { e.preventDefault(); if (!newGroupForm.group_name.trim()) { setErr('Name required'); return; } createMut.mutate(newGroupForm); }}

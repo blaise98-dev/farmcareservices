@@ -63,8 +63,8 @@ export default function ResetPassword() {
       setError('Passwords do not match');
       return;
     }
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters');
+    if (password.length < 10) {
+      setError('Password must be at least 10 characters');
       return;
     }
     setLoading(true);
@@ -150,7 +150,7 @@ export default function ResetPassword() {
                 Set a new password
               </h2>
               <p style={{ fontSize: 14, color: '#5a6a7e', marginBottom: 24 }}>
-                Choose a strong password with at least 6 characters.
+                Choose a strong password with at least 10 characters.
               </p>
 
               <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -168,7 +168,7 @@ export default function ResetPassword() {
                       onChange={e => setPassword(e.target.value)}
                       placeholder="Enter new password"
                       required
-                      minLength={6}
+                      minLength={10}
                       autoFocus
                       style={inputStyle}
                       onFocus={e => { e.target.style.borderColor = '#4CAF50'; }}
@@ -200,7 +200,7 @@ export default function ResetPassword() {
                     onChange={e => setConfirm(e.target.value)}
                     placeholder="Confirm new password"
                     required
-                    minLength={6}
+                    minLength={10}
                     style={{ ...inputStyle, padding: '11px 14px' }}
                     onFocus={e => { e.target.style.borderColor = '#4CAF50'; }}
                     onBlur={e => { e.target.style.borderColor = '#e0e0e0'; }}

@@ -5,7 +5,10 @@ import { getCow, updateCow, getCowRepro, getCowTreatments } from '../lib/api';
 import { usePermissions } from '../hooks/usePermissions';
 import { useRealtime } from '../context/RealtimeContext';
 import RoleGuard from '../components/RoleGuard';
-import { ArrowLeft, Activity, Save, Lock, HeartPulse, MapPin, Waves } from 'lucide-react';
+import {
+  ArrowLeft, Activity, Save, Lock, HeartPulse, MapPin, Waves,
+  BarChart2, Baby, Pill, Trash2, Thermometer, Droplets, Leaf, Bot, AlertTriangle,
+} from 'lucide-react';
 import { LineChart as ELine, BarChart as EBar, ChartCard } from '../components/ChartKit';
 import { format } from 'date-fns';
 import { MapContainer, TileLayer, Marker, Popup } from 'react-leaflet';
@@ -259,9 +262,9 @@ export default function CowDetail() {
                   window.history.back();
                 }}
                 className="btn btn-danger"
-                style={{ alignSelf: 'flex-end', height: 38, marginLeft: 'auto' }}
+                style={{ alignSelf: 'flex-end', height: 38, marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: 6 }}
               >
-                🗑 Retire Cow
+                <Trash2 size={14} /> Retire Cow
               </button>
             </RoleGuard>
           </div>
@@ -282,15 +285,15 @@ export default function CowDetail() {
       {/* Tab navigation */}
       <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
         {[
-          { id: 'overview',      label: '📊 Overview' },
-          { id: 'vitals',        label: '❤️ Vitals & Location' },
-          { id: 'reproduction',  label: '🐣 Reproduction' },
-          { id: 'health',        label: '💊 Treatments' },
+          { id: 'overview',      label: 'Overview', icon: BarChart2 },
+          { id: 'vitals',        label: 'Vitals & Location', icon: HeartPulse },
+          { id: 'reproduction',  label: 'Reproduction', icon: Baby },
+          { id: 'health',        label: 'Treatments', icon: Pill },
         ].map(t => (
           <button key={t.id} onClick={() => setDetailTab(t.id)}
             className="btn"
-            style={{ padding: '7px 16px', fontSize: 13, background: detailTab === t.id ? '#1E4D7B' : 'var(--bg)', color: detailTab === t.id ? '#fff' : 'var(--text-secondary)', border: '1px solid var(--border)', fontWeight: detailTab === t.id ? 700 : 400 }}>
-            {t.label}
+            style={{ padding: '7px 16px', fontSize: 13, display: 'flex', alignItems: 'center', gap: 6, background: detailTab === t.id ? '#1E4D7B' : 'var(--bg)', color: detailTab === t.id ? '#fff' : 'var(--text-secondary)', border: '1px solid var(--border)', fontWeight: detailTab === t.id ? 700 : 400 }}>
+            <t.icon size={13} /> {t.label}
           </button>
         ))}
       </div>
@@ -357,7 +360,7 @@ export default function CowDetail() {
             </div>
           </div>
 
-          <ChartCard title="❤️ Heart Rate & SpO2" sub="Recent readings from vitals collar">
+          <ChartCard title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><HeartPulse size={14} /> Heart Rate & SpO2</span>} sub="Recent readings from vitals collar">
             <ELine data={vitalsChart} xKey="time"
               series={[{ key: 'bpm', name: 'Heart Rate (bpm)', color: '#E91E63' }, { key: 'spo2', name: 'SpO2 (%)', color: '#3F51B5' }]}
               smooth height={220} unit=""
@@ -365,7 +368,7 @@ export default function CowDetail() {
           </ChartCard>
 
           <div className="card">
-            <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 12 }}>📍 Last Known Location</h2>
+            <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}><MapPin size={16} /> Last Known Location</h2>
             {latestLocation?.latitude != null && latestLocation?.longitude != null ? (
               <>
                 <div style={{ height: 320, borderRadius: 12, overflow: 'hidden', marginBottom: 12 }}>
@@ -399,7 +402,7 @@ export default function CowDetail() {
       {/* Reproduction tab */}
       {detailTab === 'reproduction' && (
         <div className="card">
-          <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 14 }}>🐣 Reproduction Records</h2>
+          <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 14, display: 'flex', alignItems: 'center', gap: 8 }}><Baby size={16} /> Reproduction Records</h2>
           {reproRecords.length === 0
             ? <div className="empty-state"><span>No reproduction records — add via the Reproduction page</span></div>
             : reproRecords.map(r => (
@@ -430,7 +433,7 @@ export default function CowDetail() {
       {/* Treatments tab */}
       {detailTab === 'health' && (
         <div className="card">
-          <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 14 }}>💊 Treatment History</h2>
+          <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 14, display: 'flex', alignItems: 'center', gap: 8 }}><Pill size={16} /> Treatment History</h2>
           {treatments.length === 0
             ? <div className="empty-state"><span>No treatment records</span></div>
             : (
@@ -461,7 +464,7 @@ export default function CowDetail() {
       {/* Charts row — only shown on overview tab */}
       {detailTab === 'overview' && <>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
-        <ChartCard title="🌡 Body Temperature" sub="Recent readings — Elevated ≥39.5°C · Fever ≥40°C">
+        <ChartCard title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Thermometer size={14} /> Body Temperature</span>} sub="Recent readings — Elevated ≥39.5°C · Fever ≥40°C">
           <ELine data={tempData} xKey="time"
             series={[{ key: 'temp', name: 'Body Temp °C', color: '#FF9800' }]}
             smooth height={200} unit="°C"
@@ -469,7 +472,7 @@ export default function CowDetail() {
           />
         </ChartCard>
 
-        <ChartCard title="🥛 Milk Production" sub="Per-session records — last 14 entries">
+        <ChartCard title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Droplets size={14} /> Milk Production</span>} sub="Per-session records — last 14 entries">
           <EBar data={milkData} xKey="time"
             series={[{ key: 'liters', name: 'Milk (L)', color: '#00BCD4' }]}
             unit=" L" showLabel height={200} />
@@ -478,13 +481,13 @@ export default function CowDetail() {
 
       {/* Feed + Water */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
-        <ChartCard title="🌿 Feed Consumption" sub="kg per feeding event — last 10 records">
+        <ChartCard title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Leaf size={14} /> Feed Consumption</span>} sub="kg per feeding event — last 10 records">
           <EBar data={feedData} xKey="date"
             series={[{ key: 'kg', name: 'Feed (kg)', color: '#4CAF50' }]}
             unit=" kg" height={200} />
         </ChartCard>
 
-        <ChartCard title="💧 Water Intake" sub="Litres consumed per recorded session">
+        <ChartCard title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Waves size={14} /> Water Intake</span>} sub="Litres consumed per recorded session">
           {water_intake.length === 0
             ? <div className="empty-state" style={{ padding: 16 }}><span>No water records</span></div>
             : (
@@ -506,7 +509,7 @@ export default function CowDetail() {
         {/* Predictions — only for roles that can see predictions */}
         {p.canViewPredictions ? (
           <div className="card">
-            <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 12 }}>🤖 AI Predictions</h2>
+            <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}><Bot size={16} /> AI Predictions</h2>
             {predictions.length === 0
               ? <div className="empty-state"><Activity size={32} /><span>No predictions available</span></div>
               : predictions.map(pred => (
@@ -533,7 +536,7 @@ export default function CowDetail() {
         )}
 
         <div className="card">
-          <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 12 }}>🚨 Cow Alerts</h2>
+          <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}><AlertTriangle size={16} /> Cow Alerts</h2>
           {alerts.length === 0
             ? <div className="empty-state" style={{ padding: 20 }}><span>No alerts for this cow</span></div>
             : alerts.map(a => (

@@ -4,6 +4,7 @@ import { getUsers, createUser, updateUser, deleteUser, adminResetPassword, getCo
 import { Users, Plus, X, ShieldCheck, ToggleLeft, ToggleRight, Edit2, Trash2, Key, Eye, UserCheck, UserX, Clock } from 'lucide-react';
 import { format } from 'date-fns';
 import RwandaLocationFields from '../components/RwandaLocationFields';
+import EntryMeta from '../components/EntryMeta';
 
 const ROLES = ['Admin', 'Farmer', 'Veterinarian', 'Technician'];
 
@@ -111,7 +112,7 @@ function UserActivityPanel({ user, onClose }) {
                     <td>{r.milking_session}</td>
                     <td style={{ fontWeight: 700, color: '#00BCD4' }}>{Number(r.milk_amount_liters).toFixed(1)}</td>
                     <td>{r.milk_quality}</td>
-                    <td style={{ fontSize: 12 }}>{r.recorded_by || '—'}</td>
+                    <td><EntryMeta by={r.recorded_by} /></td>
                   </tr>
                 ))}
                 {milkRecs.length === 0 && <tr><td colSpan={6} style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: 24 }}>No milk records</td></tr>}
@@ -135,7 +136,7 @@ function UserActivityPanel({ user, onClose }) {
                         color: r.methane_impact === 'Increases' ? '#c62828' : r.methane_impact === 'Reduces' ? '#2E7D32' : '#666'
                       }}>{r.methane_impact || 'Neutral'}</span>
                     </td>
-                    <td style={{ fontSize: 12 }}>{r.recorded_by || '—'}</td>
+                    <td><EntryMeta by={r.recorded_by} /></td>
                   </tr>
                 ))}
                 {feedRecs.length === 0 && <tr><td colSpan={6} style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: 24 }}>No feed records</td></tr>}
@@ -225,7 +226,7 @@ export default function UserManagement() {
     e.preventDefault();
     setCreateErr('');
     if (!createForm.username.trim()) { setCreateErr('Username is required'); return; }
-    if (createForm.password.length < 6) { setCreateErr('Password must be at least 6 characters'); return; }
+    if (createForm.password.length < 10) { setCreateErr('Password must be at least 10 characters'); return; }
     if (!createForm.full_name.trim()) { setCreateErr('Full name is required'); return; }
     createMut.mutate({
       ...createForm,
@@ -518,7 +519,7 @@ export default function UserManagement() {
 
               {/* Password */}
               <div>
-                <label style={LABEL_STYLE}>Password * (min 6 characters)</label>
+                <label style={LABEL_STYLE}>Password * (min 10 characters)</label>
                 <input type="password" name="password" value={createForm.password} onChange={handleCreateChange}
                   placeholder="Secure password" style={INPUT_STYLE}
                   onFocus={e => e.target.style.borderColor = '#4CAF50'}
@@ -715,7 +716,7 @@ export default function UserManagement() {
             </div>
             <div style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 14 }}>
               <div>
-                <label style={LABEL_STYLE}>New Password (min 6 characters)</label>
+                <label style={LABEL_STYLE}>New Password (min 10 characters)</label>
                 <input type="password" value={resetPw} onChange={e => setResetPw(e.target.value)}
                   placeholder="Enter new password…"
                   style={{ width: '100%', padding: '9px 12px', borderRadius: 8, border: '2px solid var(--border)', fontSize: 13, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }}
@@ -729,7 +730,7 @@ export default function UserManagement() {
               )}
               <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
                 <button onClick={() => setResetTarget(null)} className="btn" style={{ padding: '9px 18px', fontSize: 13 }}>Cancel</button>
-                <button disabled={resetPw.length < 6 || resetMut.isPending} className="btn btn-primary"
+                <button disabled={resetPw.length < 10 || resetMut.isPending} className="btn btn-primary"
                   onClick={() => resetMut.mutate({ id: resetTarget.user_id, pw: resetPw })}
                   style={{ padding: '9px 22px', fontSize: 13, background: '#E65100', border: 'none' }}>
                   {resetMut.isPending ? 'Resetting…' : 'Reset Password'}

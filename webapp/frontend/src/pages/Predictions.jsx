@@ -1,7 +1,7 @@
 import { useQuery } from '@tanstack/react-query';
 import { getPredictions, getHealthRisks, getMilkYieldPreds } from '../lib/api';
 import { HBarChart, ChartCard } from '../components/ChartKit';
-import { Brain, AlertTriangle, TrendingUp, Activity } from 'lucide-react';
+import { Brain, AlertTriangle, TrendingUp, Activity, Droplets, ClipboardList } from 'lucide-react';
 import { format } from 'date-fns';
 
 const PRED_COLOR = {
@@ -11,9 +11,9 @@ const PRED_COLOR = {
 const CONF_COLOR = (pct) => pct >= 90 ? '#4CAF50' : pct >= 80 ? '#FF9800' : '#F44336';
 
 export default function Predictions() {
-  const { data: all = [] } = useQuery({ queryKey: ['predictions'], queryFn: getPredictions });
+  const { data: all = [], isLoading: allLoading } = useQuery({ queryKey: ['predictions'], queryFn: getPredictions });
   const { data: risks = [] } = useQuery({ queryKey: ['health-risks'], queryFn: getHealthRisks });
-  const { data: milkPreds = [] } = useQuery({ queryKey: ['milk-yield-preds'], queryFn: getMilkYieldPreds });
+  const { data: milkPreds = [], isLoading: milkLoading, isError: milkError } = useQuery({ queryKey: ['milk-yield-preds'], queryFn: getMilkYieldPreds });
 
   const milkChart = milkPreds.map(p => ({
     cow: p.cow_name,
@@ -76,7 +76,8 @@ export default function Predictions() {
 
       {/* Milk Yield predictions chart */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
-        <ChartCard title="🥛 Milk Yield Forecast" sub="Predicted output — next 2 days">
+        <ChartCard title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Droplets size={14} /> Milk Yield Forecast</span>} sub="Predicted output — next 2 days"
+          isLoading={milkLoading} isError={milkError} height={220}>
           <HBarChart data={milkChart.map(r => ({ name: r.cow, value: Number(r.predicted) }))}
             unit=" L" color="#00BCD4" height={220} />
         </ChartCard>
@@ -84,7 +85,7 @@ export default function Predictions() {
         {/* All predictions table */}
         <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
           <div style={{ padding: '14px 16px', borderBottom: '1px solid var(--border)' }}>
-            <h2 style={{ fontSize: 15, fontWeight: 700 }}>📋 All Predictions</h2>
+            <h2 style={{ fontSize: 15, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}><ClipboardList size={15} /> All Predictions</h2>
           </div>
           <div style={{ maxHeight: 280, overflowY: 'auto' }}>
             <table className="data-table">
@@ -115,6 +116,8 @@ export default function Predictions() {
                     </td>
                   </tr>
                 ))}
+                {allLoading && <tr><td colSpan={5} style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: 24 }}>Loading predictions…</td></tr>}
+                {!allLoading && all.length === 0 && <tr><td colSpan={5} style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: 24 }}>No predictions yet</td></tr>}
               </tbody>
             </table>
           </div>

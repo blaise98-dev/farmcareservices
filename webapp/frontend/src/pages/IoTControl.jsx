@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getDeviceStatus, getControlLogs, sendDeviceCommand, logCalibration } from '../lib/api';
 import { usePermissions } from '../hooks/usePermissions';
 import { format } from 'date-fns';
-import { Cpu, Power, Zap, Droplets, Wind, Settings2, RotateCcw } from 'lucide-react';
+import { Cpu, Power, Zap, Droplets, Wind, Settings2, RotateCcw, ClipboardList } from 'lucide-react';
 
 const DEVICE_CONFIG = {
   Fan:         { icon: Wind,     color: '#00BCD4', label: 'Cooling Fan',    unit: '% speed', max: 100, steps: [0, 25, 50, 75, 100] },
@@ -94,8 +94,8 @@ export default function IoTControl() {
   const [cmdMsg, setCmdMsg]       = useState('');
   const [logFilter, setLogFilter] = useState('All');
 
-  const { data: devices = []  } = useQuery({ queryKey: ['device-status'], queryFn: getDeviceStatus, refetchInterval: 10000 });
-  const { data: logs = []     } = useQuery({ queryKey: ['control-logs'],  queryFn: () => getControlLogs(200), refetchInterval: 15000 });
+  const { data: devices = [] } = useQuery({ queryKey: ['device-status'], queryFn: getDeviceStatus, refetchInterval: 10000 });
+  const { data: logs = [], isLoading: logsLoading }     = useQuery({ queryKey: ['control-logs'],  queryFn: () => getControlLogs(200), refetchInterval: 15000 });
 
   const commandMut = useMutation({
     mutationFn: sendDeviceCommand,
@@ -136,7 +136,7 @@ export default function IoTControl() {
 
       {/* Header */}
       <div style={{ background: 'linear-gradient(135deg,#E65100,#FF9800)', borderRadius: 12, padding: '14px 20px', color: '#fff' }}>
-        <div style={{ fontSize: 18, fontWeight: 800 }}>⚙️ IoT Device Control</div>
+        <div style={{ fontSize: 18, fontWeight: 800, display: 'flex', alignItems: 'center', gap: 8 }}><Cpu size={18} /> IoT Device Control</div>
         <div style={{ fontSize: 12, opacity: .8, marginTop: 4 }}>
           Manual override for fans, water pumps, feed motors and spray nozzles
         </div>
@@ -204,7 +204,7 @@ export default function IoTControl() {
       {/* Control log table */}
       <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
         <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--border)', display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-          <h2 style={{ fontSize: 15, fontWeight: 700, flex: 1 }}>📋 Control Log</h2>
+          <h2 style={{ fontSize: 15, fontWeight: 700, flex: 1, display: 'flex', alignItems: 'center', gap: 8 }}><ClipboardList size={15} /> Control Log</h2>
           {['All', ...DEVICE_TYPES].map(dt => (
             <button key={dt} onClick={() => setLogFilter(dt)}
               className="btn"
@@ -235,7 +235,8 @@ export default function IoTControl() {
               ))}
             </tbody>
           </table>
-          {filteredLogs.length === 0 && <div className="empty-state"><Cpu size={40} /><span>No control logs</span></div>}
+          {logsLoading && <div className="skeleton" style={{ height: 100, width: '100%' }} />}
+          {!logsLoading && filteredLogs.length === 0 && <div className="empty-state"><Cpu size={40} /><span>No control logs</span></div>}
         </div>
       </div>
     </div>

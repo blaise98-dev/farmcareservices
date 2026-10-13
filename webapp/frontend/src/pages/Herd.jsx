@@ -3,7 +3,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Link } from 'react-router-dom';
 import { getCows, getHerdCounts, registerCow, updateCow, getNextRfid } from '../lib/api';
 import { usePermissions } from '../hooks/usePermissions';
-import { Search, Plus, X, Beef, Info, Edit2, Filter, ChevronDown } from 'lucide-react';
+import { Search, Plus, X, Beef, Info, Edit2, Filter, ChevronDown, HeartPulse, Users, Dna } from 'lucide-react';
 import RwandaLocationFields from '../components/RwandaLocationFields';
 import { DonutChart, HBarChart } from '../components/ChartKit';
 
@@ -49,10 +49,10 @@ const EMPTY_FORM = {
 
 // Available chart views
 const CHART_OPTIONS = [
-  { key: 'health',    label: 'Health Status',       icon: '🏥' },
-  { key: 'stage',     label: 'Stage Distribution',  icon: '🐄' },
-  { key: 'sex',       label: 'Sex Distribution',    icon: '♀♂'  },
-  { key: 'breed',     label: 'Breed Breakdown',     icon: '🧬' },
+  { key: 'health',    label: 'Health Status',       icon: HeartPulse },
+  { key: 'stage',     label: 'Stage Distribution',  icon: Beef },
+  { key: 'sex',       label: 'Sex Distribution',    icon: Users },
+  { key: 'breed',     label: 'Breed Breakdown',     icon: Dna },
 ];
 
 function detectStage(birthDate, sex) {
@@ -287,7 +287,7 @@ function ChartPanel({ cows, counts, activeCharts, setActiveCharts }) {
           <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: 5 }}>
             <Filter size={13} /> Show charts:
           </span>
-          {CHART_OPTIONS.map(({ key, label, icon }) => {
+          {CHART_OPTIONS.map(({ key, label, icon: Icon }) => {
             const on = activeCharts.includes(key);
             return (
               <button key={key} onClick={() => toggle(key)}
@@ -299,7 +299,7 @@ function ChartPanel({ cows, counts, activeCharts, setActiveCharts }) {
                   cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5,
                   transition: 'all .15s',
                 }}>
-                {icon} {label}
+                <Icon size={13} /> {label}
               </button>
             );
           })}
@@ -325,10 +325,10 @@ function ChartPanel({ cows, counts, activeCharts, setActiveCharts }) {
           gridTemplateColumns: visible.length === 1 ? '1fr' : visible.length === 2 ? '1fr 1fr' : visible.length === 3 ? '1fr 1fr 1fr' : '1fr 1fr',
           gap: 16,
         }}>
-          {visible.map(({ key, label, icon }) => (
+          {visible.map(({ key, label, icon: Icon }) => (
             <div key={key} className="card" style={{ position: 'relative' }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-                <h2 style={{ fontSize: 14, fontWeight: 700, margin: 0 }}>{icon} {label}</h2>
+                <h2 style={{ fontSize: 14, fontWeight: 700, margin: 0, display: 'flex', alignItems: 'center', gap: 6 }}><Icon size={14} /> {label}</h2>
                 <button onClick={() => toggle(key)}
                   style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#bbb', padding: '2px 4px', borderRadius: 4 }}
                   title="Hide chart">
@@ -530,7 +530,7 @@ export default function Herd() {
       <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
         {/* Toolbar */}
         <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--border)', display: 'flex', gap: 10, flexWrap: 'wrap', alignItems: 'center' }}>
-          <h2 style={{ fontSize: 15, fontWeight: 700, flex: 1, margin: 0 }}>🐄 Cow Roster
+          <h2 style={{ fontSize: 15, fontWeight: 700, flex: 1, margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}><Beef size={16} /> Cow Roster
             {filtered.length !== cows.length && (
               <span style={{ fontSize: 12, fontWeight: 400, color: 'var(--text-secondary)', marginLeft: 8 }}>
                 {filtered.length} of {cows.length}
@@ -713,8 +713,8 @@ export default function Herd() {
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
               background: 'linear-gradient(135deg,#1E4D7B,#2e6fa3)', color: '#fff', borderRadius: '16px 16px 0 0' }}>
               <div>
-                <h2 style={{ fontSize: 17, fontWeight: 800, margin: 0 }}>
-                  {editCow ? `✏️ Edit — ${editCow.cow_name}` : '🐄 Register New Cow'}
+                <h2 style={{ fontSize: 17, fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
+                  {editCow ? <><Edit2 size={16} /> Edit — {editCow.cow_name}</> : <><Beef size={16} /> Register New Cow</>}
                 </h2>
                 <p style={{ fontSize: 11, opacity: .8, marginTop: 3, marginBottom: 0 }}>
                   {editCow ? `${editCow.rfid_tag} · Update cow details` : 'Add a new cow to the herd roster'}
