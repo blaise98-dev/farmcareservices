@@ -5,10 +5,7 @@ import { getCows, getHerdCounts, registerCow, updateCow, getNextRfid } from '../
 import { usePermissions } from '../hooks/usePermissions';
 import { Search, Plus, X, Beef, Info, Edit2, Filter, ChevronDown } from 'lucide-react';
 import RwandaLocationFields from '../components/RwandaLocationFields';
-import {
-  PieChart, Pie, Cell, Tooltip, ResponsiveContainer, Legend,
-  BarChart, Bar, XAxis, YAxis, CartesianGrid,
-} from 'recharts';
+import { DonutChart, HBarChart } from '../components/ChartKit';
 
 // ─── constants ────────────────────────────────────────────────────────────────
 const HEALTH_COLOR = {
@@ -257,55 +254,24 @@ function ChartPanel({ cows, counts, activeCharts, setActiveCharts }) {
 
   const renderChart = (key) => {
     if (key === 'health') return (
-      <ResponsiveContainer width="100%" height={200}>
-        <PieChart>
-          <Pie data={healthData} cx="50%" cy="50%" outerRadius={75} innerRadius={38} dataKey="value"
-            label={({ value }) => `${value}`} labelLine={false}>
-            {healthData.map((d, i) => <Cell key={i} fill={d.fill} />)}
-          </Pie>
-          <Tooltip formatter={(v, n) => [v + ' cows', n]} />
-          <Legend iconSize={9} iconType="circle" wrapperStyle={{ fontSize: 11 }} />
-        </PieChart>
-      </ResponsiveContainer>
+      <DonutChart
+        data={healthData.map(d => ({ name: d.name, value: d.value, color: d.fill }))}
+        height={200} centerValue={healthData.reduce((s, d) => s + d.value, 0)} centerLabel="cows"
+      />
     );
     if (key === 'stage') return (
-      <ResponsiveContainer width="100%" height={200}>
-        <BarChart data={byStage} margin={{ top: 4, right: 8, left: 0, bottom: 30 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-          <XAxis dataKey="name" tick={{ fontSize: 9 }} angle={-30} textAnchor="end" interval={0} />
-          <YAxis allowDecimals={false} tick={{ fontSize: 10 }} />
-          <Tooltip formatter={(v) => [v + ' cows', 'Count']} />
-          <Bar dataKey="value" name="Cows" radius={[4, 4, 0, 0]}>
-            {byStage.map((d, i) => <Cell key={i} fill={d.fill} />)}
-          </Bar>
-        </BarChart>
-      </ResponsiveContainer>
+      <HBarChart data={byStage} labelKey="name" valueKey="value" unit=" cows"
+        colorFn={(d) => d.fill} height={Math.max(180, byStage.length * 32)} />
     );
     if (key === 'sex') return (
-      <ResponsiveContainer width="100%" height={200}>
-        <PieChart>
-          <Pie data={bySex} cx="50%" cy="50%" outerRadius={75} innerRadius={38} dataKey="value"
-            label={({ name, value }) => `${name}: ${value}`} labelLine={false}>
-            {bySex.map((d, i) => <Cell key={i} fill={d.fill} />)}
-          </Pie>
-          <Tooltip formatter={(v, n) => [v + ' cows', n]} />
-          <Legend iconSize={9} iconType="circle" wrapperStyle={{ fontSize: 11 }} />
-        </PieChart>
-      </ResponsiveContainer>
+      <DonutChart
+        data={bySex.map(d => ({ name: d.name, value: d.value, color: d.fill }))}
+        height={200} centerValue={bySex.reduce((s, d) => s + d.value, 0)} centerLabel="cows"
+      />
     );
     if (key === 'breed') return (
-      <ResponsiveContainer width="100%" height={200}>
-        <BarChart data={byBreed} margin={{ top: 4, right: 16, left: 0, bottom: 4 }}>
-          <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-          <XAxis dataKey="breed" tick={{ fontSize: 12, fontWeight: 600 }} />
-          <YAxis allowDecimals={false} tick={{ fontSize: 11 }} />
-          <Tooltip formatter={(v) => [v + ' cows', 'Count']} />
-          <Bar dataKey="count" name="Cows" radius={[6, 6, 0, 0]}
-            label={{ position: 'top', fontSize: 12, fontWeight: 800 }}>
-            {byBreed.map(({ breed }, i) => <Cell key={i} fill={BREED_COLOR[breed] || '#999'} />)}
-          </Bar>
-        </BarChart>
-      </ResponsiveContainer>
+      <HBarChart data={byBreed} labelKey="breed" valueKey="count" unit=" cows"
+        colorFn={(d) => BREED_COLOR[d.breed] || '#999'} height={Math.max(180, byBreed.length * 32)} />
     );
     return null;
   };

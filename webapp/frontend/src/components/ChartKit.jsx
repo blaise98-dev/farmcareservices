@@ -4,6 +4,7 @@
  * All charts share a consistent design system: typography, spacing, colour, grid.
  */
 import ReactECharts from 'echarts-for-react';
+import { AlertCircle } from 'lucide-react';
 
 // ─── Design tokens ────────────────────────────────────────────────────────────
 export const PALETTE = [
@@ -394,8 +395,12 @@ export function FunnelChart({ data = [], height = DEFAULT_H, title, unit = '' })
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  Utility: CardChart wrapper (title + subtitle + optional action slot)
+//
+//  isLoading/isError give every chart the same loading/error/empty pattern
+//  instead of each page inventing its own — pass them straight through from
+//  the query (`isLoading`, `isError`) that feeds `children`.
 // ─────────────────────────────────────────────────────────────────────────────
-export function ChartCard({ title, sub, children, action, style }) {
+export function ChartCard({ title, sub, children, action, style, isLoading, isError, errorMessage, height = 200 }) {
   return (
     <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 4, ...style }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 8 }}>
@@ -405,7 +410,26 @@ export function ChartCard({ title, sub, children, action, style }) {
         </div>
         {action && <div style={{ flexShrink: 0 }}>{action}</div>}
       </div>
-      {children}
+      {isLoading ? (
+        <div className="skeleton" style={{ height, width: '100%' }} />
+      ) : isError ? (
+        <div className="chart-error" style={{ minHeight: height }}>
+          <AlertCircle size={22} />
+          <span>{errorMessage || "Couldn't load this data. Try refreshing."}</span>
+        </div>
+      ) : children}
+    </div>
+  );
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+//  Utility: StatSkeleton — same shape as a .stat-card, for stat-grid loading
+// ─────────────────────────────────────────────────────────────────────────────
+export function StatSkeleton() {
+  return (
+    <div className="stat-card" style={{ borderLeftColor: 'transparent' }}>
+      <div className="skeleton" style={{ height: 11, width: '55%' }} />
+      <div className="skeleton" style={{ height: 28, width: '40%' }} />
     </div>
   );
 }

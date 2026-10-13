@@ -1,5 +1,11 @@
 import { useState, useEffect, useRef } from 'react';
-import { Menu, Bell, RefreshCw, X, CheckCheck, Search } from 'lucide-react';
+import {
+  Menu, Bell, RefreshCw, X, CheckCheck, Search,
+  LayoutDashboard, Beef, Droplets, Leaf, Warehouse, Baby, Users,
+  Wind, Waves, TrendingUp, CalendarDays, Cpu, FileText, Phone,
+  MessageSquare, HelpCircle, Settings as SettingsIcon,
+  Thermometer, AlertTriangle,
+} from 'lucide-react';
 import { useRealtime } from '../context/RealtimeContext';
 import { useAuth } from '../context/AuthContext';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -7,28 +13,28 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getNotifications, getUnreadCount, markNotifRead, markAllNotifRead } from '../lib/api';
 import { formatDistanceToNow } from 'date-fns';
 
-// ── Global search data ──────────────────────────────────────────────────────
+// ── Global search data — icons match the same routes' icons in Sidebar.jsx ──
 const SEARCH_PAGES = [
-  { label: 'Dashboard',        path: '/app',                icon: '📊', tags: ['home', 'overview', 'dashboard'] },
-  { label: 'Herd Management',  path: '/app/herd',           icon: '🐄', tags: ['cows', 'herd', 'animals', 'cattle'] },
-  { label: 'Milk Production',  path: '/app/milk',           icon: '🥛', tags: ['milk', 'litres', 'production', 'milking'] },
-  { label: 'Feed & Fodder',    path: '/app/feed',           icon: '🌿', tags: ['feed', 'fodder', 'nutrition', 'silage'] },
-  { label: 'Feed Inventory',   path: '/app/feed-inventory', icon: '🏚', tags: ['inventory', 'stock', 'dry matter', 'hay'] },
-  { label: 'Reproduction',     path: '/app/reproduction',   icon: '🐣', tags: ['calving', 'pregnancy', 'vaccination', 'treatment', 'bcs'] },
-  { label: 'Groups',           path: '/app/groups',         icon: '👥', tags: ['groups', 'herd groups', 'categories'] },
-  { label: 'Environment',      path: '/app/environment',    icon: '🌡', tags: ['temperature', 'humidity', 'air quality', 'oxygen', 'sensor'] },
-  { label: 'Tanks',            path: '/app/tanks',          icon: '🚰', tags: ['tanks', 'water', 'milk tank', 'level'] },
-  { label: 'Alerts',           path: '/app/alerts',         icon: '🚨', tags: ['alerts', 'notifications', 'warnings', 'sms'] },
-  { label: 'AI Predictions',   path: '/app/predictions',    icon: '🤖', tags: ['prediction', 'ai', 'forecast', 'health risk'] },
-  { label: 'Weekly Plan',      path: '/app/weekly-plan',    icon: '📅', tags: ['tasks', 'schedule', 'weekly', 'plan', 'calendar'] },
-  { label: 'IoT Control',      path: '/app/iot-control',    icon: '⚙️', tags: ['iot', 'fan', 'pump', 'motor', 'device', 'control', 'calibration'] },
-  { label: 'Economics',        path: '/app/economics',      icon: '💰', tags: ['revenue', 'cost', 'roi', 'economics', 'income'] },
-  { label: 'Reports',          path: '/app/reports',        icon: '📋', tags: ['reports', 'analytics', 'export', 'csv', 'pdf'] },
-  { label: 'User Management',  path: '/app/users',          icon: '👤', tags: ['users', 'accounts', 'roles', 'admin'] },
-  { label: 'SMS Config',       path: '/app/sms-config',     icon: '📱', tags: ['sms', 'phone', 'alerts', 'notifications'] },
-  { label: 'Feedback',         path: '/app/feedback',       icon: '💬', tags: ['feedback', 'support', 'bug', 'feature'] },
-  { label: 'Help & Support',   path: '/app/help',           icon: '❓', tags: ['help', 'faq', 'contact', 'support', 'guide'] },
-  { label: 'Settings',         path: '/app/settings',       icon: '⚙', tags: ['settings', 'password', 'profile', 'language'] },
+  { label: 'Dashboard',        path: '/app',                icon: LayoutDashboard, tags: ['home', 'overview', 'dashboard'] },
+  { label: 'Herd Management',  path: '/app/herd',           icon: Beef,            tags: ['cows', 'herd', 'animals', 'cattle'] },
+  { label: 'Milk Production',  path: '/app/milk',           icon: Droplets,        tags: ['milk', 'litres', 'production', 'milking'] },
+  { label: 'Feed & Fodder',    path: '/app/feed',           icon: Leaf,            tags: ['feed', 'fodder', 'nutrition', 'silage'] },
+  { label: 'Feed Inventory',   path: '/app/feed-inventory', icon: Warehouse,       tags: ['inventory', 'stock', 'dry matter', 'hay'] },
+  { label: 'Reproduction',     path: '/app/reproduction',   icon: Baby,            tags: ['calving', 'pregnancy', 'vaccination', 'treatment', 'bcs'] },
+  { label: 'Groups',           path: '/app/groups',         icon: Users,           tags: ['groups', 'herd groups', 'categories'] },
+  { label: 'Environment',      path: '/app/environment',    icon: Wind,            tags: ['temperature', 'humidity', 'air quality', 'oxygen', 'sensor'] },
+  { label: 'Tanks',            path: '/app/tanks',          icon: Waves,           tags: ['tanks', 'water', 'milk tank', 'level'] },
+  { label: 'Alerts',           path: '/app/alerts',         icon: Bell,            tags: ['alerts', 'notifications', 'warnings', 'sms'] },
+  { label: 'AI Predictions',   path: '/app/predictions',    icon: TrendingUp,      tags: ['prediction', 'ai', 'forecast', 'health risk'] },
+  { label: 'Weekly Plan',      path: '/app/weekly-plan',    icon: CalendarDays,    tags: ['tasks', 'schedule', 'weekly', 'plan', 'calendar'] },
+  { label: 'IoT Control',      path: '/app/iot-control',    icon: Cpu,             tags: ['iot', 'fan', 'pump', 'motor', 'device', 'control', 'calibration'] },
+  { label: 'Economics',        path: '/app/economics',      icon: TrendingUp,      tags: ['revenue', 'cost', 'roi', 'economics', 'income'] },
+  { label: 'Reports',          path: '/app/reports',        icon: FileText,        tags: ['reports', 'analytics', 'export', 'csv', 'pdf'] },
+  { label: 'User Management',  path: '/app/users',          icon: Users,           tags: ['users', 'accounts', 'roles', 'admin'] },
+  { label: 'SMS Config',       path: '/app/sms-config',     icon: Phone,           tags: ['sms', 'phone', 'alerts', 'notifications'] },
+  { label: 'Feedback',         path: '/app/feedback',       icon: MessageSquare,   tags: ['feedback', 'support', 'bug', 'feature'] },
+  { label: 'Help & Support',   path: '/app/help',           icon: HelpCircle,      tags: ['help', 'faq', 'contact', 'support', 'guide'] },
+  { label: 'Settings',         path: '/app/settings',       icon: SettingsIcon,    tags: ['settings', 'password', 'profile', 'language'] },
 ];
 
 function SearchResults({ query, onSelect, navigate }) {
@@ -42,7 +48,7 @@ function SearchResults({ query, onSelect, navigate }) {
             style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 8, cursor: 'pointer', fontSize: 13, color: 'var(--text)' }}
             onMouseEnter={e => e.currentTarget.style.background = 'var(--bg)'}
             onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-            <span style={{ fontSize: 16 }}>{p.icon}</span>
+            <p.icon size={16} color="var(--text-secondary)" style={{ flexShrink: 0 }} />
             <span style={{ fontWeight: 500 }}>{p.label}</span>
           </div>
         ))}
@@ -61,7 +67,7 @@ function SearchResults({ query, onSelect, navigate }) {
             style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 16px', cursor: 'pointer', fontSize: 13 }}
             onMouseEnter={e => e.currentTarget.style.background = 'var(--bg)'}
             onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-            <span style={{ fontSize: 18, flexShrink: 0 }}>{p.icon}</span>
+            <p.icon size={18} color="var(--text-secondary)" style={{ flexShrink: 0 }} />
             <div>
               <div style={{ fontWeight: 600 }}>{p.label}</div>
               <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>{p.path}</div>
@@ -148,11 +154,11 @@ export default function Header({ onMenuClick }) {
       {/* Live env readout */}
       {env && (
         <div style={{ display: 'flex', gap: 12, fontSize: 12, opacity: .95, background: 'rgba(0,0,0,.15)', borderRadius: 20, padding: '5px 14px', flexShrink: 0 }}>
-          <span title="Barn temperature">🌡 {Number(env.temperature_celsius || 0).toFixed(1)}°C</span>
-          <span title="Humidity">💧 {Number(env.humidity_percent || 0).toFixed(0)}%</span>
+          <span title="Barn temperature" style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><Thermometer size={13} />{Number(env.temperature_celsius || 0).toFixed(1)}°C</span>
+          <span title="Humidity" style={{ display: 'inline-flex', alignItems: 'center', gap: 4 }}><Droplets size={13} />{Number(env.humidity_percent || 0).toFixed(0)}%</span>
           {env.air_quality_ppm && (
-            <span title="Air quality" style={{ color: Number(env.air_quality_ppm) > 600 ? '#ffcdd2' : 'inherit' }}>
-              🌬 {Number(env.air_quality_ppm).toFixed(0)} ppm
+            <span title="Air quality" style={{ display: 'inline-flex', alignItems: 'center', gap: 4, color: Number(env.air_quality_ppm) > 600 ? '#ffcdd2' : 'inherit' }}>
+              <Wind size={13} />{Number(env.air_quality_ppm).toFixed(0)} ppm
             </span>
           )}
         </div>
@@ -207,7 +213,7 @@ export default function Header({ onMenuClick }) {
           }}>
             {/* Panel header */}
             <div style={{ padding: '14px 18px', borderBottom: '1px solid #f0f0f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
-              <span style={{ fontWeight: 700, fontSize: 14, color: '#1E4D7B' }}>🔔 Notifications {unread > 0 && <span style={{ background: '#F44336', color: '#fff', borderRadius: 10, padding: '1px 6px', fontSize: 11, marginLeft: 6 }}>{unread}</span>}</span>
+              <span style={{ fontWeight: 700, fontSize: 14, color: '#1E4D7B', display: 'inline-flex', alignItems: 'center', gap: 6 }}><Bell size={15} /> Notifications {unread > 0 && <span style={{ background: '#F44336', color: '#fff', borderRadius: 10, padding: '1px 6px', fontSize: 11 }}>{unread}</span>}</span>
               <div style={{ display: 'flex', gap: 8 }}>
                 {unread > 0 && (
                   <button onClick={() => readAllMut.mutate()} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, color: '#4CAF50', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -254,8 +260,8 @@ export default function Header({ onMenuClick }) {
       {/* Alert bell shortcut (red badge for unresolved alerts) */}
       <div style={{ position: 'relative', cursor: 'pointer', flexShrink: 0 }} onClick={() => navigate('/app/alerts')}>
         {alertsCount > 0 && (
-          <span style={{ background: '#F44336', color: '#fff', borderRadius: 10, padding: '2px 8px', fontSize: 11, fontWeight: 700 }}>
-            🚨 {alertsCount}
+          <span style={{ background: '#F44336', color: '#fff', borderRadius: 10, padding: '2px 8px', fontSize: 11, fontWeight: 700, display: 'inline-flex', alignItems: 'center', gap: 4 }}>
+            <AlertTriangle size={12} /> {alertsCount}
           </span>
         )}
       </div>
