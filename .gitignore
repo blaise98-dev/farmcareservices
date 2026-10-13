@@ -70,3 +70,8 @@ pnpm-debug.log*
 
 # ── Cursor (local agent state) ────────────────────────────────────────────────
 .cursor/
+
+# ── Installed Claude Code skills (local, per-user tooling) ────────────────────
+.agents/
+.claude/skills/
+skills-lock.json

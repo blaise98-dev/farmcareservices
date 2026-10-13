@@ -206,6 +206,20 @@ async def ensure_user_approval_columns() -> None:
         )
 
 
+async def ensure_milk_feed_attribution_columns() -> None:
+    """Add recorded_by to MilkProductionRecords/FeedingRecords if not already present.
+
+    Every other write-heavy table (Reproduction, Tanks, WeeklyPlan, ...) already
+    stores who entered a record this same way (plain VARCHAR holding the
+    logging user's username); Milk and Feed never got it.
+    """
+    for table in ("MilkProductionRecords", "FeedingRecords"):
+        cols = await fetchall(f"SHOW COLUMNS FROM {table}")
+        names = {c["Field"] for c in cols}
+        if "recorded_by" not in names:
+            await execute(f"ALTER TABLE {table} ADD COLUMN recorded_by VARCHAR(100) NULL")
+
+
 async def ensure_contact_messages_table() -> None:
     """Create ContactMessages if it does not exist (public Contact Us form submissions)."""
     await execute(

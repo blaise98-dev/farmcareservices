@@ -30,12 +30,20 @@ export function usePermissions() {
     canViewFeed:          any(ADMIN, FARMER, VET, TECH),
     canViewEnvironment:   any(ADMIN, FARMER, VET, TECH),
     canViewAlerts:        any(ADMIN, FARMER, VET, TECH),
-    canViewEconomics:     any(ADMIN, FARMER, TECH),     // NOT Veterinarian
     canViewPredictions:   any(ADMIN, VET),              // NOT Farmer, NOT Technician
     canViewSettings:      any(ADMIN, FARMER, VET, TECH),
     canViewAdminPanel:    is(ADMIN),
     canManageUsers:       is(ADMIN),
     canViewReports:       is(ADMIN),
+
+    // ── Page access matching Sidebar nav exactly (see App.jsx RoleGuards) ──────
+    canViewGroups:         any(ADMIN, FARMER),            // nav-only: backend list stays require_any(), shared with Feed/WeeklyPlan dropdowns
+    canViewReproduction:   any(ADMIN, VET),
+    canViewFeedInventory:  any(ADMIN, FARMER),
+    canViewTanks:          any(ADMIN, TECH),
+    canViewIotControl:     any(ADMIN, TECH),
+    canViewHerdAnalytics:  any(ADMIN, FARMER, VET),       // NOT Technician
+    canViewCowEconomics:   any(ADMIN, FARMER, VET),       // NOT Technician
 
     // ── Herd actions ──────────────────────────────────────────
     canEditCow:             any(FARMER, ADMIN, VET),    // Farmer edits profile; Vet edits health; Admin retires
@@ -64,9 +72,6 @@ export function usePermissions() {
 
     // ── Predictions ───────────────────────────────────────────
     canViewHealthRisks:     any(ADMIN, VET),
-
-    // ── Economics ─────────────────────────────────────────────
-    canViewEconomicsDetail: any(ADMIN, FARMER, TECH),
 
     // ── Role shortcuts ────────────────────────────────────────
     isAdmin:                is(ADMIN),

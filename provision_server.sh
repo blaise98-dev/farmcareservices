@@ -1,7 +1,16 @@
 #!/usr/bin/env bash
 # Full server provisioning script for farmcareservices.com (159.198.46.65)
 # Run as root on the new server after first login via Namecheap panel/VNC.
-# Usage: bash provision_server.sh
+#
+# SECRETS: this script must never hardcode DB_PASS or SECRET_KEY again — an
+# earlier version did, and those values were committed to a public repo. Both
+# are read from the environment; if unset, strong random values are generated
+# for you and printed once at the end. Save them somewhere safe (password
+# manager), they are not written anywhere in this repo.
+#
+# Usage:
+#   DB_PASS='...' SECRET_KEY='...' bash provision_server.sh   # bring your own
+#   bash provision_server.sh                                   # auto-generate
 set -euo pipefail
 
 GITHUB_REPO="https://github.com/blaise98-dev/farmcareservices.git"
@@ -14,8 +23,16 @@ GITHUB_ACTIONS_PUBKEY="ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIFPoFzjypOURfUta+48zD
 
 DB_NAME="moome"
 DB_USER="moome_user"
-DB_PASS="password@123"
-SECRET_KEY="22c111e8922e521bd4c0a4f73c0db1c9f980f4044285052fa4da97c5de361a93"
+DB_PASS="${DB_PASS:-$(openssl rand -base64 24)}"
+SECRET_KEY="${SECRET_KEY:-$(openssl rand -hex 32)}"
+
+# Refuse to run with the old leaked values in case they're still lingering in
+# someone's shell history or a copied env file.
+if [[ "${DB_PASS}" == "password@123" || "${SECRET_KEY}" == "22c111e8922e521bd4c0a4f73c0db1c9f980f4044285052fa4da97c5de361a93" ]]; then
+  echo "ERROR: refusing to provision with the previously leaked DB_PASS/SECRET_KEY." >&2
+  echo "Unset them (or pass new values) and re-run." >&2
+  exit 1
+fi
 
 echo "=============================="
 echo " MooMe Server Provisioning"
@@ -235,3 +252,9 @@ echo "GitHub Secrets to set (Settings → Secrets → Actions):"
 echo "  VPS_HOST = 159.198.46.65"
 echo "  VPS_USER = farmcareservices_user"
 echo "  VPS_SSH_KEY = <paste private key from ~/.ssh/id_rsa or the github-actions key>"
+echo ""
+echo "=============================="
+echo " SAVE THESE NOW — shown once, not stored anywhere in this repo:"
+echo "  DB_PASS    = ${DB_PASS}"
+echo "  SECRET_KEY = ${SECRET_KEY}"
+echo "=============================="

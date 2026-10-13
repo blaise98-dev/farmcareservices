@@ -6,7 +6,7 @@ import {
   LayoutDashboard, Beef, Droplets, Leaf, Wind,
   Bell, TrendingUp, BarChart2, X, Wifi, WifiOff,
   Settings, LogOut, User, ShieldCheck, Users, FileText,
-  HeartPulse, Activity, Stethoscope, Baby, Warehouse,
+  Stethoscope, Baby, Warehouse,
   CalendarDays, MessageSquare, Waves, Cpu, HelpCircle, Phone,
 } from 'lucide-react';
 

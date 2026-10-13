@@ -44,7 +44,7 @@ class CalibrationEntry(BaseModel):
 
 
 @router.get("/devices")
-async def list_device_status(_=Depends(require_any())):
+async def list_device_status(_=Depends(require_admin_or_technician())):
     """Return last known state for every device from the control log."""
     rows = await fetchall(
         """
@@ -64,7 +64,7 @@ async def list_device_status(_=Depends(require_any())):
 
 
 @router.get("/logs")
-async def control_logs(limit: int = 100, _=Depends(require_any())):
+async def control_logs(limit: int = 100, _=Depends(require_admin_or_technician())):
     rows = await fetchall(
         """
         SELECT * FROM SystemControlLogs

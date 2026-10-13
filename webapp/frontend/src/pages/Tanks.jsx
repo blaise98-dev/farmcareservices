@@ -4,7 +4,7 @@ import { getTanks, getTankHistory, addTankReading, createTank } from '../lib/api
 import { usePermissions } from '../hooks/usePermissions';
 import { Plus, X, Droplets } from 'lucide-react';
 import { format } from 'date-fns';
-import { LineChart as ELine, GaugeChart, ChartCard } from '../components/ChartKit';
+import { LineChart as ELine, ChartCard } from '../components/ChartKit';
 
 const LABEL = { display: 'block', fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: .5, marginBottom: 5 };
 const INPUT = { width: '100%', padding: '8px 12px', borderRadius: 8, border: '2px solid var(--border)', fontSize: 13, outline: 'none', fontFamily: 'inherit', background: '#fff', boxSizing: 'border-box' };
@@ -155,6 +155,50 @@ export default function Tanks() {
               <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
                 <button type="button" onClick={() => setShowReading(false)} className="btn" style={{ padding: '9px 18px', fontSize: 13 }}>Cancel</button>
                 <button type="submit" className="btn btn-primary" style={{ padding: '9px 22px', fontSize: 13 }} disabled={readingMut.isPending}>Save Reading</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* New Tank Modal */}
+      {showCreate && canWrite && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 999, background: 'rgba(0,0,0,.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
+          <div style={{ background: '#fff', borderRadius: 16, width: '100%', maxWidth: 440, boxShadow: '0 20px 60px rgba(0,0,0,.25)' }}>
+            <div style={{ padding: '18px 24px', background: 'linear-gradient(135deg,#0277BD,#00BCD4)', color: '#fff', borderRadius: '16px 16px 0 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+              <h2 style={{ fontSize: 17, fontWeight: 800, margin: 0 }}>🚰 New Tank</h2>
+              <button onClick={() => setShowCreate(false)} style={{ background: 'rgba(255,255,255,.2)', border: 'none', color: '#fff', borderRadius: 8, padding: '5px 8px', cursor: 'pointer' }}><X size={16} /></button>
+            </div>
+            <form onSubmit={e => {
+                e.preventDefault();
+                if (!createForm.tank_name.trim() || !createForm.capacity_liters) { setErr('Name and capacity are required'); return; }
+                createMut.mutate({
+                  ...createForm,
+                  capacity_liters: Number(createForm.capacity_liters),
+                  current_level_liters: Number(createForm.current_level_liters || 0),
+                  min_level_liters: createForm.min_level_liters ? Number(createForm.min_level_liters) : undefined,
+                });
+              }}
+              style={{ padding: 24, display: 'flex', flexDirection: 'column', gap: 14 }}>
+              <div><label style={LABEL}>Tank Name *</label><input style={INPUT} value={createForm.tank_name} onChange={e => setCreateForm(f => ({ ...f, tank_name: e.target.value }))} required /></div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div>
+                  <label style={LABEL}>Type</label>
+                  <select style={INPUT} value={createForm.tank_type} onChange={e => setCreateForm(f => ({ ...f, tank_type: e.target.value }))}>
+                    <option>Water</option><option>Milk</option><option>Chemical</option><option>Other</option>
+                  </select>
+                </div>
+                <div><label style={LABEL}>Capacity (L) *</label><input type="number" step="0.1" min="0" style={INPUT} value={createForm.capacity_liters} onChange={e => setCreateForm(f => ({ ...f, capacity_liters: e.target.value }))} required /></div>
+              </div>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+                <div><label style={LABEL}>Current Level (L)</label><input type="number" step="0.1" min="0" style={INPUT} value={createForm.current_level_liters} onChange={e => setCreateForm(f => ({ ...f, current_level_liters: e.target.value }))} /></div>
+                <div><label style={LABEL}>Min Level (L)</label><input type="number" step="0.1" min="0" style={INPUT} value={createForm.min_level_liters} onChange={e => setCreateForm(f => ({ ...f, min_level_liters: e.target.value }))} /></div>
+              </div>
+              <div><label style={LABEL}>Location</label><input style={INPUT} value={createForm.location} onChange={e => setCreateForm(f => ({ ...f, location: e.target.value }))} /></div>
+              {err && <div style={{ color: '#c62828', fontSize: 13, padding: '8px 12px', background: '#fde8e8', borderRadius: 8 }}>⚠ {err}</div>}
+              <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
+                <button type="button" onClick={() => setShowCreate(false)} className="btn" style={{ padding: '9px 18px', fontSize: 13 }}>Cancel</button>
+                <button type="submit" className="btn btn-primary" style={{ padding: '9px 22px', fontSize: 13 }} disabled={createMut.isPending}>Create Tank</button>
               </div>
             </form>
           </div>

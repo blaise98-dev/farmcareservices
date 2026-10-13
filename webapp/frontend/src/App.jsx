@@ -86,19 +86,19 @@ function AppLayout() {
               <Route path="feedback"        element={<FeedbackPage />} />
 
               {/* Farmer + Admin */}
-              <Route path="groups"          element={<RoleGuard allowed={p.canViewHerd} redirect="/app"><Groups /></RoleGuard>} />
-              <Route path="feed-inventory"  element={<RoleGuard allowed={p.canViewFeed} redirect="/app"><FeedInventory /></RoleGuard>} />
+              <Route path="groups"          element={<RoleGuard allowed={p.canViewGroups} redirect="/app"><Groups /></RoleGuard>} />
+              <Route path="feed-inventory"  element={<RoleGuard allowed={p.canViewFeedInventory} redirect="/app"><FeedInventory /></RoleGuard>} />
 
-              {/* All roles with herd access */}
-              <Route path="herd-analytics"  element={<RoleGuard allowed={p.canViewHerd} redirect="/app"><HerdAnalytics /></RoleGuard>} />
-              <Route path="cow-economics"   element={<RoleGuard allowed={p.canViewHerd} redirect="/app"><CowEconomics /></RoleGuard>} />
+              {/* Farmer + Vet + Admin (NOT Technician) */}
+              <Route path="herd-analytics"  element={<RoleGuard allowed={p.canViewHerdAnalytics} redirect="/app"><HerdAnalytics /></RoleGuard>} />
+              <Route path="cow-economics"   element={<RoleGuard allowed={p.canViewCowEconomics} redirect="/app"><CowEconomics /></RoleGuard>} />
 
               {/* Vet + Admin */}
-              <Route path="reproduction"    element={<RoleGuard allowed={p.canViewHerd} redirect="/app"><Reproduction /></RoleGuard>} />
+              <Route path="reproduction"    element={<RoleGuard allowed={p.canViewReproduction} redirect="/app"><Reproduction /></RoleGuard>} />
 
               {/* Admin + Technician */}
-              <Route path="tanks"           element={<RoleGuard allowed={p.canViewEnvironment} redirect="/app"><Tanks /></RoleGuard>} />
-              <Route path="iot-control"     element={<RoleGuard allowed={p.canViewEnvironment} redirect="/app"><IoTControl /></RoleGuard>} />
+              <Route path="tanks"           element={<RoleGuard allowed={p.canViewTanks} redirect="/app"><Tanks /></RoleGuard>} />
+              <Route path="iot-control"     element={<RoleGuard allowed={p.canViewIotControl} redirect="/app"><IoTControl /></RoleGuard>} />
 
               {/* Admin only */}
               <Route path="sms-config"      element={<RoleGuard allowed={p.isAdmin} redirect="/app"><SmsConfig /></RoleGuard>} />

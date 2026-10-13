@@ -32,7 +32,8 @@ export default function Register() {
     if (form.password !== form.confirmPassword) { setErr('Passwords do not match.'); return; }
     if (form.password.length < 6) { setErr('Password must be at least 6 characters.'); return; }
 
-    const { confirmPassword, ...body } = form;
+    const body = { ...form };
+    delete body.confirmPassword;
     mut.mutate({ ...body, ...location });
   };
 

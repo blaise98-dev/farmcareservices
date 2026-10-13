@@ -1,6 +1,6 @@
 import { useQuery } from '@tanstack/react-query';
 import { getPredictions, getHealthRisks, getMilkYieldPreds } from '../lib/api';
-import { HBarChart, BarChart as EBar, ChartCard } from '../components/ChartKit';
+import { HBarChart, ChartCard } from '../components/ChartKit';
 import { Brain, AlertTriangle, TrendingUp, Activity } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -14,13 +14,6 @@ export default function Predictions() {
   const { data: all = [] } = useQuery({ queryKey: ['predictions'], queryFn: getPredictions });
   const { data: risks = [] } = useQuery({ queryKey: ['health-risks'], queryFn: getHealthRisks });
   const { data: milkPreds = [] } = useQuery({ queryKey: ['milk-yield-preds'], queryFn: getMilkYieldPreds });
-
-  // Group by type
-  const byType = all.reduce((acc, p) => {
-    if (!acc[p.prediction_type]) acc[p.prediction_type] = [];
-    acc[p.prediction_type].push(p);
-    return acc;
-  }, {});
 
   const milkChart = milkPreds.map(p => ({
     cow: p.cow_name,
@@ -130,31 +123,17 @@ export default function Predictions() {
 
       {/* All predictions grouped bar chart */}
       {all.length > 0 && (
-        <div className="card">
-          <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 12 }}>🐄 Predicted Values by Cow</h2>
-          <ResponsiveContainer width="100%" height={Math.max(200, all.length * 36)}>
-            <BarChart
-              data={all.map(p => ({
-                label: `${p.cow_name} — ${p.prediction_type}`,
-                value: Number(p.predicted_value).toFixed(1),
-                confidence: Number(p.confidence_percent).toFixed(0),
-                fill: PRED_COLOR[p.prediction_type] || '#999',
-              }))}
-              layout="vertical"
-              margin={{ top: 4, right: 60, left: 10, bottom: 0 }}
-            >
-              <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-              <XAxis type="number" tick={{ fontSize: 10 }} />
-              <YAxis dataKey="label" type="category" tick={{ fontSize: 10 }} width={170} />
-              <Tooltip formatter={(v, n) => [`${v}`, n === 'value' ? 'Predicted' : 'Confidence %']} />
-              <Legend iconSize={10} />
-              <Bar dataKey="value" name="Predicted Value" radius={[0, 6, 6, 0]}>
-                <LabelList dataKey="value" position="right" style={{ fontSize: 11, fontWeight: 700 }} />
-                {all.map((p, i) => <Cell key={i} fill={PRED_COLOR[p.prediction_type] || '#999'} />)}
-              </Bar>
-            </BarChart>
-          </ResponsiveContainer>
-        </div>
+        <ChartCard title="Predicted Values by Cow" sub="Colored by prediction type">
+          <HBarChart
+            data={all.map(p => ({
+              name: `${p.cow_name} — ${p.prediction_type}`,
+              value: Number(p.predicted_value).toFixed(1),
+              type: p.prediction_type,
+            }))}
+            colorFn={(d) => PRED_COLOR[d.type] || '#999'}
+            height={Math.max(200, all.length * 36)}
+          />
+        </ChartCard>
       )}
     </div>
   );

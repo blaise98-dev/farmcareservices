@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getWeeklyTasks, getTodayTasks, createTask, updateTask, deleteTask, getCows, getGroups } from '../lib/api';
-import { usePermissions } from '../hooks/usePermissions';
 import { Plus, X, Calendar, CheckCircle, Trash2 } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -18,7 +17,6 @@ export default function WeeklyPlan() {
   const [showModal, setShowModal] = useState(false);
   const [form, setForm]         = useState(EMPTY);
   const [err, setErr]           = useState('');
-  const p  = usePermissions();
   const qc = useQueryClient();
 
   const { data: weekTasks = []  } = useQuery({ queryKey: ['weekly-tasks', 7], queryFn: () => getWeeklyTasks(7), enabled: view === 'week' });

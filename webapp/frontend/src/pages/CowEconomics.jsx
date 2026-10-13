@@ -3,16 +3,16 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
 import {
   getCowEconSummary, getCowEconFleet, getCowEconDetail,
-  addCowCost, addCowRevenue, deleteCowCost, deleteCowRevenue, getCows,
+  addCowCost, addCowRevenue, deleteCowCost, deleteCowRevenue,
 } from '../lib/api';
 import { usePermissions } from '../hooks/usePermissions';
 import {
   DonutChart, BarChart as EBar, HBarChart, LineChart as ELine,
-  WaterfallChart, ChartCard, PALETTE,
+  ChartCard, PALETTE,
 } from '../components/ChartKit';
 import {
   TrendingUp, TrendingDown, DollarSign, Plus, X, Trash2,
-  ChevronDown, ChevronRight, Filter, RefreshCw, BarChart2,
+  RefreshCw,
 } from 'lucide-react';
 
 // ─── Palettes ─────────────────────────────────────────────────────────────────
@@ -25,13 +25,11 @@ const REV_COLOR = {
   'Milk Sale': '#4CAF50', 'Offspring Sale': '#2196F3', 'Manure Sale': '#8BC34A',
   'Live Animal Sale': '#FF9800', Insurance: '#9C27B0', Subsidy: '#00BCD4', Other: '#607D8B',
 };
-const COST_PALETTE = Object.values(COST_COLOR);
-
 const fmt = (n) => n != null ? Number(n).toLocaleString('en-RW') : '—';
 const fmtK = (n) => n != null ? `${(Number(n) / 1000).toFixed(1)}K` : '—';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-function KPI({ label, value, sub, color = '#1E4D7B', icon: Icon, trend }) {
+function KPI({ label, value, sub, color = '#1E4D7B', icon: Icon }) {
   return (
     <div className="stat-card" style={{ borderLeftColor: color }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -55,7 +53,7 @@ function SectionTitle({ title, sub }) {
 
 
 // ─── Fleet-level executive dashboard ─────────────────────────────────────────
-function FleetDashboard({ fleet, summary, filterSex, filterBreed, filterStage, filteredSummary, p }) {
+function FleetDashboard({ fleet, filteredSummary }) {
   const totalCosts    = filteredSummary.reduce((s, c) => s + Number(c.total_costs_rwf || 0), 0);
   const totalRevenues = filteredSummary.reduce((s, c) => s + Number(c.total_revenues_rwf || 0), 0);
   const netProfit     = totalRevenues - totalCosts;
@@ -71,13 +69,6 @@ function FleetDashboard({ fleet, summary, filterSex, filterBreed, filterStage, f
     Costs:     Number(r.costs     || 0),
     Revenues:  Number(r.revenues  || 0),
     Net:       Number(r.net       || 0),
-  }));
-
-  // Top profitable cows
-  const topProfit = (fleet.top_profit || []).slice(0, 8).map(r => ({
-    name: r.cow_name,
-    profit: Number(r.net_profit || 0),
-    fill: Number(r.net_profit) >= 0 ? '#4CAF50' : '#F44336',
   }));
 
   // Per-cow P&L scatter (bar chart sorted by profit)
@@ -436,7 +427,6 @@ function CowDrillDown({ cowId, onClose, p }) {
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function CowEconomics() {
   const p  = usePermissions();
-  const qc = useQueryClient();
 
   const { data: summary = [], isLoading: sumLoading, refetch } = useQuery({ queryKey: ['cow-econ-summary'], queryFn: getCowEconSummary });
   const { data: fleet = {}, isLoading: fleetLoading } = useQuery({ queryKey: ['cow-econ-fleet'], queryFn: getCowEconFleet });
@@ -527,8 +517,7 @@ export default function CowEconomics() {
       </div>
 
       {/* Fleet executive dashboard */}
-      <FleetDashboard fleet={fleet} summary={summary} filteredSummary={filteredSummary} p={p}
-        filterSex={fSex} filterBreed={fBreed} filterStage={fStage} />
+      <FleetDashboard fleet={fleet} filteredSummary={filteredSummary} />
 
       {/* Cow cards grid — click to drill down */}
       <div>

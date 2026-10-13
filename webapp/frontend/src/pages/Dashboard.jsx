@@ -9,7 +9,7 @@ import {
 } from '../lib/api';
 import {
   LineChart as ELine, BarChart as EBar, DonutChart, HBarChart,
-  GaugeChart, RadarChart as ERadar, ChartCard, HEALTH_COLORS, STAGE_COLORS, SEX_COLORS,
+  GaugeChart, ChartCard, HEALTH_COLORS, STAGE_COLORS, SEX_COLORS,
 } from '../components/ChartKit';
 import {
   AlertTriangle, CheckCircle, Thermometer, Droplets, Beef,
@@ -20,7 +20,6 @@ import { format } from 'date-fns';
 const fmt = (v, d = 1) => (v != null ? Number(v).toFixed(d) : '--');
 
 const SEV_COLOR  = { Emergency: '#b71c1c', Critical: '#c62828', Warning: '#e65100', Info: '#1565c0' };
-const HEALTH_COLOR = { Healthy: '#4CAF50', Warning: '#FF9800', Critical: '#F44336', 'Under Treatment': '#9C27B0' };
 
 // ─────────────────────────────────────────────────────────────────────────
 //  Shared building blocks
@@ -107,6 +106,9 @@ function SensorGauge({ label, value, displayVal, color, warn, max = 100 }) {
   return (
     <div className="card" style={{ padding: '10px 8px' }}>
       <GaugeChart value={value} max={max} label={label} color={warn ? '#F44336' : color} height={160} />
+      <p style={{ fontSize: 15, fontWeight: 800, textAlign: 'center', margin: '2px 0 0', color: warn ? '#F44336' : '#111827' }}>
+        {displayVal}
+      </p>
       {warn
         ? <p style={{ fontSize: 10, color: '#F44336', fontWeight: 700, textAlign: 'center', margin: '4px 0 0' }}>⚠ Out of range</p>
         : <p style={{ fontSize: 10, color: '#4CAF50', textAlign: 'center', margin: '4px 0 0' }}>✓ Normal</p>}
@@ -180,13 +182,6 @@ function SysLogsTable({ sysLogs }) {
   );
 }
 
-const STAGE_COLOR = {
-  'Calf': '#00BCD4', 'Weaner': '#26C6DA', 'Yearling': '#4DB6AC', 'Bull Calf': '#78909C',
-  'Heifer': '#E91E63', 'Steer': '#5C6BC0', 'Bull': '#1E4D7B', 'Cow': '#4CAF50',
-  'Dry Cow': '#9C27B0', 'Lactating Cow': '#2196F3', 'Senior Cow': '#FF9800', 'Senior Bull': '#FF5722',
-};
-const SEX_COLOR = { Female: '#E91E63', Male: '#1565c0' };
-
 function HerdCompositionCharts({ counts }) {
   const byCat = (counts?.by_category || []).map(r => ({ name: r.cow_stage || 'Unknown', value: r.cnt }))
     .reduce((acc, r) => { const ex = acc.find(a => a.name === r.name); if (ex) ex.value += r.value; else acc.push({ ...r }); return acc; }, [])
@@ -207,7 +202,7 @@ function HerdCompositionCharts({ counts }) {
   return (
     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 20 }}>
       <ChartCard title="🐄 Category Distribution">
-        <DonutChart data={byCat.map((d,i) => ({ ...d, color: STAGE_COLORS[d.name] || '#999' }))} height={200} />
+        <DonutChart data={byCat.map(d => ({ ...d, color: STAGE_COLORS[d.name] || '#999' }))} height={200} />
       </ChartCard>
       <ChartCard title="♀♂ Sex Distribution">
         <DonutChart data={bySex.map(d => ({ ...d, color: SEX_COLORS[d.name] }))} height={200} />
@@ -284,7 +279,7 @@ function FarmerDashboard({ summary, alerts, milkTrend, envTrend, liveEnv, alerts
   );
 }
 
-function VetDashboard({ summary, alerts, liveEnv, alertsCount }) {
+function VetDashboard({ summary, alerts }) {
   const herd = summary?.herd || {};
 
   const { data: healthRisks = [] } = useQuery({ queryKey: ['health-risks'],    queryFn: getHealthRisks });
@@ -346,7 +341,17 @@ function VetDashboard({ summary, alerts, liveEnv, alertsCount }) {
         }
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 20 }}>
+        <ChartCard title="❤️ Herd Health Status" sub="Active cows by status">
+          {!herdHealth?.by_health?.length
+            ? <div className="empty-state"><CheckCircle size={36} /><span>No health data</span></div>
+            : <DonutChart
+                data={herdHealth.by_health.map(h => ({ name: h.health_status, value: h.cnt, color: HEALTH_COLORS[h.health_status] }))}
+                height={200} centerLabel="cows" centerValue={herdHealth.by_health.reduce((s, h) => s + Number(h.cnt || 0), 0)}
+              />
+          }
+        </ChartCard>
+
         <ChartCard title="🤖 AI Health Risk %" sub="Alert ≥85% · Warning ≥70%">
           {riskChart.length === 0
             ? <div className="empty-state"><CheckCircle size={36} /><span>No high-risk predictions</span></div>
@@ -498,7 +503,7 @@ function AdminDashboard({ summary, alerts, milkTrend, envTrend, liveEnv, alertsC
   );
 }
 
-function TechnicianDashboard({ summary, liveEnv, sysLogs, envTrend }) {
+function TechnicianDashboard({ liveEnv, sysLogs, envTrend }) {
   const { data: economics } = useQuery({ queryKey: ['economics-summary'], queryFn: getEconomicsSummary });
 
   const STATS = [

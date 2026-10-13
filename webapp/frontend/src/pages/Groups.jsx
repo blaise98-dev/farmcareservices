@@ -114,7 +114,7 @@ export default function Groups() {
                     <tbody>
                       {members.map(m => (
                         <tr key={m.cow_id}>
-                          <td><Link to={`/herd/${m.cow_id}`} style={{ fontWeight: 700, color: '#1E4D7B', textDecoration: 'none' }}>{m.cow_name}</Link></td>
+                          <td><Link to={`/app/herd/${m.cow_id}`} style={{ fontWeight: 700, color: '#1E4D7B', textDecoration: 'none' }}>{m.cow_name}</Link></td>
                           <td>{m.breed}</td>
                           <td><span style={{ fontSize: 11, padding: '2px 7px', borderRadius: 20, background: '#e3f2fd', color: '#1565c0', fontWeight: 600 }}>{m.cow_category}</span></td>
                           <td><span className={`badge badge-${(m.health_status || '').toLowerCase().replace(' ', '')}`}>{m.health_status}</span></td>

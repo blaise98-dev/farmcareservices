@@ -45,7 +45,7 @@ class ReproUpdate(BaseModel):
 
 
 @router.get("/")
-async def list_all(_=Depends(require_any())):
+async def list_all(_=Depends(require_admin_or_vet())):
     """All reproduction records with cow info and computed lactation/gestation days."""
     rows = await fetchall(
         """
@@ -65,7 +65,7 @@ async def list_all(_=Depends(require_any())):
 
 
 @router.get("/summary")
-async def herd_repro_summary(_=Depends(require_any())):
+async def herd_repro_summary(_=Depends(require_admin_or_vet())):
     """Summary: pregnant count, lactating, dry, expected calvings in 30 days."""
     row = await fetchone(
         """
@@ -158,7 +158,7 @@ class TreatmentEntry(BaseModel):
 
 
 @router.get("/treatments")
-async def list_treatments(_=Depends(require_any())):
+async def list_treatments(_=Depends(require_admin_or_vet())):
     rows = await fetchall(
         """
         SELECT t.*, c.cow_name
@@ -223,7 +223,7 @@ class VaxEntry(BaseModel):
 
 
 @router.get("/vaccinations")
-async def list_vaccinations(_=Depends(require_any())):
+async def list_vaccinations(_=Depends(require_admin_or_vet())):
     rows = await fetchall(
         """
         SELECT v.*, c.cow_name
@@ -236,7 +236,7 @@ async def list_vaccinations(_=Depends(require_any())):
 
 
 @router.get("/vaccinations/due")
-async def vaccinations_due(_=Depends(require_any())):
+async def vaccinations_due(_=Depends(require_admin_or_vet())):
     """Vaccinations due in the next 30 days."""
     rows = await fetchall(
         """
@@ -278,7 +278,7 @@ class BCSEntry(BaseModel):
 
 
 @router.get("/bcs")
-async def list_bcs(_=Depends(require_any())):
+async def list_bcs(_=Depends(require_admin_or_vet())):
     """Latest BCS for every active cow."""
     rows = await fetchall(
         """

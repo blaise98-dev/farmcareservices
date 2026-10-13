@@ -60,8 +60,6 @@ export default function Feed() {
   const { data: groups = []       } = useQuery({ queryKey: ['groups'],         queryFn: getGroups });
   const { data: methaneSummary = [] } = useQuery({ queryKey: ['methane-summary'], queryFn: getMethaneSummary });
 
-  const selectedFeedType = FEED_TYPES.find(f => f.value === form.feed_type);
-
   const mutation = useMutation({
     mutationFn: addFeedRecord,
     onSuccess: () => {

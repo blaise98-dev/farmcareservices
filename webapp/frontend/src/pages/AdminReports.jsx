@@ -7,7 +7,7 @@ import {
   getAdminActivityLogs,
 } from '../lib/api';
 import {
-  Beef, Droplets, Bell, Users, Cpu, CheckCircle,
+  Beef, Droplets, Bell, Users, Cpu,
   AlertTriangle, Activity, FileText, Search, Download, Printer,
 } from 'lucide-react';
 import { format } from 'date-fns';
