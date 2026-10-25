@@ -169,7 +169,8 @@ export default function UserManagement() {
   const [viewUser, setViewUser]                 = useState(null);
   const [approveFarm, setApproveFarm]           = useState({});   // user_id -> chosen farm_id
   const qc = useQueryClient();
-  const { data: farms = [] } = useQuery({ queryKey: ['farms'], queryFn: getFarms });
+  const { data: farms = [], isError: farmsError } = useQuery({ queryKey: ['farms'], queryFn: getFarms });
+  const farmPlaceholder = farmsError ? 'Could not load farms (reload the page)' : 'Choose farm…';
   const farmName = (id) => farms.find(f => f.farm_id === id)?.farm_name;
   const onlyFarm = farms.length === 1 ? farms[0].farm_id : '';
 
@@ -369,7 +370,7 @@ export default function UserManagement() {
                       <select value={approveFarm[u.user_id] ?? onlyFarm} aria-label={`Farm for ${u.username}`}
                         onChange={e => setApproveFarm(m => ({ ...m, [u.user_id]: e.target.value ? Number(e.target.value) : '' }))}
                         style={{ padding: '4px 8px', borderRadius: 6, border: '1px solid var(--border)', fontSize: 12, fontFamily: 'inherit' }}>
-                        <option value="">Choose farm…</option>
+                        <option value="">{farmPlaceholder}</option>
                         {farms.map(f => <option key={f.farm_id} value={f.farm_id}>{f.farm_name}</option>)}
                       </select>
                     </td>
@@ -618,7 +619,7 @@ export default function UserManagement() {
               <div>
                 <label style={LABEL_STYLE}>Farm *</label>
                 <select name="farm_id" value={createForm.farm_id || onlyFarm} onChange={handleCreateChange} style={INPUT_STYLE}>
-                  <option value="">Choose farm…</option>
+                  <option value="">{farmPlaceholder}</option>
                   {farms.map(f => <option key={f.farm_id} value={f.farm_id}>{f.farm_name}</option>)}
                 </select>
                 <p style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 6 }}>

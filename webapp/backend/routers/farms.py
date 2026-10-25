@@ -9,6 +9,7 @@ from pydantic import Field
 from form_model import FormModel
 
 from database import execute, fetchall, fetchone
+from tenancy import column_exists
 from rbac import require_admin, require_any
 from tenancy import is_admin, user_farm
 
@@ -27,6 +28,11 @@ def _safe(row: dict) -> dict:
             for k, v in (row or {}).items()}
 
 
+async def _existing(values: dict) -> dict:
+    """Only the columns this server's Farm table has (older tables lack some details)."""
+    return {k: v for k, v in values.items() if k == "farm_name" or await column_exists("Farm", k)}
+
+
 @router.get("")
 async def list_farms(user=Depends(require_any())):
     if is_admin(user):
@@ -37,7 +43,7 @@ async def list_farms(user=Depends(require_any())):
         return []
     rows = await fetchall(
         f"""
-        SELECT f.farm_id, f.farm_name, f.location, f.established_year, f.total_area_hectares,
+        SELECT f.*,
                (SELECT COUNT(*) FROM Users u WHERE u.farm_id = f.farm_id) AS users,
                (SELECT COUNT(*) FROM Cows c WHERE c.farm_id = f.farm_id AND c.is_active = TRUE) AS cows,
                (SELECT COUNT(*) FROM IoTDevices d WHERE d.farm_id = f.farm_id) AS devices
@@ -69,9 +75,12 @@ async def create_farm(body: FarmBody, _=Depends(require_admin())):
         raise HTTPException(400, "Farm name is required")
     if await fetchone("SELECT farm_id FROM Farm WHERE farm_name = %s", (body.farm_name.strip(),)):
         raise HTTPException(409, "A farm with that name already exists")
+    fields = await _existing({"farm_name": body.farm_name.strip(), "location": body.location,
+                              "established_year": body.established_year,
+                              "total_area_hectares": body.total_area_hectares})
     fid = await execute(
-        "INSERT INTO Farm (farm_name, location, established_year, total_area_hectares) VALUES (%s, %s, %s, %s)",
-        (body.farm_name.strip(), body.location, body.established_year, body.total_area_hectares),
+        f"INSERT INTO Farm ({', '.join(fields)}) VALUES ({', '.join(['%s'] * len(fields))})",
+        tuple(fields.values()),
     )
     return _safe(await fetchone("SELECT * FROM Farm WHERE farm_id = %s", (fid,)))
 
@@ -80,7 +89,7 @@ async def create_farm(body: FarmBody, _=Depends(require_admin())):
 async def update_farm(farm_id: int, body: FarmBody, _=Depends(require_admin())):
     if not await fetchone("SELECT farm_id FROM Farm WHERE farm_id = %s", (farm_id,)):
         raise HTTPException(404, "Farm not found")
-    fields = {k: v for k, v in body.model_dump().items() if v is not None}
+    fields = await _existing({k: v for k, v in body.model_dump().items() if v is not None})
     if not fields:
         raise HTTPException(400, "No fields to update")
     sets = ", ".join(f"{k} = %s" for k in fields)

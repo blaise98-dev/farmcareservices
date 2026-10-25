@@ -177,7 +177,7 @@ export default function AdminReports() {
         </div>
         {report?.farm && (
           <div style={{ marginTop: 12, fontSize: 12, opacity: .75 }}>
-            {report.farm.farm_name} &nbsp;·&nbsp; {report.farm.location} &nbsp;·&nbsp; Est. {report.farm.established_year}
+            {[report.farm.farm_name, report.farm.location, report.farm.established_year ? `Est. ${report.farm.established_year}` : null].filter(Boolean).join(' · ')}
           </div>
         )}
       </div>
