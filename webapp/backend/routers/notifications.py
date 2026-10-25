@@ -31,7 +31,11 @@ async def my_notifications(current_user: dict = Depends(require_any())):
                END AS cow_id,
                CASE WHEN n.notif_type = 'SymptomReport'
                     THEN (SELECT c.cow_name FROM Alerts a JOIN Cows c ON a.cow_id=c.cow_id WHERE a.alert_id = n.ref_id)
-               END AS cow_name
+               END AS cow_name,
+               -- a registration's current state: 'pending', 'approved', 'rejected', or NULL once deleted
+               CASE WHEN n.notif_type = 'UserRegistration'
+                    THEN (SELECT u.approval_status FROM Users u WHERE u.user_id = n.ref_id)
+               END AS ref_status
         FROM Notifications n
         WHERE n.user_id = %s OR n.user_id IS NULL
         ORDER BY n.created_at DESC

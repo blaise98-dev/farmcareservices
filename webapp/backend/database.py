@@ -204,6 +204,25 @@ async def ensure_user_approval_columns() -> None:
         await execute(
             "ALTER TABLE Users ADD COLUMN approved_at DATETIME NULL AFTER approved_by"
         )
+    try:
+        await close_handled_registration_notices()
+    except Exception as e:  # noqa: BLE001 - housekeeping must never stop startup
+        print(f"Could not tidy registration notices: {e}")
+
+
+async def close_handled_registration_notices(user_id=None) -> None:
+    """Mark "New user pending approval" notices read once that user is approved,
+    rejected or deleted (all of them, or just one user's), so they stop looking open."""
+    await execute(
+        """
+        UPDATE Notifications n LEFT JOIN Users u ON u.user_id = n.ref_id
+        SET n.is_read = TRUE
+        WHERE n.notif_type = 'UserRegistration' AND n.is_read = FALSE
+          AND (u.user_id IS NULL OR u.approval_status <> 'pending')
+          AND (%s IS NULL OR n.ref_id = %s)
+        """,
+        (user_id, user_id),
+    )
 
 
 async def ensure_milk_feed_attribution_columns() -> None:

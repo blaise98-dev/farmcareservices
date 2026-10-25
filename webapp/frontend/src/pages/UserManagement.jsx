@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getUsers, createUser, updateUser, deleteUser, adminResetPassword, getCows, getMilk, getFeed, getPendingUsers, approveUser, rejectUser, getFarms } from '../lib/api';
 import FarmsCard from '../components/FarmsCard';
@@ -177,20 +178,40 @@ export default function UserManagement() {
     queryFn: getUsers,
   });
 
-  const { data: pendingUsers = [] } = useQuery({
+  const { data: pendingList = [], isError: pendingError } = useQuery({
     queryKey: ['pending-users'],
     queryFn: getPendingUsers,
     refetchInterval: 30000,
   });
+  // Anyone the users list reports as pending is shown too, so a registration
+  // can always be approved here even if the pending list fails to load.
+  const pendingUsers = useMemo(() => {
+    const seen = new Set(pendingList.map(u => u.user_id));
+    return [...pendingList, ...users.filter(u => u.approval_status === 'pending' && !seen.has(u.user_id))];
+  }, [pendingList, users]);
+
+  // ?user=<id> (from a notification) scrolls to that person and highlights the row
+  const [params] = useSearchParams();
+  const focusId = Number(params.get('user')) || null;
+  useEffect(() => {
+    if (!focusId) return;
+    const el = document.getElementById(`pending-${focusId}`) || document.getElementById(`user-${focusId}`);
+    el?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }, [focusId, pendingUsers.length, users.length]);
+  const focusStyle = (id) => (id === focusId ? { outline: '2px solid #FF9800', outlineOffset: -2 } : undefined);
 
   const approveMut = useMutation({
     mutationFn: ({ id, farmId }) => approveUser(id, farmId),
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['pending-users'] }); qc.invalidateQueries({ queryKey: ['users'] }); qc.invalidateQueries({ queryKey: ['farms'] }); },
+    onSuccess: () => {
+      ['pending-users', 'users', 'farms', 'notifications', 'notif-unread'].forEach(k => qc.invalidateQueries({ queryKey: [k] }));
+    },
     onError: (e) => alert(e.response?.data?.detail || 'Approval failed'),
   });
   const rejectMut = useMutation({
     mutationFn: rejectUser,
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['pending-users'] }),
+    onSuccess: () => {
+      ['pending-users', 'users', 'notifications', 'notif-unread'].forEach(k => qc.invalidateQueries({ queryKey: [k] }));
+    },
     onError: (e) => alert(e.response?.data?.detail || 'Rejection failed'),
   });
 
@@ -298,9 +319,15 @@ export default function UserManagement() {
         </button>
       </div>
 
+      {pendingError && pendingUsers.length === 0 && (
+        <div role="alert" className="card" style={{ padding: '12px 18px', background: 'var(--tint-red)', color: '#c62828', fontSize: 13 }}>
+          Could not load the registrations waiting for approval. Reload the page; if it persists, the server log has the reason.
+        </div>
+      )}
+
       {/* Pending approvals */}
       {pendingUsers.length > 0 && (
-        <div className="card" style={{ padding: 0, overflow: 'hidden', border: '2px solid #FF9800' }}>
+        <div id="pending" className="card" style={{ padding: 0, overflow: 'hidden', border: '2px solid #FF9800', scrollMarginTop: 80 }}>
           <div style={{ padding: '14px 20px', background: 'var(--tint-amber)', display: 'flex', alignItems: 'center', gap: 10 }}>
             <Clock size={18} color="#E65100" />
             <h2 style={{ fontSize: 15, fontWeight: 800, color: '#E65100' }}>Pending Approval</h2>
@@ -318,7 +345,7 @@ export default function UserManagement() {
               </thead>
               <tbody>
                 {pendingUsers.map(u => (
-                  <tr key={u.user_id}>
+                  <tr key={u.user_id} id={`pending-${u.user_id}`} style={focusStyle(u.user_id)}>
                     <td style={{ fontWeight: 600 }}>{u.full_name || '-'}</td>
                     <td style={{ fontFamily: 'monospace', fontSize: 12 }}>@{u.username}</td>
                     <td style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{u.email || '-'}</td>
@@ -386,7 +413,7 @@ export default function UserManagement() {
               <ShieldCheck size={14} color={ROLE_COLOR[r]} />
               <span style={{ fontWeight: 700, fontSize: 13, color: ROLE_COLOR[r] }}>{r}</span>
               <span style={{ marginLeft: 'auto', fontSize: 12, fontWeight: 700, color: 'var(--text-secondary)' }}>
-                {users.filter(u => u.role === r && u.is_active).length} active
+                {users.filter(u => u.role === r && u.is_active && !['pending', 'rejected'].includes(u.approval_status)).length} active
               </span>
             </div>
             <p style={{ fontSize: 11, color: 'var(--text-secondary)', margin: 0, lineHeight: 1.5 }}>{ROLE_DESC[r]}</p>
@@ -400,7 +427,7 @@ export default function UserManagement() {
           <Users size={18} color="#1E4D7B" />
           <h2 style={{ fontSize: 16, fontWeight: 700 }}>System Users</h2>
           <span style={{ marginLeft: 'auto', fontSize: 12, color: 'var(--text-secondary)' }}>
-            {users.filter(u => u.is_active).length} active · {users.length} total
+            {users.filter(u => u.is_active && !['pending', 'rejected'].includes(u.approval_status)).length} active · {users.length} total
           </span>
         </div>
 
@@ -417,7 +444,7 @@ export default function UserManagement() {
                 </thead>
                 <tbody>
                   {users.map(u => (
-                    <tr key={u.user_id}>
+                    <tr key={u.user_id} id={`user-${u.user_id}`} style={focusStyle(u.user_id)}>
                       <td style={{ fontWeight: 600 }}>{u.full_name || '-'}</td>
                       <td style={{ fontFamily: 'monospace', fontSize: 12 }}>@{u.username}</td>
                       <td style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{u.email || '-'}</td>
@@ -436,9 +463,16 @@ export default function UserManagement() {
                         {u.role === 'Admin' ? 'All farms' : u.farm_id ? (farmName(u.farm_id) || `Farm ${u.farm_id}`) : 'Unassigned'}
                       </td>
                       <td>
-                        <span className={`badge badge-${u.is_active ? 'healthy' : 'critical'}`}>
-                          {u.is_active ? 'Active' : 'Inactive'}
-                        </span>
+                        {u.approval_status === 'pending' ? (
+                          <a href="#pending" className="badge badge-warning" title="Waiting for approval: approve or reject in the panel above"
+                            style={{ textDecoration: 'none' }}>Pending approval</a>
+                        ) : u.approval_status === 'rejected' ? (
+                          <span className="badge badge-critical">Rejected</span>
+                        ) : (
+                          <span className={`badge badge-${u.is_active ? 'healthy' : 'critical'}`}>
+                            {u.is_active ? 'Active' : 'Inactive'}
+                          </span>
+                        )}
                       </td>
                       <td style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
                         {u.last_login ? format(new Date(u.last_login), 'MMM d, yyyy HH:mm') : 'Never'}
