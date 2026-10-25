@@ -10,7 +10,7 @@ import {
   BarChart as EBar, FunnelChart as EFunnel, GaugeChart as EGauge, HeatmapChart as EHeatmap, LineChart as ELine,
   PieChart as EPie, RadarChart as ERadar, ScatterChart as EScatter, TreemapChart as ETreemap,
 } from 'echarts/charts';
-import { GraphicComponent, GridComponent, LegendComponent, MarkLineComponent, RadarComponent, TitleComponent, TooltipComponent, VisualMapComponent } from 'echarts/components';
+import { GridComponent, LegendComponent, MarkLineComponent, RadarComponent, TitleComponent, TooltipComponent, VisualMapComponent } from 'echarts/components';
 import { CanvasRenderer } from 'echarts/renderers';
 import { AlertCircle } from 'lucide-react';
 import { PALETTE } from './chartColors';
@@ -19,13 +19,17 @@ import { useTheme } from '../hooks/useTheme';
 // Only the chart types and components used below, so the bundle stays small.
 echarts.use([
   EBar, EFunnel, EGauge, EHeatmap, ELine, EPie, ERadar, EScatter, ETreemap,
-  GraphicComponent, GridComponent, LegendComponent, MarkLineComponent, RadarComponent, TitleComponent,
+  GridComponent, LegendComponent, MarkLineComponent, RadarComponent, TitleComponent,
   TooltipComponent, VisualMapComponent, CanvasRenderer,
 ]);
 
+// Canvas text needs a real font name: 'inherit' is rejected, and the browser
+// then drops the whole font (size and weight too) for its small default.
+const FONT = "'Inter', system-ui, sans-serif";
+
 // ─── Base ECharts theme (applied to every chart) ──────────────────────────────
 const BASE = {
-  textStyle: { fontFamily: 'inherit', fontSize: 12, color: 'var(--text-secondary)' },
+  textStyle: { fontFamily: FONT, fontSize: 12, color: 'var(--text-secondary)' },
   grid:      { left: 12, right: 12, top: 28, bottom: 12, containLabel: true },
   tooltip: {
     backgroundColor: 'var(--card)',
@@ -89,34 +93,70 @@ const DEFAULT_H   = 260;
  * data: [{ name, value, color? }]
  */
 export function DonutChart({ data = [], height = DEFAULT_H, centerLabel, centerValue, title }) {
-  const total = data.reduce((s, d) => s + Number(d.value || 0), 0);
+  const slices = data.map((d, i) => ({ name: d.name, value: Number(d.value || 0), color: d.color || PALETTE[i % PALETTE.length] }));
+  const total = slices.reduce((s, d) => s + d.value, 0);
+  const pct = (v) => (total ? Math.round((v / total) * 100) : 0);
+  const showCenter = centerValue != null || centerLabel != null;
+  const CENTER = ['38%', '50%'];
   const option = opt({
     title: title ? { text: title, left: 0, top: 0, textStyle: { fontSize: 14, fontWeight: 700, color: 'var(--text)' } } : undefined,
     tooltip: { ...BASE.tooltip, trigger: 'item', formatter: ({ name, value, percent }) => `<b>${name}</b><br/>${value} &nbsp;<span style="opacity:.7">(${percent}%)</span>` },
-    legend: { ...BASE.legend, orient: 'vertical', right: 10, top: 'center' },
-    series: [{
-      type:         'pie',
-      radius:       ['42%', '68%'],
-      center:       ['40%', '50%'],
-      avoidLabelOverlap: true,
-      itemStyle:    { borderRadius: 6, borderColor: 'var(--card)', borderWidth: 2 },
-      label:        { show: false },
-      emphasis:     { label: { show: false }, itemStyle: { shadowBlur: 16, shadowOffsetX: 0, shadowColor: 'rgba(0,0,0,.2)' } },
-      data: data.map((d, i) => ({
-        name:      d.name,
-        value:     Number(d.value || 0),
-        itemStyle: { color: d.color || PALETTE[i % PALETTE.length] },
-      })),
-    }],
-    graphic: (centerValue || centerLabel) ? [{
-      type: 'group', left: 'center', top: 'center',
-      children: [
-        { type: 'text', style: { text: centerValue ?? String(total), textAlign: 'center', fontSize: 22, fontWeight: 800, fill: '#111827' } },
-        { type: 'text', top: 26, style: { text: centerLabel ?? 'total', textAlign: 'center', fontSize: 11, fill: '#6b7280' } },
-      ],
-    }] : undefined,
+    // Each legend row carries its count and share, so the values read without hovering
+    legend: {
+      ...BASE.legend, orient: 'vertical', right: 8, top: 'center', data: slices.map(d => d.name),
+      formatter: (name) => {
+        const d = slices.find(x => x.name === name);
+        return d ? `{n|${name}}  {v|${d.value}}  {p|${pct(d.value)}%}` : name;
+      },
+      textStyle: {
+        ...BASE.legend.textStyle,
+        rich: {
+          n: { fontSize: 12, color: 'var(--text-secondary)' },
+          v: { fontSize: 12, fontWeight: 700, color: 'var(--text)' },
+          p: { fontSize: 11, color: 'var(--text-faint)' },
+        },
+      },
+    },
+    series: [
+      {
+        type:         'pie',
+        radius:       ['48%', '72%'],
+        center:       CENTER,
+        avoidLabelOverlap: true,
+        itemStyle:    { borderRadius: 6, borderColor: 'var(--card)', borderWidth: 2 },
+        label:        { show: false },
+        emphasis:     { label: { show: false }, itemStyle: { shadowBlur: 16, shadowOffsetX: 0, shadowColor: 'rgba(0,0,0,.2)' } },
+        data: slices.map(d => ({ name: d.name, value: d.value, itemStyle: { color: d.color } })),
+      },
+      // Centre total: an empty pie at the same centre whose label sits in the hole,
+      // so it stays centred on the ring whatever the legend width
+      ...(showCenter ? [{
+        type: 'pie', radius: ['0%', '1%'], center: CENTER, silent: true, legendHoverLink: false,
+        tooltip: { show: false }, itemStyle: { color: 'transparent' }, emphasis: { disabled: true },
+        label: {
+          show: true, position: 'center',
+          formatter: `{v|${centerValue ?? total}}\n{l|${centerLabel ?? 'total'}}`,
+          rich: {
+            v: { fontSize: 22, fontWeight: 800, color: 'var(--text)', lineHeight: 26 },
+            l: { fontSize: 11, color: 'var(--text-secondary)', lineHeight: 14 },
+          },
+        },
+        data: [{ value: 1, name: '' }],
+      }] : []),
+    ],
   });
-  return <Chart option={option} style={{ ...CHART_STYLE, height }} />;
+  // In a narrow card the legend moves under the ring instead of overlapping it
+  const responsive = {
+    baseOption: option,
+    media: [{
+      query: { maxWidth: 420 },
+      option: {
+        legend: { orient: 'horizontal', left: 'center', right: 'auto', top: 'auto', bottom: 0 },
+        series: [{ center: ['50%', '42%'], radius: ['40%', '62%'] }, ...(showCenter ? [{ center: ['50%', '42%'] }] : [])],
+      },
+    }],
+  };
+  return <Chart option={responsive} style={{ ...CHART_STYLE, height }} />;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -241,9 +281,9 @@ export function GaugeChart({ value = 0, max = 100, label = '', unit = '', color 
       axisLabel:  { show: false },
       pointer:    { show: false },
       anchor:     { show: false },
-      title:      { show: true, offsetCenter: [0, '25%'], color: 'var(--text-secondary)', fontSize: 11, fontFamily: 'inherit' },
+      title:      { show: true, offsetCenter: [0, '25%'], color: 'var(--text-secondary)', fontSize: 11, fontFamily: FONT },
       detail:     { valueAnimation: true, offsetCenter: [0, '-5%'], fontSize: 20, fontWeight: 800, color: col,
-                    formatter: v => `${Number(v).toFixed(1)}${unit}`, fontFamily: 'inherit' },
+                    formatter: v => `${Number(v).toFixed(1)}${unit}`, fontFamily: FONT },
       data: [{ value, name: label }],
     }],
   };
