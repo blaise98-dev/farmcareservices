@@ -52,7 +52,7 @@ export const getHerdCounts       = () => api.get('/api/herd/summary/counts').the
 // Milk
 export const getMilk             = (days=7) => api.get(`/api/milk/?days=${days}`).then(r => r.data);
 export const getMilkDailySummary = (days=7) => api.get(`/api/milk/daily-summary?days=${days}`).then(r => r.data);
-export const getTopProducers     = () => api.get('/api/milk/top-producers').then(r => r.data);
+export const getTopProducers     = (days=7) => api.get(`/api/milk/top-producers?days=${days}`).then(r => r.data);
 export const addMilkRecord       = (body) => api.post('/api/milk/', body).then(r => r.data);
 export const getTodaySessions    = () => api.get('/api/milk/sessions/today').then(r => r.data);
 
@@ -64,7 +64,7 @@ export const addFeedRecord       = (body) => api.post('/api/feed/', body).then(r
 
 // Environment
 export const getEnvHistory       =(hours=24) => api.get(`/api/environment/history?hours=${hours}`).then(r => r.data);
-export const getEnvDailyAvg      = () => api.get('/api/environment/daily-averages').then(r => r.data);
+export const getEnvDailyAvg      = (days=7) => api.get(`/api/environment/daily-averages?days=${days}`).then(r => r.data);
 export const getCowTemperatures  = () => api.get('/api/environment/cow-temperatures').then(r => r.data);
 export const addEnvReading       = (body) => api.post('/api/environment/', body).then(r => r.data);
 

@@ -4,6 +4,8 @@ import { format } from 'date-fns';
 import { Home, Thermometer, Droplets, Waves, Wheat, Wind, ToggleRight, TrendingUp } from 'lucide-react';
 import { getBarnLatest, getBarnHistory, getFeedIntake } from '../lib/api';
 import { LineChart, BarChart, ChartCard } from '../components/ChartKit';
+import PeriodSelect from '../components/PeriodSelect';
+import { periodDays, periodLabel, timeLabeler } from '../lib/periods';
 
 const num = (v, d = 1) => (v == null ? '-' : Number(v).toFixed(d));
 
@@ -50,14 +52,20 @@ export default function Barn() {
   const [hours, setHours] = useState(24);
   const { data: latest } = useQuery({ queryKey: ['barn-latest'], queryFn: getBarnLatest, refetchInterval: 5000 });
   const { data: history = [], isLoading: hLoading, isError: hError } = useQuery({ queryKey: ['barn-history', hours], queryFn: () => getBarnHistory(hours), refetchInterval: 30000 });
-  const { data: feed } = useQuery({ queryKey: ['feed-intake'], queryFn: () => getFeedIntake(30), refetchInterval: 60000 });
+  // Feed eaten is per day, so short periods still show the last whole days
+  const feedDays = Math.max(periodDays(hours), hours ? 7 : 0);
+  const { data: feed } = useQuery({ queryKey: ['feed-intake', feedDays], queryFn: () => getFeedIntake(feedDays), refetchInterval: 60000 });
 
   const r = latest?.reading || {};
+  const label = timeLabeler(history);
   const trend = history.map(h => ({
-    time: format(new Date(h.recorded_at), hours > 24 ? 'MMM d HH:mm' : 'HH:mm'),
+    time: label(h.recorded_at),
     temperature: h.temperature, humidity: h.humidity, tank: h.tank_level, feed: h.feed_weight,
   }));
-  const feedDaily = (feed?.daily || []).map(d => ({ day: format(new Date(`${d.day}T00:00:00`), 'MMM d'), eaten: d.eaten_kg }));
+  const feedDaily = (feed?.daily || []).map(d => ({ day: format(new Date(`${d.day}T00:00:00`), feedDays === 0 || feedDays > 366 ? 'MMM d, yyyy' : 'MMM d'), eaten: d.eaten_kg }));
+  const emptyNote = !hLoading && !hError && history.length === 0
+    ? `No readings in this period${r.recorded_at ? `. The last one was on ${format(new Date(r.recorded_at), 'MMM d, yyyy HH:mm')}; choose a longer period or All time.` : '.'}`
+    : null;
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
@@ -123,18 +131,14 @@ export default function Barn() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
           <ChartCard
             title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><TrendingUp size={14} /> Temperature</span>}
-            sub={`Last ${hours} hours`} isLoading={hLoading} isError={hError} height={220}
-            action={
-              <select value={hours} onChange={e => setHours(Number(e.target.value))} style={{ padding: '4px 8px', borderRadius: 8, border: '1px solid var(--border)', fontSize: 12 }}>
-                {[6, 24, 72, 168].map(h => <option key={h} value={h}>{h === 168 ? '7 days' : `${h} h`}</option>)}
-              </select>
-            }>
+            sub={emptyNote || periodLabel(hours)} isLoading={hLoading} isError={hError} height={220}
+            action={<PeriodSelect value={hours} onChange={setHours} />}>
             <LineChart data={trend} xKey="time" series={[{ key: 'temperature', name: 'Temperature', color: '#1565C0' }]} unit="°C" area scale height={220} />
           </ChartCard>
-          <ChartCard title="Humidity & tank level" sub="%" isLoading={hLoading} isError={hError} height={220}>
+          <ChartCard title="Humidity & tank level" sub={`% · ${periodLabel(hours)}`} isLoading={hLoading} isError={hError} height={220}>
             <LineChart data={trend} xKey="time" series={[{ key: 'humidity', name: 'Humidity', color: '#00838F' }, { key: 'tank', name: 'Tank', color: 'var(--green-ink)' }]} unit="%" height={220} />
           </ChartCard>
-          <ChartCard title="Feed eaten per day" sub="Last 30 days, kg" height={200}>
+          <ChartCard title="Feed eaten per day" sub={`kg · ${feedDays ? `last ${feedDays} days` : 'all time'}`} height={200}>
             <BarChart data={feedDaily} xKey="day" series={[{ key: 'eaten', name: 'Feed eaten', color: '#E65100' }]} unit=" kg" height={200} />
           </ChartCard>
         </div>

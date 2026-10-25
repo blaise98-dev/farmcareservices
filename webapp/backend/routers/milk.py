@@ -7,6 +7,7 @@ from typing import Optional
 from database import fetchall, fetchone, execute
 from ws_manager import manager
 from rbac import require_any, require_can_log_milk
+from periods import period_days
 from tenancy import farm_clause, cow_clause, ensure_cow_access
 
 router = APIRouter(prefix="/api/milk", tags=["milk"])
@@ -39,25 +40,35 @@ class MilkEntry(FormModel):
     entry_date: Optional[str] = None
 
 
+def _since(days: int, condition: str):
+    """(SQL, args) for "within the last `days`"; no limit when days=0 (all time)."""
+    days = period_days(days)
+    return (condition, (days,)) if days else ("1=1", ())
+
+
 @router.get("/")
 async def list_milk(days: int = 7, user=Depends(require_any())):
+    """Records from the last `days`, or all of them when days=0."""
     where, args = farm_clause(user, "c.farm_id")
+    since, sargs = _since(days, "m.recorded_at >= DATE_SUB(NOW(), INTERVAL %s DAY)")
     rows = await fetchall(
         f"""
         SELECT m.*, c.cow_name, c.breed
         FROM MilkProductionRecords m
         JOIN Cows c ON m.cow_id = c.cow_id
-        WHERE m.recorded_at >= DATE_SUB(NOW(), INTERVAL %s DAY) AND {where}
+        WHERE {since} AND {where}
         ORDER BY m.recorded_at DESC
         """,
-        (days, *args),
+        (*sargs, *args),
     )
     return [_safe(r) for r in rows]
 
 
 @router.get("/daily-summary")
 async def daily_summary(days: int = 7, user=Depends(require_any())):
+    """Litres per cow per day over the last `days`, or all time when days=0."""
     where, args = farm_clause(user, "c.farm_id")
+    since, sargs = _since(days, "CAST(m.recorded_at AS DATE) >= DATE_SUB(CURDATE(), INTERVAL %s DAY)")
     rows = await fetchall(
         f"""
         SELECT c.cow_id, c.cow_name,
@@ -68,18 +79,20 @@ async def daily_summary(days: int = 7, user=Depends(require_any())):
                SUM(m.milk_amount_liters) AS total_daily_milk
         FROM Cows c
         JOIN MilkProductionRecords m ON c.cow_id = m.cow_id
-        WHERE CAST(m.recorded_at AS DATE) >= DATE_SUB(CURDATE(), INTERVAL %s DAY) AND {where}
+        WHERE {since} AND {where}
         GROUP BY c.cow_id, c.cow_name, CAST(m.recorded_at AS DATE)
         ORDER BY milk_date DESC, c.cow_id
         """,
-        (days, *args),
+        (*sargs, *args),
     )
     return [_safe(r) for r in rows]
 
 
 @router.get("/top-producers")
-async def top_producers(user=Depends(require_any())):
+async def top_producers(days: int = 7, user=Depends(require_any())):
+    """The five cows that gave the most milk over the last `days` (0 = all time)."""
     where, args = farm_clause(user, "c.farm_id")
+    since, sargs = _since(days, "m.recorded_at >= DATE_SUB(NOW(), INTERVAL %s DAY)")
     rows = await fetchall(
         f"""
         SELECT c.cow_id, c.cow_name, c.breed,
@@ -88,12 +101,12 @@ async def top_producers(user=Depends(require_any())):
                COUNT(m.milk_id) AS sessions
         FROM Cows c
         JOIN MilkProductionRecords m ON c.cow_id = m.cow_id
-        WHERE m.recorded_at >= DATE_SUB(NOW(), INTERVAL 7 DAY) AND {where}
+        WHERE {since} AND {where}
         GROUP BY c.cow_id, c.cow_name, c.breed
         ORDER BY total_weekly_milk DESC
         LIMIT 5
         """,
-        args,
+        (*sargs, *args),
     )
     return [_safe(r) for r in rows]
 

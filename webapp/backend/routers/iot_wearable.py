@@ -25,6 +25,7 @@ from alerting import log_alert
 from database import execute, fetchall, fetchone
 from farm_config import as_float, device_config, get_settings, milk_level, touch_device
 from health_risk import distance_m
+from periods import bucketed_series, period_hours
 from rbac import require_any
 from tenancy import cow_clause, ensure_cow_access, farm_of_device
 from ws_manager import manager
@@ -394,38 +395,29 @@ async def latest_water_quality(cow_id: Optional[int] = None, user=Depends(requir
 
 @router.get("/water-quality/history")
 async def water_quality_history(hours: int = 24, cow_id: Optional[int] = None, user=Depends(require_any())):
+    """Readings over the last `hours`, or since the first reading when hours=0."""
     if cow_id is not None:
         await ensure_cow_access(user, cow_id)
-        rows = await fetchall(
-            """
-            SELECT * FROM WaterQualityReadings
-            WHERE cow_id=%s AND recorded_at >= DATE_SUB(NOW(), INTERVAL %s HOUR)
-            ORDER BY recorded_at ASC
-            """,
-            (cow_id, hours),
-        )
+        where, args = "cow_id = %s", (cow_id,)
     else:
         where, args = cow_clause(user)
-        rows = await fetchall(
-            f"""
-            SELECT * FROM WaterQualityReadings
-            WHERE {where} AND recorded_at >= DATE_SUB(NOW(), INTERVAL %s HOUR)
-            ORDER BY recorded_at ASC
-            """,
-            (*args, hours),
-        )
+    rows = await bucketed_series("WaterQualityReadings", "recorded_at", ["tds_ppm", "distance_cm"], [], where, args, hours)
     return [_safe(r) for r in rows]
 
 
 async def _cow_readings(user: dict, table: str, cow_id: int, hours: int) -> list:
+    """A cow's readings over the last `hours`, or all of them when hours=0."""
     await ensure_cow_access(user, cow_id)
+    hours = period_hours(hours)
+    cond, cargs = ("AND recorded_at >= DATE_SUB(NOW(), INTERVAL %s HOUR)", (hours,)) if hours else ("", ())
     rows = await fetchall(
         f"""
         SELECT * FROM {table}
-        WHERE cow_id=%s AND recorded_at >= DATE_SUB(NOW(), INTERVAL %s HOUR)
+        WHERE cow_id=%s {cond}
         ORDER BY recorded_at ASC
+        LIMIT 20000
         """,
-        (cow_id, hours),
+        (cow_id, *cargs),
     )
     return [_safe(r) for r in rows]
 

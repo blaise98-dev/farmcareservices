@@ -7,6 +7,8 @@ import { BarChart as EBar, HBarChart, ChartCard } from '../components/ChartKit';
 import { Plus, Droplets, Lock, Trophy, ClipboardList } from 'lucide-react';
 import { format } from 'date-fns';
 import { errorText } from '../lib/errors';
+import PeriodSelect from '../components/PeriodSelect';
+import { periodDays, periodLabel } from '../lib/periods';
 
 const today = () => format(new Date(), 'yyyy-MM-dd');
 const emptyForm = () => ({
@@ -29,8 +31,11 @@ export default function Milk() {
   const [showBreakdown, setShowBreakdown] = useState(false);
   const qc = useQueryClient();
 
-  const { data: daily = [], isLoading: dailyLoading, isError: dailyError } = useQuery({ queryKey: ['milk-daily'], queryFn: () => getMilkDailySummary(14) });
-  const { data: top = [], isLoading: topLoading, isError: topError } = useQuery({ queryKey: ['top-producers'], queryFn: getTopProducers });
+  const [periodHours, setPeriodHours] = useState(336);   // two weeks
+  const days = periodDays(periodHours);
+  const periodText = days ? periodLabel(periodHours).replace(/^Last /, 'last ') : 'all time';
+  const { data: daily = [], isLoading: dailyLoading, isError: dailyError } = useQuery({ queryKey: ['milk-daily', days], queryFn: () => getMilkDailySummary(days) });
+  const { data: top = [], isLoading: topLoading, isError: topError } = useQuery({ queryKey: ['top-producers', days], queryFn: () => getTopProducers(days) });
   const { data: sessions = [] } = useQuery({ queryKey: ['today-sessions'], queryFn: getTodaySessions });
   const { data: cows = [] } = useQuery({ queryKey: ['cows'], queryFn: getCows });
 
@@ -48,10 +53,14 @@ export default function Milk() {
   });
 
   // Chart: daily total per day (summed across cows)
+  // Show the year only when the records span more than a year
+  const stamps = daily.map(r => new Date(r.milk_date).getTime()).filter(Boolean);
+  const multiYear = stamps.length > 1 && Math.max(...stamps) - Math.min(...stamps) > 366 * 864e5;
   const byDate = daily.reduce((acc, r) => {
-    const d = r.milk_date ? format(new Date(r.milk_date), 'MMM d') : '';
-    if (!acc[d]) acc[d] = { date: d, morning: 0, evening: 0, total: 0 };
+    const d = r.milk_date ? format(new Date(r.milk_date), multiYear ? 'MMM d, yyyy' : 'MMM d') : '';
+    if (!acc[d]) acc[d] = { date: d, morning: 0, midday: 0, evening: 0, total: 0 };
     acc[d].morning += Number(r.morning_milk || 0);
+    acc[d].midday += Number(r.midday_milk || 0);
     acc[d].evening += Number(r.evening_milk || 0);
     acc[d].total += Number(r.total_daily_milk || 0);
     return acc;
@@ -82,17 +91,20 @@ export default function Milk() {
       </div>
 
       {/* Charts */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
-        <ChartCard title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Droplets size={14} /> 14-Day Milk Production</span>} sub="Stacked morning / evening sessions"
+      <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: -12 }}>
+        <PeriodSelect value={periodHours} onChange={setPeriodHours} minHours={24} />
+      </div>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,360px),1fr))', gap: 20 }}>
+        <ChartCard title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Droplets size={14} /> Milk Production</span>} sub={`Litres per day by session, ${periodText}`}
           isLoading={dailyLoading} isError={dailyError} height={240}>
           <EBar
             data={chartData} xKey="date"
-            series={[{ key: 'morning', name: 'Morning', color: '#FF9800' }, { key: 'evening', name: 'Evening', color: '#9C27B0' }]}
+            series={[{ key: 'morning', name: 'Morning', color: '#FF9800' }, { key: 'midday', name: 'Midday', color: '#00838F' }, { key: 'evening', name: 'Evening', color: '#9C27B0' }]}
             stacked unit=" L" height={240}
           />
         </ChartCard>
 
-        <ChartCard title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Trophy size={14} /> Top 5 Producers</span>} sub="7-day cumulative milk output"
+        <ChartCard title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Trophy size={14} /> Top 5 Producers</span>} sub={`Total milk, ${periodText}`}
           isLoading={topLoading} isError={topError} height={240}>
           <HBarChart
             data={top.slice(0, 5).map(c => ({ name: c.cow_name, value: Number(Number(c.total_weekly_milk).toFixed(1)) }))}
@@ -105,7 +117,7 @@ export default function Milk() {
       {/* Per-cow daily table */}
       <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
         <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)', display: 'flex', alignItems: 'center', gap: 12 }}>
-          <h2 style={{ fontSize: 16, fontWeight: 700, flex: 1, display: 'flex', alignItems: 'center', gap: 8 }}><ClipboardList size={16} /> Daily Records per Cow</h2>
+          <h2 style={{ fontSize: 16, fontWeight: 700, flex: 1, display: 'flex', alignItems: 'center', gap: 8 }}><ClipboardList size={16} /> Daily Records per Cow <span style={{ fontSize: 12, fontWeight: 500, color: 'var(--text-secondary)' }}>({periodText})</span></h2>
           <RoleGuard
             allowed={p.canLogMilk}
             fallback={

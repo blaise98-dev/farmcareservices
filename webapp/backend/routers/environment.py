@@ -5,6 +5,7 @@ from database import fetchall, fetchone, execute
 from ws_manager import manager
 from rbac import require_any, require_can_add_env
 from tenancy import farm_clause, farm_for_write
+from periods import bucketed_series, period_days
 
 router = APIRouter(prefix="/api/environment", tags=["environment"])
 
@@ -43,21 +44,22 @@ async def latest(user=Depends(require_any())):
 
 @router.get("/history")
 async def history(hours: int = 24, user=Depends(require_any())):
+    """Readings over the last `hours`, or since the first reading when hours=0."""
     where, args = farm_clause(user)
-    rows = await fetchall(
-        f"""
-        SELECT * FROM EnvironmentalReadings
-        WHERE recorded_at >= DATE_SUB(NOW(), INTERVAL %s HOUR) AND {where}
-        ORDER BY recorded_at ASC
-        """,
-        (hours, *args),
+    rows = await bucketed_series(
+        "EnvironmentalReadings", "recorded_at",
+        ["temperature_celsius", "humidity_percent", "air_quality_ppm", "oxygen_percent"],
+        ["alert_triggered"], where, args, hours,
     )
     return [_safe(r) for r in rows]
 
 
 @router.get("/daily-averages")
-async def daily_averages(user=Depends(require_any())):
+async def daily_averages(days: int = 7, user=Depends(require_any())):
+    """One row per day over the last `days`, or all time when days=0."""
+    days = period_days(days)
     where, args = farm_clause(user)
+    since, sargs = ("recorded_at >= CURDATE() - INTERVAL %s DAY", (days - 1,)) if days else ("1=1", ())
     rows = await fetchall(
         f"""
         SELECT DATE(recorded_at) AS reading_date,
@@ -68,11 +70,11 @@ async def daily_averages(user=Depends(require_any())):
                MAX(air_quality_ppm) AS max_aq,
                MAX(temperature_celsius) AS max_temp
         FROM EnvironmentalReadings
-        WHERE recorded_at >= DATE_SUB(NOW(), INTERVAL 7 DAY) AND {where}
+        WHERE {since} AND {where}
         GROUP BY DATE(recorded_at)
         ORDER BY reading_date DESC
         """,
-        args,
+        (*sargs, *args),
     )
     return [_safe(r) for r in rows]
 
