@@ -8,7 +8,9 @@ import logging
 from contextlib import asynccontextmanager
 from datetime import datetime
 
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect
+from fastapi import FastAPI, Request, WebSocket, WebSocketDisconnect
+from fastapi.responses import JSONResponse
+from pymysql.err import MySQLError
 from fastapi.middleware.cors import CORSMiddleware
 
 logger = logging.getLogger(__name__)
@@ -35,6 +37,7 @@ from routers.milking import router as milking_router
 from routers.barn import router as barn_router
 from routers.cow_health import router as cow_health_router
 from routers.field_settings import router as field_settings_router
+from app_schema import ensure_app_schema
 from farm_config import ensure_field_tables
 from tenancy import FarmHeaderMiddleware, ensure_farm_tenancy, is_admin, user_farm
 from routers.farms import router as farms_router
@@ -54,7 +57,7 @@ async def lifespan(app: FastAPI):
     await ensure_milk_feed_attribution_columns()
     # Newer migrations log and carry on if a live database refuses one, so the
     # API still starts and the older pages keep working.
-    for step in (ensure_field_tables, ensure_farm_tenancy):
+    for step in (ensure_app_schema, ensure_field_tables, ensure_farm_tenancy):
         try:
             await step()
         except Exception:  # noqa: BLE001
@@ -73,6 +76,18 @@ app = FastAPI(
     version="1.0.0",
     lifespan=lifespan,
 )
+
+@app.exception_handler(MySQLError)
+async def database_error(request: Request, exc: MySQLError):
+    # Name the MySQL error code (1054 unknown column, 1146 missing table,
+    # 1265/1366 value not accepted, ...) so a failing page says why, without
+    # sending table details to the browser. The full error goes to the log.
+    code = exc.args[0] if exc.args and isinstance(exc.args[0], int) else None
+    logger.error("Database error on %s %s: %s", request.method, request.url.path, exc)
+    return JSONResponse(status_code=500, content={
+        "detail": f"Database error{f' {code}' if code else ''} while saving or loading. The server log has the details.",
+    })
+
 
 # Added first so it runs inside CORS: the Admin farm picker's X-Farm-Id header
 app.add_middleware(FarmHeaderMiddleware)
