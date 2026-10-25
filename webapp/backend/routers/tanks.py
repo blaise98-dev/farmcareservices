@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
+from form_model import FormModel
 from typing import Optional
 from database import fetchall, fetchone, execute
 from rbac import require_any, require_admin_or_technician
@@ -22,14 +22,14 @@ def _safe(row: dict) -> dict:
     return out
 
 
-class TankReading(BaseModel):
+class TankReading(FormModel):
     tank_id: int
     level_liters: float
     action: Optional[str] = "Reading"
     notes: Optional[str] = None
 
 
-class TankCreate(BaseModel):
+class TankCreate(FormModel):
     tank_name: str
     tank_type: Optional[str] = "Water"
     capacity_liters: float

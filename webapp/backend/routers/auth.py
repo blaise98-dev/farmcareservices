@@ -11,7 +11,7 @@ from fastapi import APIRouter, HTTPException, Depends, status, BackgroundTasks, 
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from jose import JWTError, jwt
 from passlib.context import CryptContext
-from pydantic import BaseModel
+from form_model import FormModel
 
 from config import settings
 from database import fetchone, execute, fetchall
@@ -32,22 +32,22 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 12   # 12 hours
 
 
 # ── Schemas ───────────────────────────────────────────────────
-class Token(BaseModel):
+class Token(FormModel):
     access_token: str
     token_type: str
     user: dict
 
 
-class ForgotPasswordRequest(BaseModel):
+class ForgotPasswordRequest(FormModel):
     identifier: str   # email or username
 
 
-class ResetPasswordRequest(BaseModel):
+class ResetPasswordRequest(FormModel):
     token: str
     new_password: str
 
 
-class RegisterRequest(BaseModel):
+class RegisterRequest(FormModel):
     username: str
     password: str
     full_name: str
@@ -379,7 +379,7 @@ async def list_pending_users(current_user: dict = Depends(get_current_user)):
     return [_safe_user(r) for r in rows]
 
 
-class ApproveRequest(BaseModel):
+class ApproveRequest(FormModel):
     farm_id: Optional[int] = None   # the farm the user will see; required when there are several
 
 
@@ -432,7 +432,7 @@ async def reject_user(user_id: int, current_user: dict = Depends(get_current_use
 VALID_ROLES = {"Admin", "Farmer", "Veterinarian", "Technician"}
 
 
-class UserCreate(BaseModel):
+class UserCreate(FormModel):
     username: str
     password: str
     full_name: str
@@ -447,7 +447,7 @@ class UserCreate(BaseModel):
     village:  Optional[str] = None
 
 
-class UserUpdate(BaseModel):
+class UserUpdate(FormModel):
     role: Optional[str] = None
     is_active: Optional[bool] = None
     full_name: Optional[str] = None

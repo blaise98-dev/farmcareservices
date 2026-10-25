@@ -1,6 +1,7 @@
 """Public Contact Us form: no authentication required."""
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
-from pydantic import BaseModel, EmailStr
+from pydantic import EmailStr
+from form_model import FormModel
 from typing import Optional
 
 from database import execute, fetchall
@@ -10,7 +11,7 @@ from rbac import require_admin
 router = APIRouter(prefix="/api/contact", tags=["contact"])
 
 
-class ContactRequest(BaseModel):
+class ContactRequest(FormModel):
     name: str
     email: EmailStr
     phone: Optional[str] = None

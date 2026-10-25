@@ -7,7 +7,8 @@ Users only reach their own farm's milking stations and cows.
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from pydantic import BaseModel, Field
+from pydantic import Field
+from form_model import FormModel
 
 from alerting import notify_text
 from database import execute, fetchall, fetchone
@@ -118,7 +119,7 @@ async def finish_session(station: str, session_id: Optional[int],
 
 
 # ── Web actions ───────────────────────────────────────────────────────────────
-class ScanBody(BaseModel):
+class ScanBody(FormModel):
     rfid_tag: str = Field(..., min_length=2, max_length=50)
     device_id: Optional[str] = None
 
@@ -138,7 +139,7 @@ async def web_scan(body: ScanBody, user=Depends(require_can_log_milk())):
     return result
 
 
-class RecordBody(BaseModel):
+class RecordBody(FormModel):
     device_id: Optional[str] = None
     session_id: Optional[int] = None
     volume_l: Optional[float] = Field(None, gt=0, le=60)

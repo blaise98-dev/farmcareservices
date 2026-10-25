@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
+from form_model import FormModel
 from typing import Optional, List
 from database import fetchall, fetchone, execute
 from rbac import require_any, require_admin_or_farmer
@@ -22,14 +22,14 @@ def _safe(row: dict) -> dict:
     return out
 
 
-class GroupCreate(BaseModel):
+class GroupCreate(FormModel):
     group_name: str
     group_type: Optional[str] = "Custom"
     description: Optional[str] = None
     farm_id: Optional[int] = None    # Admin only; others use their own farm
 
 
-class MemberBody(BaseModel):
+class MemberBody(FormModel):
     cow_ids: List[int]
 
 

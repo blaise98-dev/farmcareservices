@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
+from form_model import FormModel
 from typing import Optional
 from database import fetchall, fetchone, execute
 from ws_manager import manager
@@ -23,7 +23,7 @@ def _safe(row: dict) -> dict:
     return out
 
 
-class AlertCreate(BaseModel):
+class AlertCreate(FormModel):
     alert_type: str
     cow_id: Optional[int] = None
     severity: Optional[str] = "Warning"

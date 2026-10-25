@@ -5,7 +5,7 @@ rules, farm boundary) and the device registry with online status.
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-from pydantic import BaseModel
+from form_model import FormModel
 
 from database import execute, fetchall, fetchone
 from farm_config import DEFAULT_SETTINGS, ONLINE_SECONDS, ROLES, db_now, get_settings, save_settings, seconds_since
@@ -82,7 +82,7 @@ async def device_status(user=Depends(require_any())):
     return out
 
 
-class DeviceUpdate(BaseModel):
+class DeviceUpdate(FormModel):
     role: Optional[str] = None
     label: Optional[str] = None
     cow_id: Optional[int] = None

@@ -5,7 +5,7 @@ Uses a new SmsSubscribers table (added in additions SQL).
 Each subscriber belongs to a farm and is texted about that farm's alerts.
 """
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
+from form_model import FormModel
 from typing import Optional
 from database import fetchall, fetchone, execute
 from rbac import require_admin
@@ -28,7 +28,7 @@ def _safe(row: dict) -> dict:
     return out
 
 
-class SubscriberCreate(BaseModel):
+class SubscriberCreate(FormModel):
     phone_number: str
     full_name:    Optional[str] = None
     min_severity: Optional[str] = "Critical"   # Info | Warning | Critical | Emergency
@@ -37,7 +37,7 @@ class SubscriberCreate(BaseModel):
     farm_id:      Optional[int] = None         # needed when there is more than one farm
 
 
-class SubscriberUpdate(BaseModel):
+class SubscriberUpdate(FormModel):
     full_name:    Optional[str] = None
     min_severity: Optional[str] = None
     alert_types:  Optional[str] = None

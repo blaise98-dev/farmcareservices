@@ -5,7 +5,8 @@ how many users, cows and devices each holds; everyone else sees only their own.
 from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel, Field
+from pydantic import Field
+from form_model import FormModel
 
 from database import execute, fetchall, fetchone
 from rbac import require_admin, require_any
@@ -14,7 +15,7 @@ from tenancy import is_admin, user_farm
 router = APIRouter(prefix="/api/farms", tags=["farms"])
 
 
-class FarmBody(BaseModel):
+class FarmBody(FormModel):
     farm_name: Optional[str] = Field(None, min_length=2, max_length=150)
     location: Optional[str] = Field(None, max_length=255)
     established_year: Optional[int] = Field(None, ge=1900, le=2100)

@@ -1,6 +1,6 @@
 import { lazy, Suspense, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { MutationCache, QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './context/AuthContext';
 import { useAuth } from './hooks/useAuth';
 import { RealtimeProvider } from './context/RealtimeContext';
@@ -8,6 +8,8 @@ import { usePermissions } from './hooks/usePermissions';
 import RoleGuard from './components/RoleGuard';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
+import ErrorToast from './components/ErrorToast';
+import { errorText, showErrorToast } from './lib/errors';
 import Login from './pages/Login';
 // Every page except the landing page and sign-in loads on demand, so the first
 // visit downloads a fraction of the app (charts and maps arrive with their pages).
@@ -45,6 +47,13 @@ const Barn = lazy(() => import('./pages/Barn'));
 const CowHealth = lazy(() => import('./pages/CowHealth'));
 
 const qc = new QueryClient({
+  // Any save that fails without its own error message gets a toast, so a
+  // rejected request is never silent.
+  mutationCache: new MutationCache({
+    onError: (error, _vars, _ctx, mutation) => {
+      if (!mutation.options.onError) showErrorToast(errorText(error));
+    },
+  }),
   defaultOptions: {
     queries: {
       refetchInterval: 30000,
@@ -159,6 +168,7 @@ export default function App() {
   return (
     <QueryClientProvider client={qc}>
       <AuthProvider>
+        <ErrorToast />
         <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
           <Suspense fallback={<div className="spinner" style={{ marginTop: 120 }} />}>
           <Routes>
