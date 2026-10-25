@@ -124,7 +124,7 @@ export default function Feed() {
             unit=" kg" showLabel height={240} />
         </ChartCard>
 
-        <ChartCard title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Waves size={14} /> Water Intake Today</span>} sub="Per-cow consumption — threshold 30 L"
+        <ChartCard title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Waves size={14} /> Water Intake Today</span>} sub="Per-cow consumption: threshold 30 L"
           isLoading={waterLoading} isError={waterError} height={240}>
           <HBarChart
             data={waterToday.map(w => ({ name: w.cow_name, value: Number(Number(w.total_liters).toFixed(0)) }))}
@@ -141,7 +141,7 @@ export default function Feed() {
             <Wind size={16} color="#607D8B" /> Methane Impact by Cow (last 30 days)
           </h2>
           <p style={{ fontSize: 12, color: 'var(--text-secondary)', marginBottom: 16 }}>
-            % of diet from high-methane feeds — target below 30% to reduce farm emissions
+            % of diet from high-methane feeds: target below 30% to reduce farm emissions
           </p>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(220px,1fr))', gap: 10 }}>
             {methaneSummary.map(r => {
@@ -171,7 +171,7 @@ export default function Feed() {
           <RoleGuard
             allowed={p.canLogFeed}
             fallback={
-              <span style={{ fontSize: 12, color: '#aaa', display: 'flex', alignItems: 'center', gap: 4 }}>
+              <span style={{ fontSize: 12, color: 'var(--text-faint)', display: 'flex', alignItems: 'center', gap: 4 }}>
                 <Lock size={13} /> Logging restricted to Admin/Farmer
               </span>
             }
@@ -183,7 +183,7 @@ export default function Feed() {
         </div>
 
         {showForm && p.canLogFeed && (
-          <div style={{ padding: '16px 20px', background: '#f7f9fc', borderBottom: '1px solid var(--border)', display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'flex-end' }}>
+          <div style={{ padding: '16px 20px', background: 'var(--surface-2)', borderBottom: '1px solid var(--border)', display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'flex-end' }}>
             {/* Feed mode toggle */}
             <div style={{ width: '100%', display: 'flex', gap: 8 }}>
               {['cow', 'group'].map(m => (
@@ -198,7 +198,7 @@ export default function Feed() {
               <div>
                 <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: 4 }}>Cow</label>
                 <select value={form.cow_id} onChange={e => setForm(f => ({ ...f, cow_id: e.target.value }))}
-                  style={{ padding: '7px 10px', borderRadius: 8, border: '1px solid var(--border)', fontSize: 13, background: '#fff', minWidth: 140 }}>
+                  style={{ padding: '7px 10px', borderRadius: 8, border: '1px solid var(--border)', fontSize: 13, background: 'var(--card)', minWidth: 140 }}>
                   <option value="">Select cow…</option>
                   {cows.map(c => <option key={c.cow_id} value={c.cow_id}>{c.cow_name}</option>)}
                 </select>
@@ -207,7 +207,7 @@ export default function Feed() {
               <div>
                 <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: 4 }}>Group</label>
                 <select value={form.group_id} onChange={e => setForm(f => ({ ...f, group_id: e.target.value }))}
-                  style={{ padding: '7px 10px', borderRadius: 8, border: '1px solid var(--border)', fontSize: 13, background: '#fff', minWidth: 140 }}>
+                  style={{ padding: '7px 10px', borderRadius: 8, border: '1px solid var(--border)', fontSize: 13, background: 'var(--card)', minWidth: 140 }}>
                   <option value="">Select group…</option>
                   {groups.map(g => <option key={g.group_id} value={g.group_id}>{g.group_name}</option>)}
                 </select>
@@ -231,7 +231,7 @@ export default function Feed() {
                   const ft = FEED_TYPES.find(f => f.value === e.target.value);
                   setForm(f => ({ ...f, feed_type: e.target.value, methane_impact: ft?.impact || 'Neutral' }));
                 }}
-                style={{ padding: '7px 10px', borderRadius: 8, border: '1px solid var(--border)', fontSize: 13, background: '#fff', minWidth: 200 }}>
+                style={{ padding: '7px 10px', borderRadius: 8, border: '1px solid var(--border)', fontSize: 13, background: 'var(--card)', minWidth: 200 }}>
                 <optgroup label="Increases Methane Emissions">
                   {FEED_TYPES.filter(f => f.impact === 'Increases').map(f => <option key={f.value} value={f.value}>{f.label}</option>)}
                 </optgroup>
@@ -243,15 +243,15 @@ export default function Feed() {
                 </optgroup>
               </select>
             </div>
-            {/* Methane impact indicator — appears after feed type is chosen */}
+            {/* Methane impact indicator: appears after feed type is chosen */}
             {form.feed_type && (
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 12px', borderRadius: 8, background: IMPACT_BG[form.methane_impact], border: `1px solid ${IMPACT_COLOR[form.methane_impact]}44` }}>
                 <Wind size={14} color={IMPACT_COLOR[form.methane_impact]} />
                 <span style={{ fontSize: 12, fontWeight: 700, color: IMPACT_COLOR[form.methane_impact] }}>
                   Methane Impact: {form.methane_impact}
                 </span>
-                {form.methane_impact === 'Increases' && <span style={{ fontSize: 11, color: '#c62828' }}>— consider substituting with legumes or silage</span>}
-                {form.methane_impact === 'Reduces'   && <span style={{ fontSize: 11, color: '#2E7D32' }}>— good choice for emission reduction</span>}
+                {form.methane_impact === 'Increases' && <span style={{ fontSize: 11, color: '#c62828' }}>Consider substituting with legumes or silage</span>}
+                {form.methane_impact === 'Reduces'   && <span style={{ fontSize: 11, color: 'var(--green-ink)' }}>Good choice for emission reduction</span>}
               </div>
             )}
             {p.isVet && (
@@ -281,7 +281,7 @@ export default function Feed() {
                 <tr key={i}>
                   <td style={{ fontWeight: 600 }}>{r.cow_name}</td>
                   <td style={{ color: 'var(--text-secondary)', fontSize: 12 }}>{r.feed_date ? format(new Date(r.feed_date), 'MMM d, yyyy') : ''}</td>
-                  <td style={{ fontSize: 12 }}>{r.feed_type || '—'}</td>
+                  <td style={{ fontSize: 12 }}>{r.feed_type || '-'}</td>
                   <td>{Number(r.avg_kg).toFixed(1)}</td>
                   <td style={{ fontWeight: 700, color: '#4CAF50' }}>{Number(r.total_kg).toFixed(1)}</td>
                   <td>
@@ -290,7 +290,7 @@ export default function Feed() {
                         background: IMPACT_BG[r.methane_impact], color: IMPACT_COLOR[r.methane_impact] }}>
                         {r.methane_impact}
                       </span>
-                    ) : '—'}
+                    ) : '-'}
                   </td>
                 </tr>
               ))}

@@ -55,10 +55,11 @@ async def unread_count(current_user: dict = Depends(require_any())):
 
 
 @router.patch("/{notif_id}/read")
-async def mark_read(notif_id: int, _=Depends(require_any())):
+async def mark_read(notif_id: int, current_user: dict = Depends(require_any())):
+    # Only the user's own (or broadcast) notifications can be marked
     await execute(
-        "UPDATE Notifications SET is_read=TRUE WHERE notif_id=%s",
-        (notif_id,),
+        "UPDATE Notifications SET is_read=TRUE WHERE notif_id=%s AND (user_id=%s OR user_id IS NULL)",
+        (notif_id, current_user["user_id"]),
     )
     return {"ok": True}
 

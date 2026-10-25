@@ -30,6 +30,6 @@ if ! lsof -i :"${LOCAL_PORT}" -sTCP:LISTEN >/dev/null 2>&1; then
   exit 1
 fi
 
-echo "SSH tunnel active — all DB writes go to remote host ${REMOTE_HOST}"
+echo "SSH tunnel active: all DB writes go to remote host ${REMOTE_HOST}"
 source venv/bin/activate
 uvicorn main:app --reload --port 8000

@@ -7,7 +7,7 @@ import { Link } from 'react-router-dom';
 import { Plus, X, Users, Trash2, UserMinus } from 'lucide-react';
 
 const LABEL = { display: 'block', fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: .5, marginBottom: 5 };
-const INPUT = { width: '100%', padding: '8px 12px', borderRadius: 8, border: '2px solid var(--border)', fontSize: 13, outline: 'none', fontFamily: 'inherit', background: '#fff', boxSizing: 'border-box' };
+const INPUT = { width: '100%', padding: '8px 12px', borderRadius: 8, border: '2px solid var(--border)', fontSize: 13, outline: 'none', fontFamily: 'inherit', background: 'var(--card)', boxSizing: 'border-box' };
 
 const TYPE_COLOR = { Production: '#4CAF50', Dry: '#FF9800', Heifer: '#00BCD4', Calf: '#9C27B0', Fattening: '#1E4D7B', Custom: '#607D8B' };
 const GROUP_TYPES = ['Production', 'Dry', 'Heifer', 'Calf', 'Fattening', 'Custom'];
@@ -80,7 +80,7 @@ export default function Groups() {
               </div>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6 }}>
                 <span style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{g.description || ''}</span>
-                <span style={{ fontSize: 13, fontWeight: 700, color: '#1E4D7B' }}>{g.member_count} cows</span>
+                <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--navy-ink)' }}>{g.member_count} cows</span>
               </div>
             </div>
           ))}
@@ -119,12 +119,12 @@ export default function Groups() {
                     <tbody>
                       {members.map(m => (
                         <tr key={m.cow_id}>
-                          <td><Link to={`/app/herd/${m.cow_id}`} style={{ fontWeight: 700, color: '#1E4D7B', textDecoration: 'none' }}>{m.cow_name}</Link></td>
+                          <td><Link to={`/app/herd/${m.cow_id}`} style={{ fontWeight: 700, color: 'var(--navy-ink)', textDecoration: 'none' }}>{m.cow_name}</Link></td>
                           <td>{m.breed}</td>
-                          <td><span style={{ fontSize: 11, padding: '2px 7px', borderRadius: 20, background: '#e3f2fd', color: '#1565c0', fontWeight: 600 }}>{m.cow_category}</span></td>
+                          <td><span style={{ fontSize: 11, padding: '2px 7px', borderRadius: 20, background: 'var(--tint-blue)', color: '#1565c0', fontWeight: 600 }}>{m.cow_category}</span></td>
                           <td><span className={`badge badge-${(m.health_status || '').toLowerCase().replace(' ', '')}`}>{m.health_status}</span></td>
-                          <td>{m.lactating ? '✓' : '—'}</td>
-                          <td>{m.weight_kg ? `${m.weight_kg} kg` : '—'}</td>
+                          <td>{m.lactating ? '✓' : '-'}</td>
+                          <td>{m.weight_kg ? `${m.weight_kg} kg` : '-'}</td>
                           {canWrite && (
                             <td>
                               <button className="btn btn-ghost" style={{ padding: '3px 8px', fontSize: 11, color: '#c62828' }}
@@ -153,7 +153,7 @@ export default function Groups() {
       {/* Create Group Modal */}
       {showCreateModal && canWrite && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 999, background: 'rgba(0,0,0,.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
-          <div style={{ background: '#fff', borderRadius: 16, width: '100%', maxWidth: 460, boxShadow: '0 20px 60px rgba(0,0,0,.25)' }}>
+          <div style={{ background: 'var(--card)', borderRadius: 16, width: '100%', maxWidth: 460, boxShadow: '0 20px 60px rgba(0,0,0,.25)' }}>
             <div style={{ padding: '18px 24px', background: 'linear-gradient(135deg,#1E4D7B,#2e6fa3)', color: '#fff', borderRadius: '16px 16px 0 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <h2 style={{ fontSize: 17, fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}><Users size={16} /> Create New Group</h2>
               <button onClick={() => setShowCreateModal(false)} style={{ background: 'rgba(255,255,255,.2)', border: 'none', color: '#fff', borderRadius: 8, padding: '5px 8px', cursor: 'pointer' }}><X size={16} /></button>
@@ -168,7 +168,7 @@ export default function Groups() {
                 </select>
               </div>
               <div><label style={LABEL}>Description</label><input style={INPUT} value={newGroupForm.description} onChange={e => setNewGroupForm(f => ({ ...f, description: e.target.value }))} /></div>
-              {err && <div style={{ color: '#c62828', fontSize: 13, padding: '8px 12px', background: '#fde8e8', borderRadius: 8 }}>⚠ {err}</div>}
+              {err && <div style={{ color: '#c62828', fontSize: 13, padding: '8px 12px', background: 'var(--tint-red)', borderRadius: 8 }}>⚠ {err}</div>}
               <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
                 <button type="button" onClick={() => setShowCreateModal(false)} className="btn" style={{ padding: '9px 18px', fontSize: 13 }}>Cancel</button>
                 <button type="submit" className="btn btn-primary" style={{ padding: '9px 22px', fontSize: 13 }} disabled={createMut.isPending}>Create Group</button>
@@ -181,7 +181,7 @@ export default function Groups() {
       {/* Add Members Modal */}
       {showAddMember && selectedGroup && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 999, background: 'rgba(0,0,0,.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
-          <div style={{ background: '#fff', borderRadius: 16, width: '100%', maxWidth: 480, maxHeight: '80vh', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(0,0,0,.25)' }}>
+          <div style={{ background: 'var(--card)', borderRadius: 16, width: '100%', maxWidth: 480, maxHeight: '80vh', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(0,0,0,.25)' }}>
             <div style={{ padding: '18px 24px', background: 'linear-gradient(135deg,#1E4D7B,#2e6fa3)', color: '#fff', borderRadius: '16px 16px 0 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
               <h2 style={{ fontSize: 17, fontWeight: 800, margin: 0 }}>Add Cows to {selectedGroup.group_name}</h2>
               <button onClick={() => { setShowAddMember(false); setSelectedCowIds([]); }} style={{ background: 'rgba(255,255,255,.2)', border: 'none', color: '#fff', borderRadius: 8, padding: '5px 8px', cursor: 'pointer' }}><X size={16} /></button>

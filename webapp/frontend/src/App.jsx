@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { lazy, Suspense, useState } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { AuthProvider } from './context/AuthContext';
@@ -9,35 +9,40 @@ import RoleGuard from './components/RoleGuard';
 import Sidebar from './components/Sidebar';
 import Header from './components/Header';
 import Login from './pages/Login';
-import Register from './pages/Register';
-import ForgotPassword from './pages/ForgotPassword';
-import ResetPassword from './pages/ResetPassword';
+// Every page except the landing page and sign-in loads on demand, so the first
+// visit downloads a fraction of the app (charts and maps arrive with their pages).
+const Register = lazy(() => import('./pages/Register'));
+const ForgotPassword = lazy(() => import('./pages/ForgotPassword'));
+const ResetPassword = lazy(() => import('./pages/ResetPassword'));
 import Landing from './pages/public/Landing';
-import About from './pages/public/About';
-import Contact from './pages/public/Contact';
-import Partners from './pages/public/Partners';
-import Dashboard from './pages/Dashboard';
-import Herd from './pages/Herd';
-import CowDetail from './pages/CowDetail';
-import Milk from './pages/Milk';
-import Feed from './pages/Feed';
-import Environment from './pages/Environment';
-import AlertsPage from './pages/AlertsPage';
-import Predictions from './pages/Predictions';
-import Settings from './pages/Settings';
-import AdminReports from './pages/AdminReports';
-import UserManagement from './pages/UserManagement';
-import Reproduction from './pages/Reproduction';
-import HerdAnalytics from './pages/HerdAnalytics';
-import CowEconomics from './pages/CowEconomics';
-import FeedInventory from './pages/FeedInventory';
-import Groups from './pages/Groups';
-import Tanks from './pages/Tanks';
-import WeeklyPlan from './pages/WeeklyPlan';
-import FeedbackPage from './pages/FeedbackPage';
-import IoTControl from './pages/IoTControl';
-import HelpPage from './pages/HelpPage';
-import SmsConfig from './pages/SmsConfig';
+const About = lazy(() => import('./pages/public/About'));
+const Contact = lazy(() => import('./pages/public/Contact'));
+const Partners = lazy(() => import('./pages/public/Partners'));
+const Dashboard = lazy(() => import('./pages/Dashboard'));
+const Herd = lazy(() => import('./pages/Herd'));
+const CowDetail = lazy(() => import('./pages/CowDetail'));
+const Milk = lazy(() => import('./pages/Milk'));
+const Feed = lazy(() => import('./pages/Feed'));
+const Environment = lazy(() => import('./pages/Environment'));
+const AlertsPage = lazy(() => import('./pages/AlertsPage'));
+const Predictions = lazy(() => import('./pages/Predictions'));
+const Settings = lazy(() => import('./pages/Settings'));
+const AdminReports = lazy(() => import('./pages/AdminReports'));
+const UserManagement = lazy(() => import('./pages/UserManagement'));
+const Reproduction = lazy(() => import('./pages/Reproduction'));
+const HerdAnalytics = lazy(() => import('./pages/HerdAnalytics'));
+const CowEconomics = lazy(() => import('./pages/CowEconomics'));
+const FeedInventory = lazy(() => import('./pages/FeedInventory'));
+const Groups = lazy(() => import('./pages/Groups'));
+const Tanks = lazy(() => import('./pages/Tanks'));
+const WeeklyPlan = lazy(() => import('./pages/WeeklyPlan'));
+const FeedbackPage = lazy(() => import('./pages/FeedbackPage'));
+const IoTControl = lazy(() => import('./pages/IoTControl'));
+const HelpPage = lazy(() => import('./pages/HelpPage'));
+const SmsConfig = lazy(() => import('./pages/SmsConfig'));
+const Milking = lazy(() => import('./pages/Milking'));
+const Barn = lazy(() => import('./pages/Barn'));
+const CowHealth = lazy(() => import('./pages/CowHealth'));
 
 const qc = new QueryClient({
   defaultOptions: {
@@ -73,12 +78,16 @@ function AppLayout() {
           <main style={{
             flex: 1, overflowY: 'auto', padding: '24px', background: 'var(--bg)',
           }}>
+            <Suspense fallback={<div className="spinner" />}>
             <Routes>
               {/* All authenticated roles */}
               <Route index                  element={<Dashboard />} />
               <Route path="herd"            element={<Herd />} />
               <Route path="herd/:id"        element={<CowDetail />} />
               <Route path="milk"            element={<Milk />} />
+              <Route path="milking"         element={<Milking />} />
+              <Route path="barn"            element={<Barn />} />
+              <Route path="cow-health"      element={<CowHealth />} />
               <Route path="feed"            element={<Feed />} />
               <Route path="environment"     element={<Environment />} />
               <Route path="alerts"          element={<AlertsPage />} />
@@ -110,7 +119,7 @@ function AppLayout() {
               {/* Redirect old /economics to the new cow-economics page */}
               <Route path="economics" element={<Navigate to="/app/cow-economics" replace />} />
 
-              {/* Predictions — Admin, Vet only (NOT Farmer, NOT Technician) */}
+              {/* Predictions: Admin, Vet only (NOT Farmer, NOT Technician) */}
               <Route path="predictions"
                 element={
                   <RoleGuard allowed={p.canViewPredictions} redirect="/app">
@@ -137,6 +146,7 @@ function AppLayout() {
 
               <Route path="*" element={<Navigate to="/app" replace />} />
             </Routes>
+            </Suspense>
           </main>
         </div>
       </div>
@@ -150,6 +160,7 @@ export default function App() {
     <QueryClientProvider client={qc}>
       <AuthProvider>
         <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+          <Suspense fallback={<div className="spinner" style={{ marginTop: 120 }} />}>
           <Routes>
             {/* Public marketing site */}
             <Route path="/"          element={<Landing />} />
@@ -168,6 +179,7 @@ export default function App() {
 
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
+          </Suspense>
         </BrowserRouter>
       </AuthProvider>
     </QueryClientProvider>

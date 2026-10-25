@@ -48,7 +48,7 @@ function printTable(title, rows) {
       @media print{button{display:none}}
     </style></head>
     <body>
-      <h1>${title} — MooMe Report · ${new Date().toLocaleDateString()}</h1>
+      <h1>${title}: FarmCare Report · ${new Date().toLocaleDateString()}</h1>
       <table><thead>${thead}</thead><tbody>${tbody}</tbody></table>
     </body></html>`;
   const w = window.open('', '_blank');
@@ -113,7 +113,7 @@ export default function AdminReports() {
           label: 'Total Cows',
           value: report.herd?.total_cows ?? '--',
           sub: `${report.herd?.lactating_cows ?? 0} lactating`,
-          icon: Beef, color: '#1E4D7B',
+          icon: Beef, color: 'var(--navy-ink)',
         },
         {
           label: 'Milk (30 days)',
@@ -171,7 +171,7 @@ export default function AdminReports() {
           <div>
             <h1 style={{ fontSize: 22, fontWeight: 800, margin: 0 }}>Admin Reports & Analytics</h1>
             <p style={{ margin: '4px 0 0', fontSize: 13, opacity: .8 }}>
-              Platform-wide insights — all data live from the database
+              Platform-wide insights: all data live from the database
             </p>
           </div>
         </div>
@@ -229,11 +229,11 @@ export default function AdminReports() {
                         { label: 'Healthy',          val: report.herd.healthy_cows,  color: '#4CAF50' },
                         { label: 'Warning',           val: report.herd.warning_cows,  color: '#FF9800' },
                         { label: 'Critical',          val: report.herd.critical_cows, color: '#F44336' },
-                        { label: 'Total Active Cows', val: report.herd.total_cows,    color: '#1E4D7B' },
+                        { label: 'Total Active Cows', val: report.herd.total_cows,    color: 'var(--navy-ink)' },
                       ].map(({ label, val, color }) => {
                         const pct = report.herd.total_cows > 0 ? Math.round((val / report.herd.total_cows) * 100) : 0;
                         return (
-                          <div key={label} style={{ padding: 14, background: '#f7f9fc', borderRadius: 10 }}>
+                          <div key={label} style={{ padding: 14, background: 'var(--surface-2)', borderRadius: 10 }}>
                             <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 8 }}>{label}</div>
                             <div style={{ fontSize: 26, fontWeight: 800, color, marginBottom: 8 }}>{val ?? 0}</div>
                             <div className="gauge-bar">
@@ -253,11 +253,11 @@ export default function AdminReports() {
                     <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 16 }}>Economics Snapshot</h2>
                     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(200px,1fr))', gap: 14 }}>
                       {[
-                        { label: 'Total Infrastructure Cost', val: `${(report.components.total_cost_rwf / 1_000_000).toFixed(2)} M RWF`, color: '#1E4D7B' },
+                        { label: 'Total Infrastructure Cost', val: `${(report.components.total_cost_rwf / 1_000_000).toFixed(2)} M RWF`, color: 'var(--navy-ink)' },
                         { label: 'Operational Components',    val: `${report.components.operational} / ${report.components.total}`, color: '#4CAF50' },
                         { label: '30-Day Milk Revenue Est.',  val: `${((report.milk_30d?.total_liters || 0) * 400 / 1000).toFixed(1)} K RWF`, color: '#00BCD4' },
                       ].map(({ label, val, color }) => (
-                        <div key={label} style={{ padding: 14, background: '#f7f9fc', borderRadius: 10 }}>
+                        <div key={label} style={{ padding: 14, background: 'var(--surface-2)', borderRadius: 10 }}>
                           <div style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-secondary)', marginBottom: 6, textTransform: 'uppercase', letterSpacing: .5 }}>{label}</div>
                           <div style={{ fontSize: 20, fontWeight: 800, color }}>{val}</div>
                         </div>
@@ -279,7 +279,7 @@ export default function AdminReports() {
             <h2 style={{ fontSize: 16, fontWeight: 700 }}>User Activity</h2>
             <span style={{ marginLeft: 'auto', fontSize: 12, color: 'var(--text-secondary)' }}>{userActivity.length} users</span>
             <button className="btn btn-ghost" style={{ fontSize: 12, padding: '5px 12px', display: 'flex', alignItems: 'center', gap: 5 }}
-              onClick={() => exportCSV(userActivity, 'moome-user-activity.csv')}>
+              onClick={() => exportCSV(userActivity, 'farmcare-user-activity.csv')}>
               <Download size={13} /> CSV
             </button>
             <button className="btn btn-ghost" style={{ fontSize: 12, padding: '5px 12px', display: 'flex', alignItems: 'center', gap: 5 }}
@@ -301,7 +301,7 @@ export default function AdminReports() {
                   <tbody>
                     {userActivity.map(u => (
                       <tr key={u.user_id}>
-                        <td style={{ fontWeight: 600 }}>{u.full_name || '—'}</td>
+                        <td style={{ fontWeight: 600 }}>{u.full_name || '-'}</td>
                         <td style={{ fontFamily: 'monospace', fontSize: 12 }}>@{u.username}</td>
                         <td>
                           <span style={{
@@ -320,7 +320,7 @@ export default function AdminReports() {
                         <td style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
                           {u.last_login
                             ? format(new Date(u.last_login), 'MMM d, yyyy HH:mm')
-                            : <span style={{ color: '#aaa' }}>Never</span>}
+                            : <span style={{ color: 'var(--text-faint)' }}>Never</span>}
                         </td>
                         <td>
                           <span style={{
@@ -351,7 +351,7 @@ export default function AdminReports() {
           <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)', display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'center' }}>
             <h2 style={{ fontSize: 16, fontWeight: 700, flex: 1 }}>Alert History</h2>
             <button className="btn btn-ghost" style={{ fontSize: 12, padding: '5px 12px', display: 'flex', alignItems: 'center', gap: 5 }}
-              onClick={() => exportCSV(filteredAlerts, 'moome-alert-history.csv')}>
+              onClick={() => exportCSV(filteredAlerts, 'farmcare-alert-history.csv')}>
               <Download size={13} /> CSV
             </button>
             <button className="btn btn-ghost" style={{ fontSize: 12, padding: '5px 12px', display: 'flex', alignItems: 'center', gap: 5 }}
@@ -420,7 +420,7 @@ export default function AdminReports() {
                         <td>
                           <span style={{
                             fontSize: 11, fontWeight: 700, padding: '3px 8px', borderRadius: 20,
-                            background: '#f0f0f0', color: '#555',
+                            background: 'var(--surface-2)', color: 'var(--text-secondary)',
                           }}>
                             {a.alert_type}
                           </span>
@@ -434,8 +434,8 @@ export default function AdminReports() {
                             {a.severity}
                           </span>
                         </td>
-                        <td style={{ fontSize: 12, fontWeight: 600, color: '#1E4D7B' }}>
-                          {a.cow_name || <span style={{ color: '#bbb' }}>—</span>}
+                        <td style={{ fontSize: 12, fontWeight: 600, color: 'var(--navy-ink)' }}>
+                          {a.cow_name || <span style={{ color: '#bbb' }}>-</span>}
                         </td>
                         <td style={{ fontSize: 12, color: 'var(--text-secondary)', maxWidth: 280, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                           {a.message}
@@ -446,10 +446,10 @@ export default function AdminReports() {
                           </span>
                         </td>
                         <td style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
-                          {a.created_at ? format(new Date(a.created_at), 'MMM d HH:mm') : '—'}
+                          {a.created_at ? format(new Date(a.created_at), 'MMM d HH:mm') : '-'}
                         </td>
                         <td style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
-                          {a.resolved_at ? format(new Date(a.resolved_at), 'MMM d HH:mm') : '—'}
+                          {a.resolved_at ? format(new Date(a.resolved_at), 'MMM d HH:mm') : '-'}
                         </td>
                       </tr>
                     ))}
@@ -474,7 +474,7 @@ export default function AdminReports() {
               {activityLogs.length} records
             </span>
             <button className="btn btn-ghost" style={{ fontSize: 12, padding: '5px 12px', display: 'flex', alignItems: 'center', gap: 5 }}
-              onClick={() => exportCSV(activityLogs, 'moome-activity-logs.csv')}>
+              onClick={() => exportCSV(activityLogs, 'farmcare-activity-logs.csv')}>
               <Download size={13} /> CSV
             </button>
             <button className="btn btn-ghost" style={{ fontSize: 12, padding: '5px 12px', display: 'flex', alignItems: 'center', gap: 5 }}
@@ -496,10 +496,10 @@ export default function AdminReports() {
                   <tbody>
                     {activityLogs.map(l => (
                       <tr key={l.log_id}>
-                        <td style={{ fontSize: 11, color: '#aaa' }}>{l.log_id}</td>
+                        <td style={{ fontSize: 11, color: 'var(--text-faint)' }}>{l.log_id}</td>
                         <td>
                           <strong>{l.device_type}</strong>
-                          {l.device_id ? <span style={{ color: '#aaa', fontSize: 11 }}> #{l.device_id}</span> : ''}
+                          {l.device_id ? <span style={{ color: 'var(--text-faint)', fontSize: 11 }}> #{l.device_id}</span> : ''}
                         </td>
                         <td>
                           <span className={`badge badge-${l.action === 'ON' ? 'healthy' : l.action === 'OFF' ? 'normal' : 'warning'}`}>
@@ -507,13 +507,13 @@ export default function AdminReports() {
                           </span>
                         </td>
                         <td style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12 }}>
-                          {l.value != null ? l.value : '—'}
+                          {l.value != null ? l.value : '-'}
                         </td>
                         <td style={{ fontSize: 11, color: 'var(--text-secondary)', maxWidth: 240, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                          {l.trigger_reason || '—'}
+                          {l.trigger_reason || '-'}
                         </td>
                         <td style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
-                          {l.recorded_at ? format(new Date(l.recorded_at), 'MMM d, yyyy HH:mm') : '—'}
+                          {l.recorded_at ? format(new Date(l.recorded_at), 'MMM d, yyyy HH:mm') : '-'}
                         </td>
                       </tr>
                     ))}

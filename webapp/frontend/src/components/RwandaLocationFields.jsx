@@ -10,7 +10,7 @@ const INPUT_STYLE = {
   width: '100%', padding: '9px 12px',
   borderRadius: 8, border: '2px solid var(--border)',
   fontSize: 13, outline: 'none', fontFamily: 'inherit',
-  background: '#fff', boxSizing: 'border-box',
+  background: 'var(--card)', boxSizing: 'border-box',
 };
 
 const focusColor = '#4CAF50';
@@ -78,12 +78,12 @@ export default function RwandaLocationFields({ location, onChange }) {
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
           <Select label="Province" value={province} onChange={handle('province')} options={provinces} placeholder="Select province" />
-          <Select label="District" value={district} onChange={handle('district')} options={districts} placeholder={province ? 'Select district' : '— select province first —'} disabled={!province} />
-          <Select label="Sector" value={sector} onChange={handle('sector')} options={sectors} placeholder={district ? 'Select sector' : '— select district first —'} disabled={!district} />
-          <Select label="Cell" value={cell} onChange={handle('cell')} options={cells} placeholder={sector ? 'Select cell' : '— select sector first —'} disabled={!sector} />
+          <Select label="District" value={district} onChange={handle('district')} options={districts} placeholder={province ? 'Select district' : 'Select province first'} disabled={!province} />
+          <Select label="Sector" value={sector} onChange={handle('sector')} options={sectors} placeholder={district ? 'Select sector' : 'Select district first'} disabled={!district} />
+          <Select label="Cell" value={cell} onChange={handle('cell')} options={cells} placeholder={sector ? 'Select cell' : 'Select sector first'} disabled={!sector} />
         </div>
         <div style={{ marginTop: 14 }}>
-          <Select label="Village" value={village} onChange={handle('village')} options={villages} placeholder={cell ? 'Select village' : '— select cell first —'} disabled={!cell} />
+          <Select label="Village" value={village} onChange={handle('village')} options={villages} placeholder={cell ? 'Select village' : 'Select cell first'} disabled={!cell} />
         </div>
       </div>
     </>

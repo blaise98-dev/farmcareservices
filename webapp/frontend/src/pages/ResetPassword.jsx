@@ -13,7 +13,7 @@ const shell = {
 };
 
 const card = {
-  background: '#fff',
+  background: 'var(--card)',
   borderRadius: 16,
   padding: 32,
   boxShadow: '0 24px 64px rgba(0,0,0,.25)',
@@ -25,7 +25,7 @@ const inputStyle = {
   width: '100%',
   padding: '11px 44px 11px 14px',
   borderRadius: 10,
-  border: '2px solid #e0e0e0',
+  border: '2px solid var(--border)',
   fontSize: 14,
   outline: 'none',
   fontFamily: 'inherit',
@@ -37,7 +37,7 @@ export default function ResetPassword() {
   const navigate = useNavigate();
   const token = searchParams.get('token') || '';
 
-  // No token means nothing to validate — start already resolved instead of
+  // No token means nothing to validate: start already resolved instead of
   // setting state synchronously inside the effect below.
   const [validating, setValidating] = useState(!!token);
   const [tokenValid, setTokenValid] = useState(false);
@@ -85,12 +85,12 @@ export default function ResetPassword() {
         <div style={{ textAlign: 'center', color: '#fff' }}>
           <div style={{
             width: 64, height: 64, borderRadius: '50%',
-            background: '#4CAF50',
+            background: '#4CAF50', overflow: 'hidden',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: 32, margin: '0 auto 12px',
             boxShadow: '0 8px 32px rgba(76,175,80,.4)',
-          }}>🐄</div>
-          <h1 style={{ fontWeight: 900, fontSize: 28, margin: 0 }}>MooMe</h1>
+          }}><img src="/images/farmcare-logo.svg" alt="FarmCare" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%', display: 'block' }} /></div>
+          <h1 style={{ fontWeight: 900, fontSize: 28, margin: 0 }}>FarmCare</h1>
         </div>
 
         <div style={card}>
@@ -98,20 +98,20 @@ export default function ResetPassword() {
             to="/login"
             style={{
               display: 'inline-flex', alignItems: 'center', gap: 6,
-              color: '#5a6a7e', fontSize: 13, textDecoration: 'none', marginBottom: 16,
+              color: 'var(--text-secondary)', fontSize: 13, textDecoration: 'none', marginBottom: 16,
             }}
           >
             <ArrowLeft size={14} /> Back to sign in
           </Link>
 
           {validating ? (
-            <div style={{ textAlign: 'center', padding: '24px 0', color: '#5a6a7e' }}>
+            <div style={{ textAlign: 'center', padding: '24px 0', color: 'var(--text-secondary)' }}>
               <Loader2 size={24} style={{ animation: 'spin .7s linear infinite' }} />
               <p style={{ marginTop: 12, fontSize: 14 }}>Verifying reset link…</p>
             </div>
           ) : done ? (
             <div style={{
-              background: '#e8f5e9', color: '#2e7d32',
+              background: 'var(--tint-green)', color: 'var(--green-ink)',
               borderRadius: 10, padding: '16px 18px',
               fontSize: 14, border: '1px solid #c8e6c9',
               display: 'flex', gap: 12, alignItems: 'flex-start',
@@ -126,17 +126,17 @@ export default function ResetPassword() {
             </div>
           ) : !tokenValid ? (
             <div>
-              <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 8, color: '#1a1a2e' }}>
+              <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 8, color: 'var(--text)' }}>
                 Invalid or expired link
               </h2>
-              <p style={{ fontSize: 14, color: '#5a6a7e', marginBottom: 20, lineHeight: 1.5 }}>
+              <p style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 20, lineHeight: 1.5 }}>
                 This password reset link is no longer valid. Please request a new one.
               </p>
               <Link
                 to="/forgot-password"
                 style={{
                   display: 'inline-block',
-                  background: '#4CAF50', color: '#fff',
+                  background: '#4CAF50', overflow: 'hidden', color: '#fff',
                   padding: '12px 20px', borderRadius: 10,
                   fontWeight: 700, fontSize: 14, textDecoration: 'none',
                 }}
@@ -146,17 +146,17 @@ export default function ResetPassword() {
             </div>
           ) : (
             <>
-              <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 8, color: '#1a1a2e' }}>
+              <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 8, color: 'var(--text)' }}>
                 Set a new password
               </h2>
-              <p style={{ fontSize: 14, color: '#5a6a7e', marginBottom: 24 }}>
+              <p style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 24 }}>
                 Choose a strong password with at least 10 characters.
               </p>
 
               <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
                 <div>
                   <label style={{
-                    fontSize: 12, fontWeight: 700, color: '#5a6a7e',
+                    fontSize: 12, fontWeight: 700, color: 'var(--text-secondary)',
                     display: 'block', marginBottom: 6, textTransform: 'uppercase', letterSpacing: .5,
                   }}>
                     New password
@@ -179,7 +179,7 @@ export default function ResetPassword() {
                       onClick={() => setShowPw(s => !s)}
                       style={{
                         position: 'absolute', right: 12, top: '50%', transform: 'translateY(-50%)',
-                        background: 'none', border: 'none', cursor: 'pointer', color: '#999', padding: 4,
+                        background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-faint)', padding: 4,
                       }}
                     >
                       {showPw ? <EyeOff size={16} /> : <Eye size={16} />}
@@ -189,7 +189,7 @@ export default function ResetPassword() {
 
                 <div>
                   <label style={{
-                    fontSize: 12, fontWeight: 700, color: '#5a6a7e',
+                    fontSize: 12, fontWeight: 700, color: 'var(--text-secondary)',
                     display: 'block', marginBottom: 6, textTransform: 'uppercase', letterSpacing: .5,
                   }}>
                     Confirm password
@@ -209,7 +209,7 @@ export default function ResetPassword() {
 
                 {error && (
                   <div style={{
-                    background: '#fde8e8', color: '#c62828',
+                    background: 'var(--tint-red)', color: '#c62828',
                     borderRadius: 8, padding: '10px 14px',
                     fontSize: 13, border: '1px solid #f5c6c6',
                   }}>

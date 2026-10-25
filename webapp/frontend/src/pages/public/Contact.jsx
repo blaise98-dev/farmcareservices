@@ -3,6 +3,7 @@ import { useMutation } from '@tanstack/react-query';
 import PublicLayout from '../../components/public/PublicLayout';
 import { submitContact } from '../../lib/api';
 import { Mail, Phone, MapPin, Send, CheckCircle2 } from 'lucide-react';
+import { CONTACT } from '../../lib/contact';
 
 const EMPTY = { name: '', email: '', phone: '', subject: '', message: '' };
 
@@ -37,31 +38,31 @@ export default function Contact() {
           Let's talk about your farm
         </h1>
         <p style={{ fontSize: 15, opacity: .8, marginTop: 12, maxWidth: 500, marginLeft: 'auto', marginRight: 'auto' }}>
-          Questions, partnership inquiries, or ready to get started — we'd love to hear from you.
+          Questions, partnership inquiries, or ready to get started? We'd love to hear from you.
         </p>
       </section>
 
-      <section style={{ maxWidth: 1100, margin: '0 auto', padding: '64px 24px 100px', display: 'grid', gridTemplateColumns: '1fr 1.3fr', gap: 48 }}>
+      <section style={{ maxWidth: 1100, margin: '0 auto', padding: '64px 24px 100px', display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,320px),1fr))', gap: 48 }}>
         {/* Info column */}
         <div>
-          <h2 style={{ fontSize: 20, fontWeight: 800, color: '#1a1a2e', marginBottom: 20 }}>Get in touch</h2>
+          <h2 style={{ fontSize: 20, fontWeight: 800, color: 'var(--text)', marginBottom: 20 }}>Get in touch</h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
-            <a href="mailto:info@moome.com" style={{ display: 'flex', gap: 14, textDecoration: 'none', color: 'inherit' }}>
+            <a href={`mailto:${CONTACT.email}`} style={{ display: 'flex', gap: 14, textDecoration: 'none', color: 'inherit' }}>
               <div style={{ width: 42, height: 42, borderRadius: 12, background: 'rgba(76,175,80,.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 <Mail size={19} color="#2E7D32" />
               </div>
               <div>
                 <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: .5 }}>Email</div>
-                <div style={{ fontSize: 14, fontWeight: 600, color: '#1a1a2e', marginTop: 2 }}>info@moome.com</div>
+                <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', marginTop: 2, overflowWrap: 'anywhere' }}>{CONTACT.email}</div>
               </div>
             </a>
-            <a href="tel:+250780000001" style={{ display: 'flex', gap: 14, textDecoration: 'none', color: 'inherit' }}>
+            <a href={CONTACT.phoneHref} style={{ display: 'flex', gap: 14, textDecoration: 'none', color: 'inherit' }}>
               <div style={{ width: 42, height: 42, borderRadius: 12, background: 'rgba(30,77,123,.12)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                 <Phone size={19} color="#1E4D7B" />
               </div>
               <div>
                 <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: .5 }}>Phone</div>
-                <div style={{ fontSize: 14, fontWeight: 600, color: '#1a1a2e', marginTop: 2 }}>+250 780 000 001</div>
+                <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', marginTop: 2 }}>{CONTACT.phone}</div>
               </div>
             </a>
             <div style={{ display: 'flex', gap: 14 }}>
@@ -70,7 +71,7 @@ export default function Contact() {
               </div>
               <div>
                 <div style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: .5 }}>Location</div>
-                <div style={{ fontSize: 14, fontWeight: 600, color: '#1a1a2e', marginTop: 2 }}>Kigali, Rwanda 🇷🇼</div>
+                <div style={{ fontSize: 14, fontWeight: 600, color: 'var(--text)', marginTop: 2 }}>{CONTACT.location} 🇷🇼</div>
               </div>
             </div>
           </div>
@@ -81,9 +82,9 @@ export default function Contact() {
           {mut.isSuccess ? (
             <div style={{ textAlign: 'center', padding: '32px 0' }}>
               <CheckCircle2 size={48} color="#4CAF50" style={{ margin: '0 auto 16px' }} />
-              <h3 style={{ fontSize: 18, fontWeight: 800, color: '#1a1a2e' }}>Message sent</h3>
+              <h3 style={{ fontSize: 18, fontWeight: 800, color: 'var(--text)' }}>Message sent</h3>
               <p style={{ fontSize: 14, color: 'var(--text-secondary)', marginTop: 8 }}>
-                {mut.data?.message || "Thanks for reaching out — we'll get back to you soon."}
+                {mut.data?.message || "Thanks for reaching out. We'll get back to you soon."}
               </p>
               <button onClick={() => mut.reset()} className="btn" style={{ marginTop: 20, padding: '9px 20px', fontSize: 13 }}>
                 Send another message
@@ -91,43 +92,43 @@ export default function Contact() {
             </div>
           ) : (
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,200px),1fr))', gap: 14 }}>
                 <div>
-                  <label style={{ fontSize: 12, fontWeight: 700, color: '#5a6a7e', display: 'block', marginBottom: 6 }}>Name *</label>
+                  <label style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>Name *</label>
                   <input value={form.name} onChange={e => setForm(f => ({ ...f, name: e.target.value }))}
                     placeholder="Your name" required
-                    style={{ width: '100%', padding: '11px 14px', borderRadius: 10, border: '2px solid #e0e0e0', fontSize: 14, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }} />
+                    style={{ width: '100%', padding: '11px 14px', borderRadius: 10, border: '2px solid var(--border)', fontSize: 14, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }} />
                 </div>
                 <div>
-                  <label style={{ fontSize: 12, fontWeight: 700, color: '#5a6a7e', display: 'block', marginBottom: 6 }}>Email *</label>
+                  <label style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>Email *</label>
                   <input type="email" value={form.email} onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
                     placeholder="you@example.com" required
-                    style={{ width: '100%', padding: '11px 14px', borderRadius: 10, border: '2px solid #e0e0e0', fontSize: 14, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }} />
+                    style={{ width: '100%', padding: '11px 14px', borderRadius: 10, border: '2px solid var(--border)', fontSize: 14, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }} />
                 </div>
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
+              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,200px),1fr))', gap: 14 }}>
                 <div>
-                  <label style={{ fontSize: 12, fontWeight: 700, color: '#5a6a7e', display: 'block', marginBottom: 6 }}>Phone</label>
+                  <label style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>Phone</label>
                   <input value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))}
                     placeholder="+250 7xx xxx xxx"
-                    style={{ width: '100%', padding: '11px 14px', borderRadius: 10, border: '2px solid #e0e0e0', fontSize: 14, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }} />
+                    style={{ width: '100%', padding: '11px 14px', borderRadius: 10, border: '2px solid var(--border)', fontSize: 14, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }} />
                 </div>
                 <div>
-                  <label style={{ fontSize: 12, fontWeight: 700, color: '#5a6a7e', display: 'block', marginBottom: 6 }}>Subject</label>
+                  <label style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>Subject</label>
                   <input value={form.subject} onChange={e => setForm(f => ({ ...f, subject: e.target.value }))}
                     placeholder="What's this about?"
-                    style={{ width: '100%', padding: '11px 14px', borderRadius: 10, border: '2px solid #e0e0e0', fontSize: 14, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }} />
+                    style={{ width: '100%', padding: '11px 14px', borderRadius: 10, border: '2px solid var(--border)', fontSize: 14, outline: 'none', fontFamily: 'inherit', boxSizing: 'border-box' }} />
                 </div>
               </div>
               <div>
-                <label style={{ fontSize: 12, fontWeight: 700, color: '#5a6a7e', display: 'block', marginBottom: 6 }}>Message *</label>
+                <label style={{ fontSize: 12, fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: 6 }}>Message *</label>
                 <textarea value={form.message} onChange={e => setForm(f => ({ ...f, message: e.target.value }))}
                   placeholder="Tell us about your farm or your question…" required rows={5}
-                  style={{ width: '100%', padding: '11px 14px', borderRadius: 10, border: '2px solid #e0e0e0', fontSize: 14, outline: 'none', fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box' }} />
+                  style={{ width: '100%', padding: '11px 14px', borderRadius: 10, border: '2px solid var(--border)', fontSize: 14, outline: 'none', fontFamily: 'inherit', resize: 'vertical', boxSizing: 'border-box' }} />
               </div>
 
               {err && (
-                <div style={{ background: '#fde8e8', color: '#c62828', borderRadius: 8, padding: '10px 14px', fontSize: 13, border: '1px solid #f5c6c6' }}>
+                <div style={{ background: 'var(--tint-red)', color: '#c62828', borderRadius: 8, padding: '10px 14px', fontSize: 13, border: '1px solid #f5c6c6' }}>
                   ⚠ {err}
                 </div>
               )}

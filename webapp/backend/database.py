@@ -31,7 +31,7 @@ async def log_remote_connection() -> None:
     if not row:
         return
     print(
-        f"Remote MySQL ready — server={row['hostname']} "
+        f"Remote MySQL ready: server={row['hostname']} "
         f"database={row['db_name']} "
         f"(tunnel localhost:{settings.DB_PORT} → {settings.DB_REMOTE_HOST})"
     )
@@ -218,6 +218,21 @@ async def ensure_milk_feed_attribution_columns() -> None:
         names = {c["Field"] for c in cols}
         if "recorded_by" not in names:
             await execute(f"ALTER TABLE {table} ADD COLUMN recorded_by VARCHAR(100) NULL")
+
+    # The Milk page's breakdown fields came after the original table; a server
+    # created before them rejects every "Save Record" until they exist.
+    names = {c["Field"] for c in await fetchall("SHOW COLUMNS FROM MilkProductionRecords")}
+    for name, ddl in (
+        ("milk_quality", "VARCHAR(50) NULL DEFAULT 'Normal'"),
+        ("milk_sold_liters", "FLOAT NOT NULL DEFAULT 0"),
+        ("milk_consumed_liters", "FLOAT NOT NULL DEFAULT 0"),
+        ("milk_calves_liters", "FLOAT NOT NULL DEFAULT 0"),
+        ("milk_lost_liters", "FLOAT NOT NULL DEFAULT 0"),
+        ("price_per_liter_rwf", "FLOAT NOT NULL DEFAULT 400"),
+        ("entry_date", "DATE NULL"),
+    ):
+        if name not in names:
+            await execute(f"ALTER TABLE MilkProductionRecords ADD COLUMN {name} {ddl}")
 
 
 async def ensure_contact_messages_table() -> None:

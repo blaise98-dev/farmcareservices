@@ -36,7 +36,7 @@ export default function Predictions() {
       {/* Header cards */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(200px,1fr))', gap: 14 }}>
         {[
-          { label: 'Total Predictions', val: all.length, color: '#1E4D7B', icon: Brain },
+          { label: 'Total Predictions', val: all.length, color: 'var(--navy-ink)', icon: Brain },
           { label: 'Health Risks', val: risks.length, color: '#F44336', icon: AlertTriangle },
           { label: 'Milk Forecasts', val: milkPreds.length, color: '#00BCD4', icon: TrendingUp },
           { label: 'Avg Confidence', val: all.length ? `${(all.reduce((s,p) => s + Number(p.confidence_percent),0) / all.length).toFixed(0)}%` : '--', color: '#4CAF50', icon: Activity },
@@ -57,7 +57,7 @@ export default function Predictions() {
           <div className="section-header">
             <h2 style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <AlertTriangle size={18} color="#F44336" />
-              Health Risk Forecast — Next 1–3 Days
+              Health Risk Forecast: Next 1–3 Days
             </h2>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
@@ -76,7 +76,7 @@ export default function Predictions() {
 
       {/* Milk Yield predictions chart */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
-        <ChartCard title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Droplets size={14} /> Milk Yield Forecast</span>} sub="Predicted output — next 2 days"
+        <ChartCard title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Droplets size={14} /> Milk Yield Forecast</span>} sub="Predicted output: next 2 days"
           isLoading={milkLoading} isError={milkError} height={220}>
           <HBarChart data={milkChart.map(r => ({ name: r.cow, value: Number(r.predicted) }))}
             unit=" L" color="#00BCD4" height={220} />
@@ -129,7 +129,7 @@ export default function Predictions() {
         <ChartCard title="Predicted Values by Cow" sub="Colored by prediction type">
           <HBarChart
             data={all.map(p => ({
-              name: `${p.cow_name} — ${p.prediction_type}`,
+              name: `${p.cow_name}: ${p.prediction_type}`,
               value: Number(p.predicted_value).toFixed(1),
               type: p.prediction_type,
             }))}

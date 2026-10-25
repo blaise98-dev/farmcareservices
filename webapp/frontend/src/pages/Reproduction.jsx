@@ -14,7 +14,7 @@ import { format } from 'date-fns';
 import { Plus, X, Baby, HeartPulse, Syringe, CheckCircle, AlertTriangle, Bell, Lock, Beef, Pill, Ruler, BarChart2 } from 'lucide-react';
 
 const LABEL = { display: 'block', fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: .5, marginBottom: 5 };
-const INPUT = { width: '100%', padding: '8px 12px', borderRadius: 8, border: '2px solid var(--border)', fontSize: 13, outline: 'none', fontFamily: 'inherit', background: '#fff', boxSizing: 'border-box' };
+const INPUT = { width: '100%', padding: '8px 12px', borderRadius: 8, border: '2px solid var(--border)', fontSize: 13, outline: 'none', fontFamily: 'inherit', background: 'var(--card)', boxSizing: 'border-box' };
 
 const TABS = ['Reproduction', 'Treatments', 'Vaccinations', 'BCS'];
 
@@ -135,7 +135,7 @@ export default function Reproduction() {
     }
   };
 
-  const fmt = (d) => d ? format(new Date(d), 'MMM d, yyyy') : '—';
+  const fmt = (d) => d ? format(new Date(d), 'MMM d, yyyy') : '-';
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
@@ -145,12 +145,12 @@ export default function Reproduction() {
         <div>
           <div style={{ fontSize: 18, fontWeight: 800, display: 'flex', alignItems: 'center', gap: 8 }}><Beef size={18} /> Reproduction & Health Records</div>
           <div style={{ fontSize: 12, opacity: .8, marginTop: 4 }}>
-            {canWrite ? 'Veterinarian — full read/write access' : 'Read-only view — contact Veterinarian for health actions'}
+            {canWrite ? 'Veterinarian: full read/write access' : 'Read-only view: contact Veterinarian for health actions'}
           </div>
         </div>
         {p.canNotifyVet && (
           <button onClick={() => setNotifyOpen(true)}
-            style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '9px 18px', background: '#fff', color: '#9C27B0', border: 'none', borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
+            style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '9px 18px', background: 'var(--card)', color: '#9C27B0', border: 'none', borderRadius: 8, fontWeight: 700, fontSize: 13, cursor: 'pointer' }}>
             <Bell size={15} /> Notify Veterinarian
           </button>
         )}
@@ -162,7 +162,7 @@ export default function Reproduction() {
       {/* Notify Vet modal */}
       {notifyOpen && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(0,0,0,.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
-          <div style={{ background: '#fff', borderRadius: 16, width: '100%', maxWidth: 440, boxShadow: '0 20px 60px rgba(0,0,0,.25)' }}>
+          <div style={{ background: 'var(--card)', borderRadius: 16, width: '100%', maxWidth: 440, boxShadow: '0 20px 60px rgba(0,0,0,.25)' }}>
             <div style={{ padding: '18px 24px', background: 'linear-gradient(135deg,#9C27B0,#ba68c8)', color: '#fff', borderRadius: '16px 16px 0 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div><h2 style={{ fontSize: 17, fontWeight: 800, margin: 0 }}>Notify Veterinarian</h2>
               <p style={{ margin: '3px 0 0', fontSize: 12, opacity: .8 }}>Report symptoms or conditions</p></div>
@@ -173,7 +173,7 @@ export default function Reproduction() {
                 <div>
                   <label style={LABEL}>Select Veterinarian *</label>
                   <select value={notifyForm.vet_id} onChange={e => setNotifyForm(f => ({ ...f, vet_id: e.target.value }))} style={INPUT}>
-                    <option value="">— choose vet —</option>
+                    <option value="">Choose vet</option>
                     {vets.map(v => <option key={v.user_id} value={v.user_id}>{v.full_name || v.username}</option>)}
                   </select>
                   {vets.length === 0 && <p style={{ fontSize: 11, color: '#c62828', margin: '4px 0 0' }}>No active veterinarians found</p>}
@@ -181,17 +181,17 @@ export default function Reproduction() {
                 <div>
                   <label style={LABEL}>Urgency Level</label>
                   <select value={notifyForm.severity} onChange={e => setNotifyForm(f => ({ ...f, severity: e.target.value }))} style={INPUT}>
-                    <option value="Info">Info — routine check</option>
-                    <option value="Warning">Warning — needs attention</option>
-                    <option value="Critical">Critical — urgent</option>
-                    <option value="Emergency">Emergency — immediate</option>
+                    <option value="Info">Info: routine check</option>
+                    <option value="Warning">Warning: needs attention</option>
+                    <option value="Critical">Critical: urgent</option>
+                    <option value="Emergency">Emergency: immediate</option>
                   </select>
                 </div>
               </div>
               <div>
                 <label style={LABEL}>Affected Cow</label>
                 <select value={notifyForm.cow_id} onChange={e => setNotifyForm(f => ({ ...f, cow_id: e.target.value }))} style={INPUT}>
-                  <option value="">— choose cow (optional) —</option>
+                  <option value="">Choose cow (optional)</option>
                   {cows.map(c => <option key={c.cow_id} value={c.cow_id}>{c.cow_name} ({c.rfid_tag})</option>)}
                 </select>
               </div>
@@ -246,11 +246,11 @@ export default function Reproduction() {
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
                       <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 10, background: `${sevColor}22`, color: sevColor }}>{sev}</span>
-                      {r.cow_name && <span style={{ fontSize: 12, fontWeight: 700, color: '#1E4D7B', display: 'inline-flex', alignItems: 'center', gap: 4 }}><Beef size={12} /> {r.cow_name}</span>}
+                      {r.cow_name && <span style={{ fontSize: 12, fontWeight: 700, color: 'var(--navy-ink)', display: 'inline-flex', alignItems: 'center', gap: 4 }}><Beef size={12} /> {r.cow_name}</span>}
                       {r.created_by && <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>from {r.created_by}</span>}
-                      <span style={{ fontSize: 11, color: '#aaa', marginLeft: 'auto' }}>{r.created_at ? format(new Date(r.created_at), 'MMM d, HH:mm') : ''}</span>
+                      <span style={{ fontSize: 11, color: 'var(--text-faint)', marginLeft: 'auto' }}>{r.created_at ? format(new Date(r.created_at), 'MMM d, HH:mm') : ''}</span>
                     </div>
-                    <p style={{ margin: '6px 0 0', fontSize: 13, color: '#333', lineHeight: 1.5 }}>{r.message}</p>
+                    <p style={{ margin: '6px 0 0', fontSize: 13, color: 'var(--text)', lineHeight: 1.5 }}>{r.message}</p>
                   </div>
                   {!r.is_resolved && canWrite && (
                     <button onClick={() => { resolveAlert(r.alert_id).then(() => qc.invalidateQueries({ queryKey: ['vet-reports'] })); }}
@@ -294,7 +294,7 @@ export default function Reproduction() {
             <Plus size={14} /> Add {tab === 'Reproduction' ? 'Record' : tab === 'Treatments' ? 'Treatment' : tab === 'Vaccinations' ? 'Vaccination' : 'BCS'}
           </button>
         ) : (
-          <span style={{ marginLeft: 'auto', fontSize: 12, color: '#aaa', display: 'flex', alignItems: 'center', gap: 5 }}>
+          <span style={{ marginLeft: 'auto', fontSize: 12, color: 'var(--text-faint)', display: 'flex', alignItems: 'center', gap: 5 }}>
             <Lock size={13} /> Vet-only actions
           </span>
         )}
@@ -310,12 +310,12 @@ export default function Reproduction() {
             <tbody>
               {records.map(r => (
                 <tr key={r.repro_id}>
-                  <td><Link to={`/app/herd/${r.cow_id}`} style={{ fontWeight: 700, color: '#1E4D7B', textDecoration: 'none' }}>{r.cow_name}</Link></td>
+                  <td><Link to={`/app/herd/${r.cow_id}`} style={{ fontWeight: 700, color: 'var(--navy-ink)', textDecoration: 'none' }}>{r.cow_name}</Link></td>
                   <td>{fmt(r.calving_date)}</td>
-                  <td>{r.days_in_lactation != null ? <span style={{ fontWeight: 700, color: '#00BCD4' }}>{r.days_in_lactation}d</span> : '—'}</td>
-                  <td>{fmt(r.insemination_date)}<br /><span style={{ fontSize: 11, color: '#aaa' }}>{r.insemination_method}</span></td>
+                  <td>{r.days_in_lactation != null ? <span style={{ fontWeight: 700, color: '#00BCD4' }}>{r.days_in_lactation}d</span> : '-'}</td>
+                  <td>{fmt(r.insemination_date)}<br /><span style={{ fontSize: 11, color: 'var(--text-faint)' }}>{r.insemination_method}</span></td>
                   <td>{fmt(r.expected_calving_date)}</td>
-                  <td>{r.days_to_calving != null ? <span style={{ fontWeight: 700, color: r.days_to_calving < 14 ? '#F44336' : r.days_to_calving < 30 ? '#FF9800' : '#4CAF50' }}>{r.days_to_calving}d</span> : '—'}</td>
+                  <td>{r.days_to_calving != null ? <span style={{ fontWeight: 700, color: r.days_to_calving < 14 ? '#F44336' : r.days_to_calving < 30 ? '#FF9800' : '#4CAF50' }}>{r.days_to_calving}d</span> : '-'}</td>
                   <td style={{ fontWeight: 700 }}>{r.total_calvings}</td>
                   <td>{r.pregnancy_confirmed ? <span className="badge badge-healthy">Yes</span> : <span className="badge badge-warning">No</span>}</td>
                   <td><EntryMeta by={r.recorded_by} /></td>
@@ -343,11 +343,11 @@ export default function Reproduction() {
             <tbody>
               {treatments.map(t => (
                 <tr key={t.treatment_id}>
-                  <td><Link to={`/app/herd/${t.cow_id}`} style={{ fontWeight: 700, color: '#1E4D7B', textDecoration: 'none' }}>{t.cow_name}</Link></td>
+                  <td><Link to={`/app/herd/${t.cow_id}`} style={{ fontWeight: 700, color: 'var(--navy-ink)', textDecoration: 'none' }}>{t.cow_name}</Link></td>
                   <td>{fmt(t.treatment_date)}</td>
                   <td style={{ fontWeight: 600 }}>{t.diagnosis}</td>
                   <td style={{ color: '#9C27B0', fontWeight: 600 }}>{t.drug_name}</td>
-                  <td style={{ fontSize: 12 }}>{t.dose || '—'}</td>
+                  <td style={{ fontSize: 12 }}>{t.dose || '-'}</td>
                   <td>{t.duration_days}d</td>
                   <td>{fmt(t.follow_up_date)}</td>
                   <td>
@@ -382,8 +382,8 @@ export default function Reproduction() {
                 <h2 style={{ fontSize: 15, fontWeight: 700 }}>Due in Next 30 Days</h2>
               </div>
               {dueSoon.map(v => (
-                <div key={v.vax_id} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 12px', background: '#fff8e1', borderRadius: 8, marginBottom: 8, fontSize: 13 }}>
-                  <span><strong>{v.cow_name}</strong> — {v.vaccine_name}</span>
+                <div key={v.vax_id} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 12px', background: 'var(--tint-amber)', borderRadius: 8, marginBottom: 8, fontSize: 13 }}>
+                  <span><strong>{v.cow_name}</strong>: {v.vaccine_name}</span>
                   <span style={{ color: v.days_until_due <= 7 ? '#F44336' : '#FF9800', fontWeight: 700 }}>Due in {v.days_until_due}d</span>
                 </div>
               ))}
@@ -395,11 +395,11 @@ export default function Reproduction() {
               <tbody>
                 {vaccinations.map(v => (
                   <tr key={v.vax_id}>
-                    <td><Link to={`/app/herd/${v.cow_id}`} style={{ fontWeight: 700, color: '#1E4D7B', textDecoration: 'none' }}>{v.cow_name}</Link></td>
+                    <td><Link to={`/app/herd/${v.cow_id}`} style={{ fontWeight: 700, color: 'var(--navy-ink)', textDecoration: 'none' }}>{v.cow_name}</Link></td>
                     <td style={{ fontWeight: 600 }}>{v.vaccine_name}</td>
                     <td>{fmt(v.vaccination_date)}</td>
                     <td style={{ color: '#FF9800', fontWeight: 600 }}>{fmt(v.next_due_date)}</td>
-                    <td style={{ fontFamily: 'monospace', fontSize: 12 }}>{v.batch_number || '—'}</td>
+                    <td style={{ fontFamily: 'monospace', fontSize: 12 }}>{v.batch_number || '-'}</td>
                     <td><EntryMeta by={v.administered_by} /></td>
                   </tr>
                 ))}
@@ -447,13 +447,13 @@ export default function Reproduction() {
               <tbody>
                 {bcsRecords.map(b => (
                   <tr key={b.bcs_id}>
-                    <td><Link to={`/app/herd/${b.cow_id}`} style={{ fontWeight: 700, color: '#1E4D7B', textDecoration: 'none' }}>{b.cow_name}</Link></td>
+                    <td><Link to={`/app/herd/${b.cow_id}`} style={{ fontWeight: 700, color: 'var(--navy-ink)', textDecoration: 'none' }}>{b.cow_name}</Link></td>
                     <td><span className={`badge badge-${(b.health_status || '').toLowerCase().replace(' ', '')}`}>{b.health_status}</span></td>
                     <td style={{ fontWeight: 800, fontSize: 18, color: b.score < 2.5 ? '#F44336' : b.score < 3 ? '#FF9800' : b.score <= 3.75 ? '#4CAF50' : '#FF9800' }}>{Number(b.score).toFixed(1)}</td>
                     <td style={{ minWidth: 140 }}><BCSBar score={b.score} /></td>
                     <td><EntryMeta by={b.assessed_by} /></td>
-                    <td style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{b.assessed_at ? format(new Date(b.assessed_at), 'MMM d, yyyy') : '—'}</td>
-                    <td style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{b.notes || '—'}</td>
+                    <td style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{b.assessed_at ? format(new Date(b.assessed_at), 'MMM d, yyyy') : '-'}</td>
+                    <td style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{b.notes || '-'}</td>
                   </tr>
                 ))}
               </tbody>
@@ -466,7 +466,7 @@ export default function Reproduction() {
       {/* ── Add Modal ── */}
       {showModal && canWrite && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 999, background: 'rgba(0,0,0,.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
-          <div style={{ background: '#fff', borderRadius: 16, width: '100%', maxWidth: 520, maxHeight: '90vh', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(0,0,0,.25)' }}>
+          <div style={{ background: 'var(--card)', borderRadius: 16, width: '100%', maxWidth: 520, maxHeight: '90vh', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(0,0,0,.25)' }}>
             <div style={{ padding: '18px 24px', background: 'linear-gradient(135deg,#9C27B0,#ba68c8)', color: '#fff', borderRadius: '16px 16px 0 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <h2 style={{ fontSize: 17, fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
                 {tab === 'Reproduction' ? <><Baby size={16} /> Add Reproduction Record</> : tab === 'Treatments' ? <><Pill size={16} /> Add Treatment</> : tab === 'BCS' ? <><Ruler size={16} /> Record BCS</> : <><Syringe size={16} /> Add Vaccination</>}
@@ -476,7 +476,7 @@ export default function Reproduction() {
 
             <form onSubmit={handleSubmit} style={{ padding: 24, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 14 }}>
 
-              {/* Cow select — all tabs */}
+              {/* Cow select: all tabs */}
               <div>
                 <label style={LABEL}>Cow *</label>
                 <select style={INPUT}
@@ -563,7 +563,7 @@ export default function Reproduction() {
                 <div><label style={LABEL}>Notes</label><textarea style={{ ...INPUT, height: 60 }} value={bcsForm.notes} onChange={e => setBcsForm(f => ({ ...f, notes: e.target.value }))} /></div>
               </>)}
 
-              {err && <div style={{ color: '#c62828', fontSize: 13, padding: '8px 12px', background: '#fde8e8', borderRadius: 8 }}>⚠ {err}</div>}
+              {err && <div style={{ color: '#c62828', fontSize: 13, padding: '8px 12px', background: 'var(--tint-red)', borderRadius: 8 }}>⚠ {err}</div>}
 
               <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
                 <button type="button" onClick={() => setShowModal(false)} className="btn" style={{ padding: '9px 18px', fontSize: 13 }}>Cancel</button>

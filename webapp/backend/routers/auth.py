@@ -1,5 +1,5 @@
 """
-Authentication router — login, token refresh, current user.
+Authentication router: login, token refresh, current user.
 Uses bcrypt passwords + JWT bearer tokens.
 """
 import hashlib
@@ -17,6 +17,7 @@ from config import settings
 from database import fetchone, execute, fetchall
 from email_service import send_password_reset_email
 from rate_limit import check_rate_limit, client_ip
+from tenancy import farm_clause, farm_for_write
 
 MIN_PASSWORD_LENGTH = 10
 
@@ -52,7 +53,7 @@ class RegisterRequest(BaseModel):
     full_name: str
     email: Optional[str] = None
     phone_number: Optional[str] = None
-    role: str                     # Farmer, Veterinarian, Technician — not Admin
+    role: str                     # Farmer, Veterinarian, Technician: not Admin
     province: Optional[str] = None
     district: Optional[str] = None
     sector:   Optional[str] = None
@@ -177,7 +178,8 @@ REGISTER_ROLES = {"Farmer", "Veterinarian", "Technician"}
 async def register(body: RegisterRequest):
     """
     Public self-registration. Accounts start with approval_status='pending'
-    and cannot log in until an Admin approves them via /users/pending/{id}/approve.
+    and no farm; they cannot log in until an Admin approves them and assigns
+    their farm via /users/{id}/approve.
     """
     if body.role not in REGISTER_ROLES:
         raise HTTPException(400, f"Role must be one of: {', '.join(sorted(REGISTER_ROLES))}")
@@ -196,10 +198,10 @@ async def register(body: RegisterRequest):
         INSERT INTO Users (username, password_hash, full_name, email, phone_number,
                            role, farm_id, is_active, approval_status,
                            province, district, sector, cell_name, village)
-        VALUES (%s, %s, %s, %s, %s, %s, %s, TRUE, 'pending', %s, %s, %s, %s, %s)
+        VALUES (%s, %s, %s, %s, %s, %s, NULL, TRUE, 'pending', %s, %s, %s, %s, %s)
         """,
         (body.username, hashed, body.full_name, body.email,
-         body.phone_number, body.role, 1,
+         body.phone_number, body.role,
          body.province, body.district, body.sector, body.cell, body.village),
     )
 
@@ -343,9 +345,12 @@ async def reset_password(body: ResetPasswordRequest):
 
 @router.get("/vets")
 async def list_vets(current_user: dict = Depends(get_current_user)):
-    """Any authenticated user can get the list of active veterinarians (for notify-vet dropdown)."""
+    """Active veterinarians on the user's farm (for the notify-vet dropdown)."""
+    where, args = farm_clause(current_user)
     rows = await fetchall(
-        "SELECT user_id, username, full_name, phone_number FROM Users WHERE role='Veterinarian' AND is_active=TRUE ORDER BY full_name"
+        f"SELECT user_id, username, full_name, phone_number FROM Users "
+        f"WHERE role='Veterinarian' AND is_active=TRUE AND {where} ORDER BY full_name",
+        args,
     )
     return [_safe_user(r) for r in rows]
 
@@ -363,32 +368,38 @@ async def list_users(current_user: dict = Depends(get_current_user)):
 
 @router.get("/users/pending")
 async def list_pending_users(current_user: dict = Depends(get_current_user)):
-    """Admin only — self-registered accounts awaiting approval."""
+    """Admin only: self-registered accounts awaiting approval."""
     if current_user["role"] != "Admin":
         raise HTTPException(403, "Admin only")
     rows = await fetchall(
-        "SELECT user_id, username, full_name, email, phone_number, role, "
+        "SELECT user_id, username, full_name, email, phone_number, role, farm_id, "
         "province, district, sector, cell_name, village, created_at "
         "FROM Users WHERE approval_status='pending' ORDER BY created_at ASC"
     )
     return [_safe_user(r) for r in rows]
 
 
+class ApproveRequest(BaseModel):
+    farm_id: Optional[int] = None   # the farm the user will see; required when there are several
+
+
 @router.post("/users/{user_id}/approve")
-async def approve_user(user_id: int, current_user: dict = Depends(get_current_user)):
-    """Admin only — approve a pending registration, granting login access."""
+async def approve_user(user_id: int, body: Optional[ApproveRequest] = None,
+                       current_user: dict = Depends(get_current_user)):
+    """Admin only: approve a pending registration and assign the user's farm."""
     if current_user["role"] != "Admin":
         raise HTTPException(403, "Admin only")
-    target = await fetchone("SELECT user_id, approval_status FROM Users WHERE user_id=%s", (user_id,))
+    target = await fetchone("SELECT user_id, role, approval_status FROM Users WHERE user_id=%s", (user_id,))
     if not target:
         raise HTTPException(404, "User not found")
     if target["approval_status"] != "pending":
         raise HTTPException(400, f"User is already {target['approval_status']}")
+    farm_id = await farm_for_write(current_user, body.farm_id if body else None)
 
     await execute(
-        "UPDATE Users SET approval_status='approved', approved_by=%s, approved_at=NOW() "
+        "UPDATE Users SET approval_status='approved', approved_by=%s, approved_at=NOW(), farm_id=%s "
         "WHERE user_id=%s",
-        (current_user["user_id"], user_id),
+        (current_user["user_id"], farm_id, user_id),
     )
     await execute(
         "INSERT INTO Notifications (user_id, title, message, notif_type) VALUES (%s, %s, %s, 'AccountApproved')",
@@ -399,7 +410,7 @@ async def approve_user(user_id: int, current_user: dict = Depends(get_current_us
 
 @router.post("/users/{user_id}/reject")
 async def reject_user(user_id: int, current_user: dict = Depends(get_current_user)):
-    """Admin only — reject a pending registration."""
+    """Admin only: reject a pending registration."""
     if current_user["role"] != "Admin":
         raise HTTPException(403, "Admin only")
     target = await fetchone("SELECT user_id, approval_status FROM Users WHERE user_id=%s", (user_id,))
@@ -428,7 +439,7 @@ class UserCreate(BaseModel):
     email: Optional[str] = None
     phone_number: Optional[str] = None
     role: str                     # Admin, Farmer, Veterinarian, Technician
-    farm_id: Optional[int] = 1
+    farm_id: Optional[int] = None # required when there are several farms
     province: Optional[str] = None
     district: Optional[str] = None
     sector:   Optional[str] = None
@@ -442,6 +453,7 @@ class UserUpdate(BaseModel):
     full_name: Optional[str] = None
     email: Optional[str] = None
     phone_number: Optional[str] = None
+    farm_id: Optional[int] = None
 
 
 @router.post("/users/create")
@@ -449,7 +461,7 @@ async def create_user(
     body: UserCreate,
     current_user: dict = Depends(get_current_user),
 ):
-    """Admin only — create a new platform user."""
+    """Admin only: create a new platform user."""
     if current_user["role"] != "Admin":
         raise HTTPException(403, "Admin only")
     if body.role not in VALID_ROLES:
@@ -460,6 +472,7 @@ async def create_user(
     if existing:
         raise HTTPException(409, f"Username '{body.username}' is already taken")
 
+    farm_id = await farm_for_write(current_user, body.farm_id)
     hashed = pwd_ctx.hash(body.password)
     uid = await execute(
         """
@@ -469,7 +482,7 @@ async def create_user(
         VALUES (%s, %s, %s, %s, %s, %s, %s, TRUE, %s, %s, %s, %s, %s)
         """,
         (body.username, hashed, body.full_name, body.email,
-         body.phone_number, body.role, body.farm_id,
+         body.phone_number, body.role, farm_id,
          body.province, body.district, body.sector, body.cell, body.village),
     )
     return {"ok": True, "user_id": uid, "username": body.username, "role": body.role}
@@ -481,7 +494,7 @@ async def update_user(
     body: UserUpdate,
     current_user: dict = Depends(get_current_user),
 ):
-    """Admin only — update role, active status, or profile fields."""
+    """Admin only: update role, active status, or profile fields."""
     if current_user["role"] != "Admin":
         raise HTTPException(403, "Admin only")
 
@@ -495,6 +508,8 @@ async def update_user(
     fields = {k: v for k, v in body.model_dump().items() if v is not None}
     if not fields:
         raise HTTPException(400, "No fields to update")
+    if "farm_id" in fields:
+        fields["farm_id"] = await farm_for_write(current_user, fields["farm_id"])
 
     set_clause = ", ".join(f"{k}=%s" for k in fields)
     vals = list(fields.values()) + [user_id]
@@ -507,7 +522,7 @@ async def delete_user(
     user_id: int,
     current_user: dict = Depends(get_current_user),
 ):
-    """Admin only — permanently delete a user (cannot delete own account)."""
+    """Admin only: permanently delete a user (cannot delete own account)."""
     if current_user["role"] != "Admin":
         raise HTTPException(403, "Admin only")
     if current_user["user_id"] == user_id:
@@ -539,7 +554,7 @@ async def admin_reset_password(
     body: dict,
     current_user: dict = Depends(get_current_user),
 ):
-    """Admin only — reset another user's password."""
+    """Admin only: reset another user's password."""
     if current_user["role"] != "Admin":
         raise HTTPException(403, "Admin only")
     new_pw = body.get("new_password", "")

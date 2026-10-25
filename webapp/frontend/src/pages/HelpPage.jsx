@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { HelpCircle, Phone, Mail, MessageSquare, ChevronDown, ChevronRight, Book, Zap, Users, Bell } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../hooks/useAuth';
+import { CONTACT } from '../lib/contact';
 
 const FAQS = [
   {
@@ -30,7 +31,7 @@ const FAQS = [
     icon: Zap,
     color: '#FF9800',
     items: [
-      { q: 'What sensors does MooMe use?', a: 'Each cow has: RFID tag (ID), Non-contact temperature sensor (body temp), Activity sensor (movement). The barn has: DHT22 (temp + humidity), MQ-135 (air quality/ammonia), Oxygen sensor, Smart milk meters, Load cells (feed), Water flow sensors.' },
+      { q: 'What sensors does FarmCare use?', a: 'Each cow has: RFID tag (ID), Non-contact temperature sensor (body temp), Activity sensor (movement). The barn has: DHT22 (temp + humidity), MQ-135 (air quality/ammonia), Oxygen sensor, Smart milk meters, Load cells (feed), Water flow sensors.' },
       { q: 'How do I manually override a device?', a: 'Go to IoT Control. Technicians and Admins can turn fans on/off, change fan speed (25%/50%/75%/100%), control water pumps and feed motors.' },
       { q: 'How do I add a manual environment reading?', a: 'Go to Environment → click "Log Manual Reading". Enter temperature, humidity, air quality and oxygen values. Available to Admin and Technician roles.' },
       { q: 'How do I log a tank reading?', a: 'Go to Tanks → click "Log Reading". Select the tank, enter the current level in litres, and choose the action (Reading, Refill, or Drain).' },
@@ -49,7 +50,7 @@ const FAQS = [
   {
     category: 'User Roles',
     icon: Users,
-    color: '#1E4D7B',
+    color: 'var(--navy-ink)',
     items: [
       { q: 'What can a Farmer do?', a: 'Register cows, log milk and feed, manage groups, view economics, create alerts, manage weekly plan, use feed inventory, view environment.' },
       { q: 'What can a Veterinarian do?', a: 'View and update health status, log reproduction records (calving, insemination), add treatments and vaccinations, record BCS, view AI predictions, prescribe nutrition in feed.' },
@@ -94,7 +95,7 @@ export default function HelpPage() {
           <div style={{ fontSize: 22, fontWeight: 800 }}>Help & Support</div>
         </div>
         <div style={{ fontSize: 13, opacity: .8 }}>
-          MooMe IoT-AI Livestock Intelligence Platform — User Guide & FAQ
+          FarmCare IoT-AI Livestock Intelligence Platform: User Guide & FAQ
         </div>
         {user && <div style={{ marginTop: 8, fontSize: 12, opacity: .7 }}>Signed in as <strong>{user.full_name || user.username}</strong> · Role: <strong>{user.role}</strong></div>}
       </div>
@@ -132,8 +133,8 @@ export default function HelpPage() {
       {/* Contact & Support */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(260px,1fr))', gap: 16 }}>
         {[
-          { icon: Phone, color: '#4CAF50', title: 'Phone Support', detail: '+250 780 000 001', sub: 'Mon–Fri · 08:00–18:00 (CAT)', href: 'tel:+250780000001' },
-          { icon: Mail,  color: '#1E4D7B', title: 'Email Support', detail: 'support@moome.rw', sub: 'Response within 24 hours', href: 'mailto:support@moome.rw' },
+          { icon: Phone, color: '#4CAF50', title: 'Phone Support', detail: CONTACT.phone, sub: 'Mon–Fri · 08:00–18:00 (CAT)', href: CONTACT.phoneHref },
+          { icon: Mail,  color: 'var(--navy-ink)', title: 'Email Support', detail: CONTACT.email, sub: 'Response within 24 hours', href: `mailto:${CONTACT.email}` },
           { icon: MessageSquare, color: '#9C27B0', title: 'Send Feedback', detail: 'Report bugs or request features', sub: 'Answered by our team', href: '/feedback', isLink: true },
         ].map(({ icon: Icon, color, title, detail, sub, href, isLink }) => {
           const content = (
@@ -158,7 +159,7 @@ export default function HelpPage() {
 
       {/* System info */}
       <div className="card" style={{ fontSize: 12, color: 'var(--text-secondary)', textAlign: 'center', padding: 14 }}>
-        MooMe IoT-AI Livestock Intelligence Platform · Rwanda © 2024 · WOREX · v1.0.0
+        FarmCare IoT-AI Livestock Intelligence Platform · Rwanda © 2026 · ACTION FAMILY TECH LTD · v1.0.0
       </div>
     </div>
   );

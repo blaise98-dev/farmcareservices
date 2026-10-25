@@ -1,5 +1,5 @@
 /**
- * RoleGuard — conditionally renders children based on a permission check.
+ * RoleGuard: conditionally renders children based on a permission check.
  *
  * Usage:
  *   <RoleGuard allowed={p.canLogMilk}>

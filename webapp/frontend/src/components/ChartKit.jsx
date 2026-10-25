@@ -1,28 +1,44 @@
 /**
- * ChartKit — MooMe Professional Chart Component Library
+ * ChartKit: FarmCare Professional Chart Component Library
  * Built on Apache ECharts via echarts-for-react.
  * All charts share a consistent design system: typography, spacing, colour, grid.
  */
-import ReactECharts from 'echarts-for-react';
+import { useMemo } from 'react';
+import ReactECharts from 'echarts-for-react/esm/core';
+import * as echarts from 'echarts/core';
+import {
+  BarChart as EBar, FunnelChart as EFunnel, GaugeChart as EGauge, HeatmapChart as EHeatmap, LineChart as ELine,
+  PieChart as EPie, RadarChart as ERadar, ScatterChart as EScatter, TreemapChart as ETreemap,
+} from 'echarts/charts';
+import { GraphicComponent, GridComponent, LegendComponent, MarkLineComponent, RadarComponent, TitleComponent, TooltipComponent, VisualMapComponent } from 'echarts/components';
+import { CanvasRenderer } from 'echarts/renderers';
 import { AlertCircle } from 'lucide-react';
 import { PALETTE } from './chartColors';
+import { useTheme } from '../hooks/useTheme';
+
+// Only the chart types and components used below, so the bundle stays small.
+echarts.use([
+  EBar, EFunnel, EGauge, EHeatmap, ELine, EPie, ERadar, EScatter, ETreemap,
+  GraphicComponent, GridComponent, LegendComponent, MarkLineComponent, RadarComponent, TitleComponent,
+  TooltipComponent, VisualMapComponent, CanvasRenderer,
+]);
 
 // ─── Base ECharts theme (applied to every chart) ──────────────────────────────
 const BASE = {
-  textStyle: { fontFamily: 'inherit', fontSize: 12, color: '#374151' },
+  textStyle: { fontFamily: 'inherit', fontSize: 12, color: 'var(--text-secondary)' },
   grid:      { left: 12, right: 12, top: 28, bottom: 12, containLabel: true },
   tooltip: {
-    backgroundColor: '#fff',
-    borderColor:     '#e5e7eb',
+    backgroundColor: 'var(--card)',
+    borderColor: 'var(--border)',
     borderWidth:     1,
     borderRadius:    10,
     padding:         [10, 14],
-    textStyle:       { color: '#111827', fontSize: 12 },
+    textStyle:       { color: 'var(--text)', fontSize: 12 },
     extraCssText:    'box-shadow: 0 4px 20px rgba(0,0,0,.12);',
   },
   legend: {
     itemWidth: 10, itemHeight: 10, borderRadius: 5,
-    textStyle: { fontSize: 11, color: '#6b7280' },
+    textStyle: { fontSize: 11, color: 'var(--text-secondary)' },
     itemGap: 14,
   },
 };
@@ -35,12 +51,39 @@ const opt = (overrides) => ({ ...BASE, ...overrides,
   textStyle: { ...BASE.textStyle },
 });
 
+// ─── Theme colours ────────────────────────────────────────────────────────────
+// ECharts draws on a canvas, which cannot read CSS variables, so every
+// 'var(--token)' in an option is swapped for its current value before drawing.
+const VAR_RE = /var\((--[\w-]+)\)/g;
+
+function resolveVars(value, css) {
+  if (typeof value === 'string') return value.includes('var(') ? value.replace(VAR_RE, (_, name) => css.getPropertyValue(name).trim() || '#888') : value;
+  if (Array.isArray(value)) return value.map(v => resolveVars(v, css));
+  if (value && typeof value === 'object' && value.constructor === Object) {
+    const out = {};
+    for (const k in value) out[k] = resolveVars(value[k], css);
+    return out;
+  }
+  return value;
+}
+
+/** ReactECharts with theme colours resolved; redraws when the theme changes. */
+function Chart({ option, style }) {
+  const [theme] = useTheme();
+  const resolved = useMemo(
+    () => resolveVars(option, getComputedStyle(document.documentElement)),
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- theme is the reason to recompute
+    [option, theme],
+  );
+  return <ReactECharts echarts={echarts} option={resolved} style={style} notMerge />;
+}
+
 // ─── Shared props ─────────────────────────────────────────────────────────────
 const CHART_STYLE = { height: '100%', width: '100%' };
 const DEFAULT_H   = 260;
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  1. DONUT CHART — proportion of categories with centre KPI
+//  1. DONUT CHART: proportion of categories with centre KPI
 // ─────────────────────────────────────────────────────────────────────────────
 /**
  * data: [{ name, value, color? }]
@@ -48,15 +91,15 @@ const DEFAULT_H   = 260;
 export function DonutChart({ data = [], height = DEFAULT_H, centerLabel, centerValue, title }) {
   const total = data.reduce((s, d) => s + Number(d.value || 0), 0);
   const option = opt({
-    title: title ? { text: title, left: 0, top: 0, textStyle: { fontSize: 14, fontWeight: 700, color: '#111827' } } : undefined,
-    tooltip: { ...BASE.tooltip, trigger: 'item', formatter: ({ name, value, percent }) => `<b>${name}</b><br/>${value} &nbsp;<span style="color:#6b7280">(${percent}%)</span>` },
+    title: title ? { text: title, left: 0, top: 0, textStyle: { fontSize: 14, fontWeight: 700, color: 'var(--text)' } } : undefined,
+    tooltip: { ...BASE.tooltip, trigger: 'item', formatter: ({ name, value, percent }) => `<b>${name}</b><br/>${value} &nbsp;<span style="opacity:.7">(${percent}%)</span>` },
     legend: { ...BASE.legend, orient: 'vertical', right: 10, top: 'center' },
     series: [{
       type:         'pie',
       radius:       ['42%', '68%'],
       center:       ['40%', '50%'],
       avoidLabelOverlap: true,
-      itemStyle:    { borderRadius: 6, borderColor: '#fff', borderWidth: 2 },
+      itemStyle:    { borderRadius: 6, borderColor: 'var(--card)', borderWidth: 2 },
       label:        { show: false },
       emphasis:     { label: { show: false }, itemStyle: { shadowBlur: 16, shadowOffsetX: 0, shadowColor: 'rgba(0,0,0,.2)' } },
       data: data.map((d, i) => ({
@@ -73,15 +116,15 @@ export function DonutChart({ data = [], height = DEFAULT_H, centerLabel, centerV
       ],
     }] : undefined,
   });
-  return <ReactECharts option={option} style={{ ...CHART_STYLE, height }} />;
+  return <Chart option={option} style={{ ...CHART_STYLE, height }} />;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  2. VERTICAL BAR CHART — category comparisons
+//  2. VERTICAL BAR CHART: category comparisons
 // ─────────────────────────────────────────────────────────────────────────────
 export function BarChart({ data = [], xKey = 'name', series = [], height = DEFAULT_H, title, unit = '', colors, stacked = false, showLabel = false }) {
   const option = opt({
-    title: title ? { text: title, textStyle: { fontSize: 14, fontWeight: 700, color: '#111827' } } : undefined,
+    title: title ? { text: title, textStyle: { fontSize: 14, fontWeight: 700, color: 'var(--text)' } } : undefined,
     tooltip: { ...BASE.tooltip, trigger: 'axis', axisPointer: { type: 'shadow', shadowStyle: { color: 'rgba(0,0,0,.04)' } },
       formatter: (params) => {
         let html = `<b>${params[0].axisValue}</b><br/>`;
@@ -91,8 +134,8 @@ export function BarChart({ data = [], xKey = 'name', series = [], height = DEFAU
     },
     legend: series.length > 1 ? { ...BASE.legend, bottom: 0 } : undefined,
     grid: { ...BASE.grid, bottom: series.length > 1 ? 36 : 12 },
-    xAxis: { type: 'category', data: data.map(d => d[xKey]), axisLine: { lineStyle: { color: '#e5e7eb' } }, axisTick: { show: false }, axisLabel: { fontSize: 11, color: '#6b7280', rotate: data.length > 7 ? 30 : 0 } },
-    yAxis: { type: 'value', axisLabel: { fontSize: 11, color: '#6b7280', formatter: v => `${v}${unit}` }, splitLine: { lineStyle: { color: '#f3f4f6', type: 'dashed' } }, axisLine: { show: false }, axisTick: { show: false } },
+    xAxis: { type: 'category', data: data.map(d => d[xKey]), axisLine: { lineStyle: { color: 'var(--border)' } }, axisTick: { show: false }, axisLabel: { fontSize: 11, color: 'var(--text-secondary)', rotate: data.length > 7 ? 30 : 0 } },
+    yAxis: { type: 'value', axisLabel: { fontSize: 11, color: 'var(--text-secondary)', formatter: v => `${v}${unit}` }, splitLine: { lineStyle: { color: 'var(--border)', type: 'dashed' } }, axisLine: { show: false }, axisTick: { show: false } },
     series: series.map((s, si) => ({
       name:      s.name || s.key,
       type:      'bar',
@@ -101,47 +144,47 @@ export function BarChart({ data = [], xKey = 'name', series = [], height = DEFAU
       barCategoryGap: '38%',
       itemStyle: { borderRadius: stacked ? 0 : [4, 4, 0, 0], color: (colors && colors[s.key]) || s.color || PALETTE[si % PALETTE.length] },
       emphasis:  { itemStyle: { shadowBlur: 12, shadowColor: 'rgba(0,0,0,.15)' } },
-      label:     showLabel ? { show: true, position: 'top', fontSize: 11, fontWeight: 700, color: '#374151', formatter: p => p.value ? `${p.value}${unit}` : '' } : { show: false },
+      label:     showLabel ? { show: true, position: 'top', fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', formatter: p => p.value ? `${p.value}${unit}` : '' } : { show: false },
       data:      data.map(d => d[s.key] ?? 0),
     })),
   });
-  return <ReactECharts option={option} style={{ ...CHART_STYLE, height }} />;
+  return <Chart option={option} style={{ ...CHART_STYLE, height }} />;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  3. HORIZONTAL BAR — rankings, comparisons with long labels
+//  3. HORIZONTAL BAR: rankings, comparisons with long labels
 // ─────────────────────────────────────────────────────────────────────────────
 export function HBarChart({ data = [], labelKey = 'name', valueKey = 'value', height, unit = '', color = '#1E4D7B', title, colorFn }) {
   const h = height ?? Math.max(180, data.length * 38);
   const option = opt({
-    title: title ? { text: title, textStyle: { fontSize: 14, fontWeight: 700, color: '#111827' } } : undefined,
+    title: title ? { text: title, textStyle: { fontSize: 14, fontWeight: 700, color: 'var(--text)' } } : undefined,
     tooltip: { ...BASE.tooltip, trigger: 'axis', axisPointer: { type: 'shadow', shadowStyle: { color: 'rgba(0,0,0,.04)' } },
       formatter: (params) => `<b>${params[0].axisValue}</b><br/><b>${params[0].value}${unit}</b>`
     },
     grid: { left: 12, right: 60, top: title ? 32 : 8, bottom: 8, containLabel: true },
-    xAxis: { type: 'value', axisLabel: { fontSize: 10, color: '#6b7280' }, splitLine: { lineStyle: { color: '#f3f4f6', type: 'dashed' } }, axisLine: { show: false }, axisTick: { show: false } },
-    yAxis: { type: 'category', data: data.map(d => d[labelKey]), inverse: false, axisLabel: { fontSize: 11, color: '#374151', width: 120, overflow: 'truncate' }, axisTick: { show: false }, axisLine: { lineStyle: { color: '#e5e7eb' } } },
+    xAxis: { type: 'value', axisLabel: { fontSize: 10, color: 'var(--text-secondary)' }, splitLine: { lineStyle: { color: 'var(--border)', type: 'dashed' } }, axisLine: { show: false }, axisTick: { show: false } },
+    yAxis: { type: 'category', data: data.map(d => d[labelKey]), inverse: false, axisLabel: { fontSize: 11, color: 'var(--text-secondary)', width: 120, overflow: 'truncate' }, axisTick: { show: false }, axisLine: { lineStyle: { color: 'var(--border)' } } },
     series: [{
       type:       'bar',
       barMaxWidth: 28,
       itemStyle:  { borderRadius: [0, 4, 4, 0], color: colorFn ? undefined : color },
       emphasis:   { itemStyle: { shadowBlur: 10, shadowColor: 'rgba(0,0,0,.12)' } },
-      label:      { show: true, position: 'right', fontSize: 11, fontWeight: 700, color: '#374151', formatter: p => `${p.value}${unit}` },
+      label:      { show: true, position: 'right', fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', formatter: p => `${p.value}${unit}` },
       data: data.map((d, i) => ({
         value:     d[valueKey] ?? 0,
         itemStyle: colorFn ? { color: colorFn(d, i), borderRadius: [0, 4, 4, 0] } : undefined,
       })),
     }],
   });
-  return <ReactECharts option={option} style={{ ...CHART_STYLE, height: h }} />;
+  return <Chart option={option} style={{ ...CHART_STYLE, height: h }} />;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  4. LINE / AREA CHART — time-series trends
+//  4. LINE / AREA CHART: time-series trends
 // ─────────────────────────────────────────────────────────────────────────────
-export function LineChart({ data = [], xKey = 'date', series = [], height = DEFAULT_H, title, unit = '', smooth = true, area = false, markLine }) {
+export function LineChart({ data = [], xKey = 'date', series = [], height = DEFAULT_H, title, unit = '', smooth = true, area = false, markLine, scale = false }) {
   const option = opt({
-    title: title ? { text: title, textStyle: { fontSize: 14, fontWeight: 700, color: '#111827' } } : undefined,
+    title: title ? { text: title, textStyle: { fontSize: 14, fontWeight: 700, color: 'var(--text)' } } : undefined,
     tooltip: { ...BASE.tooltip, trigger: 'axis',
       formatter: (params) => {
         let html = `<b>${params[0].axisValue}</b><br/>`;
@@ -151,8 +194,9 @@ export function LineChart({ data = [], xKey = 'date', series = [], height = DEFA
     },
     legend: series.length > 1 ? { ...BASE.legend, bottom: 0 } : undefined,
     grid: { ...BASE.grid, bottom: series.length > 1 ? 36 : 12 },
-    xAxis: { type: 'category', boundaryGap: false, data: data.map(d => d[xKey]), axisLine: { lineStyle: { color: '#e5e7eb' } }, axisTick: { show: false }, axisLabel: { fontSize: 11, color: '#6b7280' } },
-    yAxis: { type: 'value', axisLabel: { fontSize: 11, color: '#6b7280', formatter: v => `${v}${unit}` }, splitLine: { lineStyle: { color: '#f3f4f6', type: 'dashed' } }, axisLine: { show: false }, axisTick: { show: false } },
+    xAxis: { type: 'category', boundaryGap: false, data: data.map(d => d[xKey]), axisLine: { lineStyle: { color: 'var(--border)' } }, axisTick: { show: false }, axisLabel: { fontSize: 11, color: 'var(--text-secondary)' } },
+    // scale: fit the axis to the data instead of starting at 0 (e.g. barn temperature around 29 °C)
+    yAxis: { type: 'value', scale, axisLabel: { fontSize: 11, color: 'var(--text-secondary)', formatter: v => `${Number(v.toFixed(2))}${unit}` }, splitLine: { lineStyle: { color: 'var(--border)', type: 'dashed' } }, axisLine: { show: false }, axisTick: { show: false } },
     series: series.map((s, si) => {
       const col = s.color || PALETTE[si % PALETTE.length];
       return {
@@ -161,25 +205,25 @@ export function LineChart({ data = [], xKey = 'date', series = [], height = DEFA
         smooth,
         symbol:      'circle', symbolSize: 5,
         lineStyle:   { width: 2.5, color: col },
-        itemStyle:   { color: col, borderWidth: 2, borderColor: '#fff' },
+        itemStyle:   { color: col, borderWidth: 2, borderColor: 'var(--card)' },
         areaStyle:   area ? { color: { type: 'linear', x: 0, y: 0, x2: 0, y2: 1, colorStops: [{ offset: 0, color: col + '33' }, { offset: 1, color: col + '05' }] } } : undefined,
-        markLine:    markLine ? { silent: true, lineStyle: { type: 'dashed', color: '#9ca3af' }, data: markLine } : undefined,
+        markLine:    markLine ? { silent: true, lineStyle: { type: 'dashed', color: 'var(--text-faint)' }, data: markLine } : undefined,
         data:        data.map(d => d[s.key] ?? null),
       };
     }),
   });
-  return <ReactECharts option={option} style={{ ...CHART_STYLE, height }} />;
+  return <Chart option={option} style={{ ...CHART_STYLE, height }} />;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  5. STACKED AREA — cumulative contribution over time
+//  5. STACKED AREA: cumulative contribution over time
 // ─────────────────────────────────────────────────────────────────────────────
 export function StackedAreaChart({ data = [], xKey = 'date', series = [], height = DEFAULT_H, title, unit = '' }) {
   return <LineChart data={data} xKey={xKey} series={series} height={height} title={title} unit={unit} area smooth stacked />;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  6. GAUGE — single KPI with arc visual
+//  6. GAUGE: single KPI with arc visual
 // ─────────────────────────────────────────────────────────────────────────────
 export function GaugeChart({ value = 0, max = 100, label = '', unit = '', color = '#1E4D7B', height = 180, warn }) {
   const col = warn ? '#F44336' : color;
@@ -191,30 +235,30 @@ export function GaugeChart({ value = 0, max = 100, label = '', unit = '', color 
       radius:     '88%',
       center:     ['50%', '60%'],
       progress:   { show: true, width: 14, roundCap: true, itemStyle: { color: col } },
-      axisLine:   { lineStyle: { width: 14, color: [[1, '#f3f4f6']] } },
+      axisLine:   { lineStyle: { width: 14, color: [[1, 'var(--track)']] } },
       axisTick:   { show: false },
       splitLine:  { show: false },
       axisLabel:  { show: false },
       pointer:    { show: false },
       anchor:     { show: false },
-      title:      { show: true, offsetCenter: [0, '25%'], color: '#6b7280', fontSize: 11, fontFamily: 'inherit' },
+      title:      { show: true, offsetCenter: [0, '25%'], color: 'var(--text-secondary)', fontSize: 11, fontFamily: 'inherit' },
       detail:     { valueAnimation: true, offsetCenter: [0, '-5%'], fontSize: 20, fontWeight: 800, color: col,
                     formatter: v => `${Number(v).toFixed(1)}${unit}`, fontFamily: 'inherit' },
       data: [{ value, name: label }],
     }],
   };
-  return <ReactECharts option={option} style={{ ...CHART_STYLE, height }} />;
+  return <Chart option={option} style={{ ...CHART_STYLE, height }} />;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  7. RADAR CHART — multi-dimensional comparison
+//  7. RADAR CHART: multi-dimensional comparison
 // ─────────────────────────────────────────────────────────────────────────────
 export function RadarChart({ indicators = [], series = [], height = DEFAULT_H, title }) {
   const option = opt({
-    title: title ? { text: title, textStyle: { fontSize: 14, fontWeight: 700, color: '#111827' } } : undefined,
+    title: title ? { text: title, textStyle: { fontSize: 14, fontWeight: 700, color: 'var(--text)' } } : undefined,
     tooltip: { ...BASE.tooltip, trigger: 'item' },
     legend: series.length > 1 ? { ...BASE.legend, bottom: 0 } : undefined,
-    radar: { indicator: indicators, splitLine: { lineStyle: { color: '#f3f4f6' } }, axisLine: { lineStyle: { color: '#e5e7eb' } }, axisName: { color: '#6b7280', fontSize: 11 } },
+    radar: { indicator: indicators, splitLine: { lineStyle: { color: 'var(--border)' } }, axisLine: { lineStyle: { color: 'var(--border)' } }, axisName: { color: 'var(--text-secondary)', fontSize: 11 } },
     series: series.map((s, si) => ({
       type:      'radar',
       name:      s.name,
@@ -224,34 +268,34 @@ export function RadarChart({ indicators = [], series = [], height = DEFAULT_H, t
       data:      [{ value: s.values, name: s.name }],
     })),
   });
-  return <ReactECharts option={option} style={{ ...CHART_STYLE, height }} />;
+  return <Chart option={option} style={{ ...CHART_STYLE, height }} />;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  8. TREEMAP — hierarchical proportions
+//  8. TREEMAP: hierarchical proportions
 // ─────────────────────────────────────────────────────────────────────────────
 export function TreemapChart({ data = [], height = DEFAULT_H, title, unit = '' }) {
   const option = {
     tooltip: { ...BASE.tooltip, formatter: ({ name, value }) => `<b>${name}</b>: ${value}${unit}` },
-    title: title ? { text: title, textStyle: { fontSize: 14, fontWeight: 700, color: '#111827' } } : undefined,
+    title: title ? { text: title, textStyle: { fontSize: 14, fontWeight: 700, color: 'var(--text)' } } : undefined,
     series: [{
       type:         'treemap',
       width:        '100%', height: '100%',
       breadcrumb:   { show: false },
       roam:         false,
       nodeClick:    false,
-      itemStyle:    { borderColor: '#fff', borderWidth: 2, gapWidth: 2 },
+      itemStyle:    { borderColor: 'var(--card)', borderWidth: 2, gapWidth: 2 },
       label:        { show: true, fontSize: 12, fontWeight: 700, color: '#fff',
                       formatter: ({ name, value }) => value > 0 ? `${name}\n${value}${unit}` : name },
       emphasis:     { itemStyle: { shadowBlur: 10, shadowColor: 'rgba(0,0,0,.2)' } },
       data: data.map((d, i) => ({ name: d.name, value: d.value, itemStyle: { color: d.color || PALETTE[i % PALETTE.length] } })),
     }],
   };
-  return <ReactECharts option={option} style={{ ...CHART_STYLE, height }} />;
+  return <Chart option={option} style={{ ...CHART_STYLE, height }} />;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  9. WATERFALL / P&L CHART — cumulative cost-revenue flow
+//  9. WATERFALL / P&L CHART: cumulative cost-revenue flow
 // ─────────────────────────────────────────────────────────────────────────────
 export function WaterfallChart({ data = [], xKey = 'name', valueKey = 'value', height = DEFAULT_H, title, unit = ' RWF' }) {
   let running = 0;
@@ -265,7 +309,7 @@ export function WaterfallChart({ data = [], xKey = 'name', valueKey = 'value', h
     d._col = v >= 0 ? '#4CAF50' : '#F44336';
   });
   const option = opt({
-    title: title ? { text: title, textStyle: { fontSize: 14, fontWeight: 700, color: '#111827' } } : undefined,
+    title: title ? { text: title, textStyle: { fontSize: 14, fontWeight: 700, color: 'var(--text)' } } : undefined,
     tooltip: { ...BASE.tooltip, trigger: 'axis', axisPointer: { type: 'shadow' },
       formatter: (params) => {
         const bar = params.find(p => p.seriesName === 'Value');
@@ -274,37 +318,37 @@ export function WaterfallChart({ data = [], xKey = 'name', valueKey = 'value', h
         return `<b>${bar.axisValue}</b><br/>${Number(v) >= 0 ? '+' : ''}${Number(v).toLocaleString('en-RW')}${unit}`;
       }
     },
-    xAxis: { type: 'category', data: data.map(d => d[xKey]), axisLabel: { fontSize: 11, color: '#6b7280' }, axisTick: { show: false }, axisLine: { lineStyle: { color: '#e5e7eb' } } },
-    yAxis: { type: 'value', axisLabel: { fontSize: 11, color: '#6b7280', formatter: v => `${(v/1000).toFixed(0)}K` }, splitLine: { lineStyle: { color: '#f3f4f6', type: 'dashed' } }, axisLine: { show: false }, axisTick: { show: false } },
+    xAxis: { type: 'category', data: data.map(d => d[xKey]), axisLabel: { fontSize: 11, color: 'var(--text-secondary)' }, axisTick: { show: false }, axisLine: { lineStyle: { color: 'var(--border)' } } },
+    yAxis: { type: 'value', axisLabel: { fontSize: 11, color: 'var(--text-secondary)', formatter: v => `${(v/1000).toFixed(0)}K` }, splitLine: { lineStyle: { color: 'var(--border)', type: 'dashed' } }, axisLine: { show: false }, axisTick: { show: false } },
     series: [
       { name: 'Base', type: 'bar', stack: 'wf', itemStyle: { color: 'transparent' }, emphasis: { disabled: true }, data: placeholders },
       { name: 'Value', type: 'bar', stack: 'wf', barMaxWidth: 40,
         itemStyle: { borderRadius: [4, 4, 0, 0], color: (p) => data[p.dataIndex]?._col || '#1E4D7B' },
         emphasis: { itemStyle: { shadowBlur: 10, shadowColor: 'rgba(0,0,0,.12)' } },
-        label: { show: true, position: 'top', fontSize: 10, fontWeight: 700, color: '#374151',
+        label: { show: true, position: 'top', fontSize: 10, fontWeight: 700, color: 'var(--text-secondary)',
                  formatter: p => { const v = data[p.dataIndex]?.[valueKey] ?? 0; return `${Number(v) >= 0 ? '+' : ''}${(Number(v)/1000).toFixed(1)}K`; } },
         data: bars,
       },
     ],
   });
-  return <ReactECharts option={option} style={{ ...CHART_STYLE, height }} />;
+  return <Chart option={option} style={{ ...CHART_STYLE, height }} />;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  10. SCATTER PLOT — correlation between two metrics
+//  10. SCATTER PLOT: correlation between two metrics
 // ─────────────────────────────────────────────────────────────────────────────
 export function ScatterChart({ data = [], xName = 'X', yName = 'Y', height = DEFAULT_H, title, unit = '', colorKey, colorMap }) {
   const option = opt({
-    title: title ? { text: title, textStyle: { fontSize: 14, fontWeight: 700, color: '#111827' } } : undefined,
+    title: title ? { text: title, textStyle: { fontSize: 14, fontWeight: 700, color: 'var(--text)' } } : undefined,
     tooltip: { ...BASE.tooltip, trigger: 'item',
       formatter: p => `<b>${p.data.name || ''}</b><br/>${xName}: <b>${p.data.value[0]}${unit}</b><br/>${yName}: <b>${p.data.value[1]}${unit}</b>`
     },
-    xAxis: { type: 'value', name: xName, nameLocation: 'middle', nameGap: 28, axisLabel: { fontSize: 11, color: '#6b7280' }, splitLine: { lineStyle: { color: '#f3f4f6', type: 'dashed' } }, axisLine: { lineStyle: { color: '#e5e7eb' } } },
-    yAxis: { type: 'value', name: yName, nameLocation: 'middle', nameGap: 40, axisLabel: { fontSize: 11, color: '#6b7280' }, splitLine: { lineStyle: { color: '#f3f4f6', type: 'dashed' } }, axisLine: { show: false }, axisTick: { show: false } },
+    xAxis: { type: 'value', name: xName, nameLocation: 'middle', nameGap: 28, axisLabel: { fontSize: 11, color: 'var(--text-secondary)' }, splitLine: { lineStyle: { color: 'var(--border)', type: 'dashed' } }, axisLine: { lineStyle: { color: 'var(--border)' } } },
+    yAxis: { type: 'value', name: yName, nameLocation: 'middle', nameGap: 40, axisLabel: { fontSize: 11, color: 'var(--text-secondary)' }, splitLine: { lineStyle: { color: 'var(--border)', type: 'dashed' } }, axisLine: { show: false }, axisTick: { show: false } },
     series: [{
       type:       'scatter',
       symbolSize: 10,
-      itemStyle:  { opacity: .85, borderWidth: 1.5, borderColor: '#fff' },
+      itemStyle:  { opacity: .85, borderWidth: 1.5, borderColor: 'var(--card)' },
       emphasis:   { itemStyle: { shadowBlur: 10, shadowColor: 'rgba(0,0,0,.2)', symbolSize: 14 } },
       data: data.map((d, i) => ({
         name:      d.name || '',
@@ -313,54 +357,54 @@ export function ScatterChart({ data = [], xName = 'X', yName = 'Y', height = DEF
       })),
     }],
   });
-  return <ReactECharts option={option} style={{ ...CHART_STYLE, height }} />;
+  return <Chart option={option} style={{ ...CHART_STYLE, height }} />;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  11. HEATMAP — matrix intensity (e.g. health × stage)
+//  11. HEATMAP: matrix intensity (e.g. health × stage)
 // ─────────────────────────────────────────────────────────────────────────────
 export function HeatmapChart({ xData = [], yData = [], data = [], height = DEFAULT_H, title, unit = '' }) {
   const option = {
     tooltip: { ...BASE.tooltip, formatter: p => `${p.data[1]} / ${p.data[0]}: <b>${p.data[2]}${unit}</b>` },
-    title: title ? { text: title, textStyle: { fontSize: 14, fontWeight: 700, color: '#111827' } } : undefined,
+    title: title ? { text: title, textStyle: { fontSize: 14, fontWeight: 700, color: 'var(--text)' } } : undefined,
     grid: { left: 12, right: 12, top: title ? 40 : 10, bottom: 24, containLabel: true },
-    xAxis: { type: 'category', data: xData, splitArea: { show: true }, axisLabel: { fontSize: 10, color: '#6b7280', rotate: xData.length > 5 ? 30 : 0 }, axisTick: { show: false }, axisLine: { lineStyle: { color: '#e5e7eb' } } },
-    yAxis: { type: 'category', data: yData, splitArea: { show: true }, axisLabel: { fontSize: 11, color: '#374151' }, axisTick: { show: false }, axisLine: { lineStyle: { color: '#e5e7eb' } } },
+    xAxis: { type: 'category', data: xData, splitArea: { show: true }, axisLabel: { fontSize: 10, color: 'var(--text-secondary)', rotate: xData.length > 5 ? 30 : 0 }, axisTick: { show: false }, axisLine: { lineStyle: { color: 'var(--border)' } } },
+    yAxis: { type: 'category', data: yData, splitArea: { show: true }, axisLabel: { fontSize: 11, color: 'var(--text-secondary)' }, axisTick: { show: false }, axisLine: { lineStyle: { color: 'var(--border)' } } },
     visualMap: { min: 0, max: Math.max(...data.map(d => d[2] || 0), 1), calculable: false, show: false,
       inRange: { color: ['#f0fdf4', '#4CAF50', '#166534'] } },
-    series: [{ type: 'heatmap', data, label: { show: true, fontSize: 11, fontWeight: 700, color: '#374151' }, itemStyle: { borderRadius: 4 }, emphasis: { itemStyle: { shadowBlur: 8, shadowColor: 'rgba(0,0,0,.12)' } } }],
+    series: [{ type: 'heatmap', data, label: { show: true, fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)' }, itemStyle: { borderRadius: 4 }, emphasis: { itemStyle: { shadowBlur: 8, shadowColor: 'rgba(0,0,0,.12)' } } }],
   };
-  return <ReactECharts option={option} style={{ ...CHART_STYLE, height }} />;
+  return <Chart option={option} style={{ ...CHART_STYLE, height }} />;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  12. BULLET / PROGRESS BAR — target vs actual
+//  12. BULLET / PROGRESS BAR: target vs actual
 // ─────────────────────────────────────────────────────────────────────────────
 export function BulletChart({ items = [], height, unit = '' }) {
   const h = height ?? Math.max(120, items.length * 52);
   const option = opt({
     tooltip: { ...BASE.tooltip, trigger: 'axis', axisPointer: { type: 'shadow' } },
     grid: { left: 12, right: 60, top: 8, bottom: 8, containLabel: true },
-    xAxis: { type: 'value', axisLabel: { fontSize: 10, color: '#6b7280', formatter: v => `${v}${unit}` }, splitLine: { lineStyle: { color: '#f3f4f6', type: 'dashed' } }, axisLine: { show: false }, axisTick: { show: false } },
-    yAxis: { type: 'category', data: items.map(d => d.label), axisTick: { show: false }, axisLine: { lineStyle: { color: '#e5e7eb' } }, axisLabel: { fontSize: 11, color: '#374151' } },
+    xAxis: { type: 'value', axisLabel: { fontSize: 10, color: 'var(--text-secondary)', formatter: v => `${v}${unit}` }, splitLine: { lineStyle: { color: 'var(--border)', type: 'dashed' } }, axisLine: { show: false }, axisTick: { show: false } },
+    yAxis: { type: 'category', data: items.map(d => d.label), axisTick: { show: false }, axisLine: { lineStyle: { color: 'var(--border)' } }, axisLabel: { fontSize: 11, color: 'var(--text-secondary)' } },
     series: [
-      { name: 'Target', type: 'bar', barWidth: 16, itemStyle: { color: '#e5e7eb', borderRadius: [0, 4, 4, 0] }, data: items.map(d => d.target ?? 0), z: 1 },
+      { name: 'Target', type: 'bar', barWidth: 16, itemStyle: { color: 'var(--track)', borderRadius: [0, 4, 4, 0] }, data: items.map(d => d.target ?? 0), z: 1 },
       { name: 'Actual', type: 'bar', barWidth: 10, barGap: '-100%',
         itemStyle: { color: p => { const d = items[p.dataIndex]; return Number(d.actual) >= Number(d.target) ? '#4CAF50' : '#1E4D7B'; }, borderRadius: [0, 3, 3, 0] },
-        label: { show: true, position: 'right', fontSize: 11, fontWeight: 700, color: '#374151', formatter: p => `${p.value}${unit}` },
+        label: { show: true, position: 'right', fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', formatter: p => `${p.value}${unit}` },
         data: items.map(d => d.actual ?? 0), z: 2,
       },
     ],
   });
-  return <ReactECharts option={option} style={{ ...CHART_STYLE, height: h }} />;
+  return <Chart option={option} style={{ ...CHART_STYLE, height: h }} />;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  13. FUNNEL CHART — stage/conversion flow
+//  13. FUNNEL CHART: stage/conversion flow
 // ─────────────────────────────────────────────────────────────────────────────
 export function FunnelChart({ data = [], height = DEFAULT_H, title, unit = '' }) {
   const option = opt({
-    title: title ? { text: title, textStyle: { fontSize: 14, fontWeight: 700, color: '#111827' } } : undefined,
+    title: title ? { text: title, textStyle: { fontSize: 14, fontWeight: 700, color: 'var(--text)' } } : undefined,
     tooltip: { ...BASE.tooltip, trigger: 'item', formatter: ({ name, value, percent }) => `<b>${name}</b><br/>${value}${unit} (${percent}%)` },
     series: [{
       type:       'funnel',
@@ -374,14 +418,14 @@ export function FunnelChart({ data = [], height = DEFAULT_H, title, unit = '' })
       data: data.map((d, i) => ({ name: d.name, value: d.value, itemStyle: { color: d.color || PALETTE[i % PALETTE.length] } })),
     }],
   });
-  return <ReactECharts option={option} style={{ ...CHART_STYLE, height }} />;
+  return <Chart option={option} style={{ ...CHART_STYLE, height }} />;
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
 //  Utility: CardChart wrapper (title + subtitle + optional action slot)
 //
 //  isLoading/isError give every chart the same loading/error/empty pattern
-//  instead of each page inventing its own — pass them straight through from
+//  instead of each page inventing its own: pass them straight through from
 //  the query (`isLoading`, `isError`) that feeds `children`.
 // ─────────────────────────────────────────────────────────────────────────────
 export function ChartCard({ title, sub, children, action, style, isLoading, isError, errorMessage, height = 200 }) {
@@ -389,8 +433,8 @@ export function ChartCard({ title, sub, children, action, style, isLoading, isEr
     <div className="card" style={{ display: 'flex', flexDirection: 'column', gap: 4, ...style }}>
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 8 }}>
         <div>
-          <h2 style={{ fontSize: 14, fontWeight: 700, margin: 0, color: '#111827' }}>{title}</h2>
-          {sub && <p style={{ fontSize: 11, color: '#6b7280', margin: '3px 0 0' }}>{sub}</p>}
+          <h2 style={{ fontSize: 14, fontWeight: 700, margin: 0, color: 'var(--text)' }}>{title}</h2>
+          {sub && <p style={{ fontSize: 11, color: 'var(--text-secondary)', margin: '3px 0 0' }}>{sub}</p>}
         </div>
         {action && <div style={{ flexShrink: 0 }}>{action}</div>}
       </div>
@@ -407,7 +451,7 @@ export function ChartCard({ title, sub, children, action, style, isLoading, isEr
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
-//  Utility: StatSkeleton — same shape as a .stat-card, for stat-grid loading
+//  Utility: StatSkeleton: same shape as a .stat-card, for stat-grid loading
 // ─────────────────────────────────────────────────────────────────────────────
 export function StatSkeleton() {
   return (

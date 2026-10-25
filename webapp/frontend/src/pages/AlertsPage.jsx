@@ -78,7 +78,7 @@ export default function AlertsPage() {
           { label: 'Active Alerts', val: activeAlerts.length, color: activeAlerts.length > 0 ? '#F44336' : '#4CAF50' },
           { label: 'Critical / Emergency', val: activeAlerts.filter(a => ['Critical','Emergency'].includes(a.severity)).length, color: '#c62828' },
           { label: 'Warnings', val: activeAlerts.filter(a => a.severity === 'Warning').length, color: '#e65100' },
-          { label: 'SMS Sent', val: activeAlerts.filter(a => a.is_sent_sms).length, color: '#1E4D7B' },
+          { label: 'SMS Sent', val: activeAlerts.filter(a => a.is_sent_sms).length, color: 'var(--navy-ink)' },
         ].map(({ label, val, color }) => (
           <div key={label} className="stat-card" style={{ borderLeftColor: color }}>
             <span className="label">{label}</span>
@@ -89,7 +89,7 @@ export default function AlertsPage() {
 
       {/* Stats chart */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
-        <ChartCard title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><BarChart2 size={14} /> Alerts by Type</span>} sub="Last 7 days — by category"
+        <ChartCard title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><BarChart2 size={14} /> Alerts by Type</span>} sub="Last 7 days: by category"
           isLoading={statsLoading} isError={statsError} height={220}>
           <HBarChart
             data={chartData.map(d => ({ name: d.type, value: d.total }))}
@@ -113,7 +113,7 @@ export default function AlertsPage() {
                   background: SEV_CONFIG[n.severity]?.bg || '#f0f0f0',
                   borderLeft: `3px solid ${SEV_CONFIG[n.severity]?.color || '#999'}`,
                 }}>
-                  <div style={{ fontWeight: 700, color: SEV_CONFIG[n.severity]?.color }}>{n.severity} — {n.alert_type}</div>
+                  <div style={{ fontWeight: 700, color: SEV_CONFIG[n.severity]?.color }}>{n.severity}: {n.alert_type}</div>
                   <div style={{ color: 'var(--text-secondary)', marginTop: 2 }}>{n.message}</div>
                 </div>
               ))}
@@ -174,14 +174,14 @@ export default function AlertsPage() {
           <div style={{ display: 'flex', flexDirection: 'column' }}>
             {isLoading && <div className="spinner" />}
             {alerts.length === 0 && !isLoading && (
-              <div className="empty-state"><CheckCircle size={40} /><span>{tab === 'resolved' ? 'No resolved alerts yet' : 'No active alerts — farm is healthy! 🎉'}</span></div>
+              <div className="empty-state"><CheckCircle size={40} /><span>{tab === 'resolved' ? 'No resolved alerts yet' : 'No active alerts: farm is healthy! 🎉'}</span></div>
             )}
             {alerts.map(a => {
-              const cfg = SEV_CONFIG[a.severity] || { color: '#999', bg: '#f0f0f0' };
+              const cfg = SEV_CONFIG[a.severity] || { color: 'var(--text-faint)', bg: '#f0f0f0' };
               return (
                 <div key={a.alert_id} style={{
                   display: 'flex', gap: 14, padding: '14px 20px',
-                  borderBottom: '1px solid #f0f0f0', alignItems: 'flex-start',
+                  borderBottom: '1px solid var(--border)', alignItems: 'flex-start',
                   background: a.is_resolved ? '#fafafa' : '#fff',
                 }}>
                   <AlertTriangle size={18} color={cfg.color} style={{ flexShrink: 0, marginTop: 2 }} />
@@ -192,7 +192,7 @@ export default function AlertsPage() {
                         fontSize: 11, padding: '1px 8px', borderRadius: 20, fontWeight: 600,
                         background: `${TYPE_COLOR[a.alert_type] || '#999'}22`, color: TYPE_COLOR[a.alert_type] || '#333'
                       }}>{a.alert_type}</span>
-                      {a.cow_name && <span style={{ fontSize: 12, color: '#1E4D7B', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 4 }}><Beef size={12} /> {a.cow_name}</span>}
+                      {a.cow_name && <span style={{ fontSize: 12, color: 'var(--navy-ink)', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: 4 }}><Beef size={12} /> {a.cow_name}</span>}
                       {a.is_sent_sms && <span style={{ fontSize: 11, color: '#4CAF50', display: 'inline-flex', alignItems: 'center', gap: 4 }}><Smartphone size={12} /> SMS sent</span>}
                     </div>
                     <div style={{ fontSize: 13, color: 'var(--text)' }}>{a.message}</div>
@@ -220,7 +220,7 @@ export default function AlertsPage() {
       {/* Create Alert Modal */}
       {showCreate && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 999, background: 'rgba(0,0,0,.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
-          <div style={{ background: '#fff', borderRadius: 16, width: '100%', maxWidth: 460, boxShadow: '0 20px 60px rgba(0,0,0,.25)' }}>
+          <div style={{ background: 'var(--card)', borderRadius: 16, width: '100%', maxWidth: 460, boxShadow: '0 20px 60px rgba(0,0,0,.25)' }}>
             <div style={{ padding: '18px 24px', background: 'linear-gradient(135deg,#c62828,#e53935)', color: '#fff', borderRadius: '16px 16px 0 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <h2 style={{ fontSize: 17, fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}><AlertTriangle size={17} /> Create Alert</h2>
               <button onClick={() => setShowCreate(false)} style={{ background: 'rgba(255,255,255,.2)', border: 'none', color: '#fff', borderRadius: 8, padding: '5px 8px', cursor: 'pointer' }}><X size={16} /></button>
@@ -247,7 +247,7 @@ export default function AlertsPage() {
                 <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: 5, textTransform: 'uppercase', letterSpacing: .5 }}>Related Cow (optional)</label>
                 <select style={{ width: '100%', padding: '8px 12px', borderRadius: 8, border: '2px solid var(--border)', fontSize: 13, outline: 'none', fontFamily: 'inherit' }}
                   value={createForm.cow_id} onChange={e => setCreateForm(f => ({ ...f, cow_id: e.target.value }))}>
-                  <option value="">None — farm-wide</option>
+                  <option value="">None: farm-wide</option>
                   {cows.map(c => <option key={c.cow_id} value={c.cow_id}>{c.cow_name}</option>)}
                 </select>
               </div>
@@ -258,7 +258,7 @@ export default function AlertsPage() {
                   value={createForm.message} onChange={e => setCreateForm(f => ({ ...f, message: e.target.value }))}
                   placeholder="Describe the alert…" required />
               </div>
-              {createErr && <div style={{ color: '#c62828', fontSize: 13, padding: '8px 12px', background: '#fde8e8', borderRadius: 8 }}>⚠ {createErr}</div>}
+              {createErr && <div style={{ color: '#c62828', fontSize: 13, padding: '8px 12px', background: 'var(--tint-red)', borderRadius: 8 }}>⚠ {createErr}</div>}
               <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
                 <button type="button" onClick={() => setShowCreate(false)} className="btn" style={{ padding: '9px 18px', fontSize: 13 }}>Cancel</button>
                 <button type="submit" className="btn btn-primary" disabled={createMut.isPending} style={{ padding: '9px 22px', fontSize: 13, background: '#c62828', border: 'none' }}>

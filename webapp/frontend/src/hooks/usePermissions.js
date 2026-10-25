@@ -1,5 +1,5 @@
 /**
- * usePermissions — role-based access helpers for MooMe frontend.
+ * usePermissions: role-based access helpers for FarmCare frontend.
  *
  * Permission matrix mirrors the backend rbac.py table exactly.
  * Import `usePermissions` in any component to gate UI elements.

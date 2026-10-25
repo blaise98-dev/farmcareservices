@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field
 from typing import Optional
 from database import fetchall, fetchone, execute
 from rbac import require_any, require_admin_or_farmer, require_not_technician
+from tenancy import cow_clause, ensure_cow_access, farm_clause
 
 router = APIRouter(prefix="/api/cow-economics", tags=["cow_economics"])
 
@@ -47,10 +48,11 @@ class RevenueEntry(BaseModel):
 # ── Summary per cow ───────────────────────────────────────────────────────────
 
 @router.get("/summary")
-async def economics_summary(_=Depends(require_not_technician())):
-    """Lifetime P&L summary per cow — total costs, revenues, profit."""
+async def economics_summary(user=Depends(require_not_technician())):
+    """Lifetime P&L summary per cow: total costs, revenues, profit."""
+    where, args = farm_clause(user, "c.farm_id")
     rows = await fetchall(
-        """
+        f"""
         SELECT
             c.cow_id, c.cow_name, c.rfid_tag, c.breed, c.cow_stage,
             c.sex, c.birth_date, c.is_active, c.health_status,
@@ -81,15 +83,18 @@ async def economics_summary(_=Depends(require_not_technician())):
             SELECT cow_id, SUM(milk_amount_liters * 400) AS milk_revenue
             FROM MilkProductionRecords GROUP BY cow_id
         ) milk_r ON c.cow_id = milk_r.cow_id
+        WHERE {where}
         ORDER BY net_profit_rwf DESC
-        """
+        """,
+        args,
     )
     return [_safe(r) for r in rows]
 
 
 @router.get("/cow/{cow_id}")
-async def cow_detail(cow_id: int, _=Depends(require_not_technician())):
+async def cow_detail(cow_id: int, user=Depends(require_not_technician())):
     """Full cost + revenue breakdown for one cow."""
+    await ensure_cow_access(user, cow_id)
     cow = await fetchone(
         """
         SELECT c.*, TIMESTAMPDIFF(MONTH, c.birth_date, CURDATE()) AS age_months
@@ -124,10 +129,10 @@ async def cow_detail(cow_id: int, _=Depends(require_not_technician())):
         """
         SELECT ym, SUM(costs) AS costs, SUM(revenues) AS revenues
         FROM (
-            SELECT DATE_FORMAT(cost_date,'%Y-%m') AS ym, SUM(amount_rwf) AS costs, 0 AS revenues
+            SELECT DATE_FORMAT(cost_date,'%%Y-%%m') AS ym, SUM(amount_rwf) AS costs, 0 AS revenues
             FROM CowCosts WHERE cow_id=%s GROUP BY ym
             UNION ALL
-            SELECT DATE_FORMAT(revenue_date,'%Y-%m') AS ym, 0 AS costs, SUM(amount_rwf) AS revenues
+            SELECT DATE_FORMAT(revenue_date,'%%Y-%%m') AS ym, 0 AS costs, SUM(amount_rwf) AS revenues
             FROM CowRevenues WHERE cow_id=%s GROUP BY ym
         ) t
         GROUP BY ym ORDER BY ym
@@ -157,49 +162,56 @@ async def cow_detail(cow_id: int, _=Depends(require_not_technician())):
 
 
 @router.get("/fleet")
-async def fleet_overview(_=Depends(require_not_technician())):
+async def fleet_overview(user=Depends(require_not_technician())):
     """Aggregated fleet-level analytics for the executive dashboard."""
+    cw, ca = cow_clause(user)
+    # Each table is summed on its own so costs are not multiplied by revenue rows
     total = await fetchone(
-        """
+        f"""
         SELECT
-            COALESCE(SUM(cc.amount_rwf),0) AS total_costs,
-            COALESCE(SUM(cr.amount_rwf),0) AS total_revenues,
-            COALESCE(SUM(cr.amount_rwf),0) - COALESCE(SUM(cc.amount_rwf),0) AS net_profit
-        FROM (SELECT 1) dummy
-        LEFT JOIN CowCosts cc ON TRUE
-        LEFT JOIN CowRevenues cr ON TRUE
-        """
+            COALESCE(cc.total,0) AS total_costs,
+            COALESCE(cr.total,0) AS total_revenues,
+            COALESCE(cr.total,0) - COALESCE(cc.total,0) AS net_profit
+        FROM (SELECT SUM(amount_rwf) AS total FROM CowCosts WHERE {cw}) cc,
+             (SELECT SUM(amount_rwf) AS total FROM CowRevenues WHERE {cw}) cr
+        """,
+        (*ca, *ca),
     )
 
     by_cost_cat = await fetchall(
-        "SELECT cost_category, SUM(amount_rwf) AS total FROM CowCosts GROUP BY cost_category ORDER BY total DESC"
+        f"SELECT cost_category, SUM(amount_rwf) AS total FROM CowCosts WHERE {cw} GROUP BY cost_category ORDER BY total DESC",
+        ca,
     )
     by_rev_cat = await fetchall(
-        "SELECT revenue_category, SUM(amount_rwf) AS total FROM CowRevenues GROUP BY revenue_category ORDER BY total DESC"
+        f"SELECT revenue_category, SUM(amount_rwf) AS total FROM CowRevenues WHERE {cw} GROUP BY revenue_category ORDER BY total DESC",
+        ca,
     )
     monthly = await fetchall(
-        """
+        f"""
         SELECT ym, SUM(costs) AS costs, SUM(revenues) AS revenues,
                SUM(revenues) - SUM(costs) AS net
         FROM (
-            SELECT DATE_FORMAT(cost_date,'%Y-%m') AS ym, SUM(amount_rwf) AS costs, 0 AS revenues
-            FROM CowCosts GROUP BY ym
+            SELECT DATE_FORMAT(cost_date,'%%Y-%%m') AS ym, SUM(amount_rwf) AS costs, 0 AS revenues
+            FROM CowCosts WHERE {cw} GROUP BY ym
             UNION ALL
-            SELECT DATE_FORMAT(revenue_date,'%Y-%m') AS ym, 0 AS costs, SUM(amount_rwf) AS revenues
-            FROM CowRevenues GROUP BY ym
+            SELECT DATE_FORMAT(revenue_date,'%%Y-%%m') AS ym, 0 AS costs, SUM(amount_rwf) AS revenues
+            FROM CowRevenues WHERE {cw} GROUP BY ym
         ) t GROUP BY ym ORDER BY ym
-        """
+        """,
+        (*ca, *ca),
     )
+    fw, fa = farm_clause(user, "c.farm_id")
     top_profit = await fetchall(
-        """
+        f"""
         SELECT c.cow_id, c.cow_name, c.breed, c.cow_stage,
                COALESCE(cr.rev,0) - COALESCE(cc.cost,0) AS net_profit
         FROM Cows c
         LEFT JOIN (SELECT cow_id, SUM(amount_rwf) AS cost FROM CowCosts GROUP BY cow_id) cc ON c.cow_id=cc.cow_id
         LEFT JOIN (SELECT cow_id, SUM(amount_rwf) AS rev FROM CowRevenues GROUP BY cow_id) cr ON c.cow_id=cr.cow_id
-        WHERE c.is_active=TRUE
+        WHERE c.is_active=TRUE AND {fw}
         ORDER BY net_profit DESC LIMIT 10
-        """
+        """,
+        fa,
     )
     return {
         "total":        _safe(total) if total else {},
@@ -214,6 +226,7 @@ async def fleet_overview(_=Depends(require_not_technician())):
 
 @router.post("/costs")
 async def add_cost(body: CostEntry, current_user: dict = Depends(require_any())):
+    await ensure_cow_access(current_user, body.cow_id)
     rid = await execute(
         """
         INSERT INTO CowCosts (cow_id, cost_date, cost_category, description, amount_rwf, recorded_by, role_type)
@@ -227,6 +240,7 @@ async def add_cost(body: CostEntry, current_user: dict = Depends(require_any()))
 
 @router.post("/revenues")
 async def add_revenue(body: RevenueEntry, current_user: dict = Depends(require_any())):
+    await ensure_cow_access(current_user, body.cow_id)
     rid = await execute(
         """
         INSERT INTO CowRevenues (cow_id, revenue_date, revenue_category, description, amount_rwf, quantity, unit, recorded_by)
@@ -240,7 +254,8 @@ async def add_revenue(body: RevenueEntry, current_user: dict = Depends(require_a
 
 @router.delete("/costs/{cost_id}")
 async def delete_cost(cost_id: int, current_user: dict = Depends(require_admin_or_farmer())):
-    row = await fetchone("SELECT cost_id FROM CowCosts WHERE cost_id=%s", (cost_id,))
+    where, args = cow_clause(current_user)
+    row = await fetchone(f"SELECT cost_id FROM CowCosts WHERE cost_id=%s AND {where}", (cost_id, *args))
     if not row:
         raise HTTPException(404, "Cost record not found")
     await execute("DELETE FROM CowCosts WHERE cost_id=%s", (cost_id,))
@@ -249,7 +264,8 @@ async def delete_cost(cost_id: int, current_user: dict = Depends(require_admin_o
 
 @router.delete("/revenues/{revenue_id}")
 async def delete_revenue(revenue_id: int, current_user: dict = Depends(require_admin_or_farmer())):
-    row = await fetchone("SELECT revenue_id FROM CowRevenues WHERE revenue_id=%s", (revenue_id,))
+    where, args = cow_clause(current_user)
+    row = await fetchone(f"SELECT revenue_id FROM CowRevenues WHERE revenue_id=%s AND {where}", (revenue_id, *args))
     if not row:
         raise HTTPException(404, "Revenue record not found")
     await execute("DELETE FROM CowRevenues WHERE revenue_id=%s", (revenue_id,))

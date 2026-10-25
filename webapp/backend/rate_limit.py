@@ -2,7 +2,7 @@
 Minimal in-memory rate limiter for auth endpoints (login, forgot-password).
 
 Deliberately simple: a per-key sliding window held in a process-local dict.
-No new infra (Redis, etc.) — sufficient for the single-worker uvicorn
+No new infra (Redis, etc.): sufficient for the single-worker uvicorn
 deployment this app runs (see provision_server.sh). If the app is ever
 scaled to multiple workers/processes, this state stops being shared across
 them and the limit effectively multiplies by worker count; move to a

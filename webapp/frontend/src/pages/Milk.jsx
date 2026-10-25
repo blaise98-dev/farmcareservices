@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getMilkDailySummary, getTopProducers, getTodaySessions, addMilkRecord, getCows } from '../lib/api';
 import { usePermissions } from '../hooks/usePermissions';
@@ -7,14 +7,31 @@ import { BarChart as EBar, HBarChart, ChartCard } from '../components/ChartKit';
 import { Plus, Droplets, Lock, Trophy, ClipboardList } from 'lucide-react';
 import { format } from 'date-fns';
 
+const today = () => format(new Date(), 'yyyy-MM-dd');
+const emptyForm = () => ({
+  cow_id: '', milk_amount_liters: '', milking_session: 'Morning', milk_quality: 'Normal',
+  milk_sold_liters: '', milk_consumed_liters: '', milk_calves_liters: '', milk_lost_liters: '',
+  price_per_liter_rwf: 400, entry_date: today(),
+});
+
+// FastAPI sends a string, or a list of field errors for invalid input
+const errorText = (e) => {
+  const d = e.response?.data?.detail;
+  if (Array.isArray(d)) return d.map(x => x.msg).join('; ');
+  return d || (e.response ? `Save failed (server error ${e.response.status})` : 'Save failed: the server could not be reached');
+};
+
 export default function Milk() {
   const p = usePermissions();
   const [showForm, setShowForm] = useState(false);
-  const [form, setForm] = useState({
-    cow_id: '', milk_amount_liters: '', milking_session: 'Morning', milk_quality: 'Normal',
-    milk_sold_liters: '', milk_consumed_liters: '', milk_calves_liters: '', milk_lost_liters: '',
-    price_per_liter_rwf: 400, entry_date: '',
-  });
+  const [form, setForm] = useState(emptyForm);
+  const [notice, setNotice] = useState(null);   // { ok, text } after Save
+  // A confirmation fades after 5 s; an error stays until the next try
+  useEffect(() => {
+    if (!notice?.ok) return undefined;
+    const t = setTimeout(() => setNotice(null), 5000);
+    return () => clearTimeout(t);
+  }, [notice]);
   const [showBreakdown, setShowBreakdown] = useState(false);
   const qc = useQueryClient();
 
@@ -25,13 +42,15 @@ export default function Milk() {
 
   const mutation = useMutation({
     mutationFn: addMilkRecord,
-    onSuccess: () => {
+    onSuccess: (res) => {
       qc.invalidateQueries({ queryKey: ['milk-daily'] });
       qc.invalidateQueries({ queryKey: ['today-sessions'] });
       qc.invalidateQueries({ queryKey: ['top-producers'] });
       setShowForm(false);
-      setForm({ cow_id: '', milk_amount_liters: '', milking_session: 'Morning', milk_quality: 'Normal', milk_sold_liters: '', milk_consumed_liters: '', milk_calves_liters: '', milk_lost_liters: '', price_per_liter_rwf: 400, entry_date: '' });
+      setForm(emptyForm());
+      setNotice({ ok: true, text: `Saved ${res?.liters ?? ''} L for ${res?.cow_name || 'the cow'}${res?.date ? ` on ${format(new Date(`${res.date}T00:00:00`), 'MMM d, yyyy')}` : ''}.` });
     },
+    onError: (e) => setNotice({ ok: false, text: errorText(e) }),
   });
 
   // Chart: daily total per day (summed across cows)
@@ -96,31 +115,40 @@ export default function Milk() {
           <RoleGuard
             allowed={p.canLogMilk}
             fallback={
-              <span style={{ fontSize: 12, color: '#aaa', display: 'flex', alignItems: 'center', gap: 4 }}>
+              <span style={{ fontSize: 12, color: 'var(--text-faint)', display: 'flex', alignItems: 'center', gap: 4 }}>
                 <Lock size={13} /> Logging restricted to Admin/Farmer
               </span>
             }
           >
-            <button className="btn btn-primary" onClick={() => setShowForm(t => !t)}>
+            <button className="btn btn-primary" onClick={() => { setShowForm(t => !t); setNotice(null); }}>
               <Plus size={14} /> Record Milk
             </button>
           </RoleGuard>
         </div>
 
-        {/* Form — only shown if allowed */}
+        {notice && (
+          <div role={notice.ok ? 'status' : 'alert'} style={{
+            margin: '12px 20px 0', padding: '10px 14px', borderRadius: 10, fontSize: 13, fontWeight: 600,
+            background: notice.ok ? 'var(--tint-green)' : 'var(--tint-red)', color: notice.ok ? 'var(--green-ink)' : '#c62828',
+          }}>
+            {notice.text}
+          </div>
+        )}
+
+        {/* Form: only shown if allowed */}
         {showForm && p.canLogMilk && (
-          <div style={{ padding: '16px 20px', background: '#f7f9fc', borderBottom: '1px solid var(--border)', display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'flex-end' }}>
+          <div style={{ padding: '16px 20px', background: 'var(--surface-2)', borderBottom: '1px solid var(--border)', display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'flex-end' }}>
             <div>
               <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: 4 }}>Cow</label>
               <select value={form.cow_id} onChange={e => setForm(f => ({ ...f, cow_id: e.target.value }))}
-                style={{ padding: '7px 10px', borderRadius: 8, border: '1px solid var(--border)', fontSize: 13, background: '#fff', minWidth: 140 }}>
+                style={{ padding: '7px 10px', borderRadius: 8, border: '1px solid var(--border)', fontSize: 13, background: 'var(--card)', minWidth: 140 }}>
                 <option value="">Select cow…</option>
                 {cows.filter(c => c.lactating).map(c => <option key={c.cow_id} value={c.cow_id}>{c.cow_name}</option>)}
               </select>
             </div>
             <div>
               <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: 4 }}>Date</label>
-              <input type="date" value={form.entry_date} onChange={e => setForm(f => ({ ...f, entry_date: e.target.value }))}
+              <input type="date" value={form.entry_date} max={today()} onChange={e => setForm(f => ({ ...f, entry_date: e.target.value }))}
                 style={{ padding: '7px 10px', borderRadius: 8, border: '1px solid var(--border)', fontSize: 13 }} />
             </div>
             <div>
@@ -132,14 +160,14 @@ export default function Milk() {
             <div>
               <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: 4 }}>Session</label>
               <select value={form.milking_session} onChange={e => setForm(f => ({ ...f, milking_session: e.target.value }))}
-                style={{ padding: '7px 10px', borderRadius: 8, border: '1px solid var(--border)', fontSize: 13, background: '#fff' }}>
-                <option>Morning</option><option>Evening</option>
+                style={{ padding: '7px 10px', borderRadius: 8, border: '1px solid var(--border)', fontSize: 13, background: 'var(--card)' }}>
+                <option>Morning</option><option>Midday</option><option>Evening</option>
               </select>
             </div>
             <div>
               <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: 4 }}>Quality</label>
               <select value={form.milk_quality} onChange={e => setForm(f => ({ ...f, milk_quality: e.target.value }))}
-                style={{ padding: '7px 10px', borderRadius: 8, border: '1px solid var(--border)', fontSize: 13, background: '#fff' }}>
+                style={{ padding: '7px 10px', borderRadius: 8, border: '1px solid var(--border)', fontSize: 13, background: 'var(--card)' }}>
                 <option>Excellent</option><option>Good</option><option>Normal</option><option>Poor</option>
               </select>
             </div>
@@ -166,7 +194,7 @@ export default function Milk() {
               )}
             </div>
             <div style={{ display: 'flex', gap: 8, width: '100%' }}>
-              <button className="btn btn-primary" disabled={mutation.isPending || !form.cow_id || !form.milk_amount_liters}
+              <button className="btn btn-primary" disabled={mutation.isPending || !form.cow_id || !(Number(form.milk_amount_liters) > 0)}
                 onClick={() => mutation.mutate({ ...form, cow_id: Number(form.cow_id), milk_amount_liters: Number(form.milk_amount_liters), milk_sold_liters: Number(form.milk_sold_liters || 0), milk_consumed_liters: Number(form.milk_consumed_liters || 0), milk_calves_liters: Number(form.milk_calves_liters || 0), milk_lost_liters: Number(form.milk_lost_liters || 0), price_per_liter_rwf: Number(form.price_per_liter_rwf || 400) })}>
                 {mutation.isPending ? 'Saving…' : 'Save Record'}
               </button>
@@ -178,7 +206,7 @@ export default function Milk() {
         <div style={{ overflowX: 'auto' }}>
           <table className="data-table">
             <thead>
-              <tr><th>Cow</th><th>Date</th><th>Morning (L)</th><th>Evening (L)</th><th>Daily Total</th></tr>
+              <tr><th>Cow</th><th>Date</th><th>Morning (L)</th><th>Midday (L)</th><th>Evening (L)</th><th>Daily Total</th></tr>
             </thead>
             <tbody>
               {daily.map((r, i) => (
@@ -186,6 +214,7 @@ export default function Milk() {
                   <td style={{ fontWeight: 600 }}>{r.cow_name}</td>
                   <td style={{ color: 'var(--text-secondary)' }}>{r.milk_date ? format(new Date(r.milk_date), 'MMM d, yyyy') : ''}</td>
                   <td style={{ color: '#FF9800', fontWeight: 600 }}>{Number(r.morning_milk).toFixed(1)}</td>
+                  <td style={{ color: '#00838F', fontWeight: 600 }}>{Number(r.midday_milk || 0).toFixed(1)}</td>
                   <td style={{ color: '#9C27B0', fontWeight: 600 }}>{Number(r.evening_milk).toFixed(1)}</td>
                   <td style={{ fontWeight: 700, color: '#00BCD4' }}>{Number(r.total_daily_milk).toFixed(1)}</td>
                 </tr>

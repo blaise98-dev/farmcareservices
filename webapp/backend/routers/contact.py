@@ -1,4 +1,4 @@
-"""Public Contact Us form — no authentication required."""
+"""Public Contact Us form: no authentication required."""
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException
 from pydantic import BaseModel, EmailStr
 from typing import Optional
@@ -37,7 +37,7 @@ async def submit_contact(body: ContactRequest, background_tasks: BackgroundTasks
     background_tasks.add_task(
         send_contact_message, body.name, body.email, body.phone, body.subject, body.message
     )
-    return {"ok": True, "message": "Thanks for reaching out — we'll get back to you soon."}
+    return {"ok": True, "message": "Thanks for reaching out. We'll get back to you soon."}
 
 
 @router.get("/", dependencies=[Depends(require_admin())])

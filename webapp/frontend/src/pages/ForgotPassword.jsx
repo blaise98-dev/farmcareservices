@@ -13,7 +13,7 @@ const shell = {
 };
 
 const card = {
-  background: '#fff',
+  background: 'var(--card)',
   borderRadius: 16,
   padding: 32,
   boxShadow: '0 24px 64px rgba(0,0,0,.25)',
@@ -25,7 +25,7 @@ const inputStyle = {
   width: '100%',
   padding: '11px 14px',
   borderRadius: 10,
-  border: '2px solid #e0e0e0',
+  border: '2px solid var(--border)',
   fontSize: 14,
   outline: 'none',
   fontFamily: 'inherit',
@@ -58,12 +58,12 @@ export default function ForgotPassword() {
         <div style={{ textAlign: 'center', color: '#fff' }}>
           <div style={{
             width: 64, height: 64, borderRadius: '50%',
-            background: '#4CAF50',
+            background: '#4CAF50', overflow: 'hidden',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             fontSize: 32, margin: '0 auto 12px',
             boxShadow: '0 8px 32px rgba(76,175,80,.4)',
-          }}>🐄</div>
-          <h1 style={{ fontWeight: 900, fontSize: 28, margin: 0 }}>MooMe</h1>
+          }}><img src="/images/farmcare-logo.svg" alt="FarmCare" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%', display: 'block' }} /></div>
+          <h1 style={{ fontWeight: 900, fontSize: 28, margin: 0 }}>FarmCare</h1>
         </div>
 
         <div style={card}>
@@ -71,23 +71,23 @@ export default function ForgotPassword() {
             to="/login"
             style={{
               display: 'inline-flex', alignItems: 'center', gap: 6,
-              color: '#5a6a7e', fontSize: 13, textDecoration: 'none', marginBottom: 16,
+              color: 'var(--text-secondary)', fontSize: 13, textDecoration: 'none', marginBottom: 16,
             }}
           >
             <ArrowLeft size={14} /> Back to sign in
           </Link>
 
-          <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 8, color: '#1a1a2e' }}>
+          <h2 style={{ fontSize: 20, fontWeight: 700, marginBottom: 8, color: 'var(--text)' }}>
             Forgot your password?
           </h2>
-          <p style={{ fontSize: 14, color: '#5a6a7e', marginBottom: 24, lineHeight: 1.5 }}>
+          <p style={{ fontSize: 14, color: 'var(--text-secondary)', marginBottom: 24, lineHeight: 1.5 }}>
             Enter your email or username. If an account exists with an email on file,
             we&apos;ll send you a reset link.
           </p>
 
           {sent ? (
             <div style={{
-              background: '#e8f5e9', color: '#2e7d32',
+              background: 'var(--tint-green)', color: 'var(--green-ink)',
               borderRadius: 10, padding: '16px 18px',
               fontSize: 14, border: '1px solid #c8e6c9',
               display: 'flex', gap: 12, alignItems: 'flex-start',
@@ -105,7 +105,7 @@ export default function ForgotPassword() {
             <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
               <div>
                 <label style={{
-                  fontSize: 12, fontWeight: 700, color: '#5a6a7e',
+                  fontSize: 12, fontWeight: 700, color: 'var(--text-secondary)',
                   display: 'block', marginBottom: 6, textTransform: 'uppercase', letterSpacing: .5,
                 }}>
                   Email or username
@@ -125,7 +125,7 @@ export default function ForgotPassword() {
 
               {error && (
                 <div style={{
-                  background: '#fde8e8', color: '#c62828',
+                  background: 'var(--tint-red)', color: '#c62828',
                   borderRadius: 8, padding: '10px 14px',
                   fontSize: 13, border: '1px solid #f5c6c6',
                 }}>

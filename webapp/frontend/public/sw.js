@@ -1,5 +1,5 @@
-// MooMe Service Worker — offline support + asset caching
-const CACHE_NAME = 'moome-v1';
+// FarmCare Service Worker: offline support + asset caching
+const CACHE_NAME = 'farmcare-v1';
 const STATIC_ASSETS = ['/', '/manifest.json', '/favicon.svg'];
 
 self.addEventListener('install', (event) => {
@@ -48,11 +48,11 @@ self.addEventListener('fetch', (event) => {
 self.addEventListener('push', (event) => {
   const data = event.data?.json() || {};
   event.waitUntil(
-    self.registration.showNotification(data.title || 'MooMe Alert', {
+    self.registration.showNotification(data.title || 'FarmCare Alert', {
       body: data.body || '',
       icon: '/favicon.svg',
       badge: '/favicon.svg',
-      tag: data.tag || 'moome-alert',
+      tag: data.tag || 'farmcare-alert',
     })
   );
 });
