@@ -31,7 +31,7 @@ async def log_remote_connection() -> None:
     if not row:
         return
     print(
-        f"Remote MySQL ready — server={row['hostname']} "
+        f"Remote MySQL ready: server={row['hostname']} "
         f"database={row['db_name']} "
         f"(tunnel localhost:{settings.DB_PORT} → {settings.DB_REMOTE_HOST})"
     )

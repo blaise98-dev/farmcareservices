@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { FARM_KEY, TOKEN_KEY, USER_KEY, readKey, writeKey } from './storage';
 
 // In dev, Vite proxies /api → backend so baseURL can be empty (avoids CORS).
 // In production set VITE_API_URL to the deployed backend URL.
@@ -11,8 +12,11 @@ export const api = axios.create({ baseURL: BASE });
 // Inject JWT token into every request made through this instance.
 // axios.create() does NOT inherit axios.defaults, so we need our own interceptor.
 api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('moome_token');
+  const token = readKey(TOKEN_KEY);
   if (token) config.headers.Authorization = `Bearer ${token}`;
+  // Admin farm picker: the server ignores this header for everyone else
+  const farm = readKey(FARM_KEY);
+  if (farm) config.headers['X-Farm-Id'] = farm;
   return config;
 });
 
@@ -21,8 +25,8 @@ api.interceptors.response.use(
   (res) => res,
   (err) => {
     if (err.response?.status === 401) {
-      localStorage.removeItem('moome_token');
-      localStorage.removeItem('moome_user');
+      writeKey(TOKEN_KEY, null);
+      writeKey(USER_KEY, null);
       // Navigate to login without a hard reload if possible
       if (window.location.pathname !== '/login') {
         window.location.href = '/login';
@@ -86,12 +90,12 @@ export const getHerdHealthTrend  = () => api.get('/api/dashboard/herd-health-tre
 export const getPredictions      = () => api.get('/api/predictions/').then(r => r.data);
 export const getHealthRisks      = () => api.get('/api/predictions/health-risks').then(r => r.data);
 export const getMilkYieldPreds   = () => api.get('/api/predictions/milk-yield').then(r => r.data);
-// Herd — cow registration
+// Herd: cow registration
 export const registerCow         = (body) => api.post('/api/herd/register', body).then(r => r.data);
 export const getNextRfid         = () => api.get('/api/herd/next-rfid').then(r => r.data);
 export const getHerdAnalytics    =() => api.get('/api/herd/analytics').then(r => r.data);
 
-// Feed — methane tracking
+// Feed: methane tracking
 export const getMethaneSummary   = () => api.get('/api/feed/methane-summary').then(r => r.data);
 
 // Cow Economics
@@ -103,22 +107,22 @@ export const addCowRevenue       = (body) => api.post('/api/cow-economics/revenu
 export const deleteCowCost       = (id) => api.delete(`/api/cow-economics/costs/${id}`).then(r => r.data);
 export const deleteCowRevenue    = (id) => api.delete(`/api/cow-economics/revenues/${id}`).then(r => r.data);
 
-// Auth — user management
+// Auth: user management
 export const getUsers            = () => api.get('/api/auth/users').then(r => r.data);
 export const getVets             = () => api.get('/api/auth/vets').then(r => r.data);
 export const createUser          = (body) => api.post('/api/auth/users/create', body).then(r => r.data);
 export const updateUser          = (id, body) => api.patch(`/api/auth/users/${id}`, body).then(r => r.data);
 
-// Auth — public self-registration + admin approval
+// Auth: public self-registration + admin approval
 export const registerUser        = (body) => api.post('/api/auth/register', body).then(r => r.data);
 export const getPendingUsers     = () => api.get('/api/auth/users/pending').then(r => r.data);
-export const approveUser         = (id) => api.post(`/api/auth/users/${id}/approve`).then(r => r.data);
+export const approveUser         = (id, farmId) => api.post(`/api/auth/users/${id}/approve`, { farm_id: farmId ?? null }).then(r => r.data);
 export const rejectUser          = (id) => api.post(`/api/auth/users/${id}/reject`).then(r => r.data);
 
 // Public Contact Us form
 export const submitContact       = (body) => api.post('/api/contact/', body).then(r => r.data);
 
-// Auth — password reset (public, no login required)
+// Auth: password reset (public, no login required)
 export const requestPasswordReset = (identifier) =>
   api.post('/api/auth/forgot-password', { identifier }).then(r => r.data);
 export const validateResetToken   = (token) =>
@@ -137,7 +141,7 @@ export const getAdminAlertHistory  = (days = 30, alertType = '', severity = '') 
   return api.get(`/api/admin/alert-history?${params}`).then(r => r.data);
 };
 
-// User management — delete + admin password reset
+// User management: delete + admin password reset
 export const deleteUser            = (id) => api.delete(`/api/auth/users/${id}`).then(r => r.data);
 export const adminResetPassword    = (id, newPassword) => api.post(`/api/auth/users/${id}/reset-password`, { new_password: newPassword }).then(r => r.data);
 
@@ -212,7 +216,7 @@ export const getSmsHistory        = (limit=100) => api.get(`/api/sms-config/sms-
 // Body Condition Score
 export const getBCS               = () => api.get('/api/reproduction/bcs').then(r => r.data);
 
-// IoT Wearables — RFID collar (water quality) + vitals tag (GPS/heart rate/motion)
+// IoT Wearables: RFID collar (water quality) + vitals tag (GPS/heart rate/motion)
 export const getWaterQualityLatest  = (cowId) => api.get('/api/iot/water-quality/latest', { params: cowId ? { cow_id: cowId } : {} }).then(r => r.data);
 export const getWaterQualityHistory = (hours=24, cowId) => api.get('/api/iot/water-quality/history', { params: { hours, ...(cowId ? { cow_id: cowId } : {}) } }).then(r => r.data);
 export const getLocationLatest      = (cowId) => api.get(`/api/iot/location/latest/${cowId}`).then(r => r.data);
@@ -226,3 +230,33 @@ export const updateAvatar         = (avatarDataUrl) => api.patch('/api/auth/avat
 
 // Cow activity sensor
 export const getCowActivity       = () => api.get('/api/herd/activity').then(r => r.data);
+
+// Field devices (Milking Station, Barn Monitor, Health Collar), as shown in the field demo
+export const getDeviceChips      = () => api.get('/api/field/device-status').then(r => r.data);
+export const getFieldDevices     = () => api.get('/api/field/devices').then(r => r.data);
+export const updateFieldDevice   = (id, body) => api.patch(`/api/field/devices/${encodeURIComponent(id)}`, body).then(r => r.data);
+export const getFieldSettings    = () => api.get('/api/field/settings').then(r => r.data);
+export const updateFieldSettings = (body) => api.patch('/api/field/settings', body).then(r => r.data);
+export const getRecentCommands   = (limit=30) => api.get(`/api/iot/commands?limit=${limit}`).then(r => r.data);
+
+// Milking page
+export const getMilkingLive      = () => api.get('/api/milking/live').then(r => r.data);
+export const getMilkingSessions  = (limit=20) => api.get(`/api/milking/sessions?limit=${limit}`).then(r => r.data);
+export const getMilkingToday     = () => api.get('/api/milking/today').then(r => r.data);
+export const milkingScan         = (rfid_tag) => api.post('/api/milking/scan', { rfid_tag }).then(r => r.data);
+export const milkingRecord       = (body={}) => api.post('/api/milking/record', body).then(r => r.data);
+export const milkingCancel       = () => api.post('/api/milking/cancel', {}).then(r => r.data);
+
+// Barn / House Monitor
+export const getBarnLatest       = () => api.get('/api/barn/latest').then(r => r.data);
+export const getBarnHistory      = (hours=24) => api.get(`/api/barn/history?hours=${hours}`).then(r => r.data);
+export const getFeedIntake       = (days=30) => api.get(`/api/barn/feed-intake?days=${days}`).then(r => r.data);
+
+// Cow Health & Tracking
+export const getCowHealthOverview = () => api.get('/api/cow-health/overview').then(r => r.data);
+
+// Farms (each user, cow and device belongs to one; Admins see all)
+export const getFarms            = () => api.get('/api/farms').then(r => r.data);
+export const createFarm          = (body) => api.post('/api/farms', body).then(r => r.data);
+export const updateFarm          = (id, body) => api.patch(`/api/farms/${id}`, body).then(r => r.data);
+export const getUnassigned       = () => api.get('/api/farms/unassigned').then(r => r.data);

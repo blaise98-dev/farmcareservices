@@ -1,11 +1,13 @@
 """
-Admin-only router — activity logs, user activity, platform reports, alert history.
-All endpoints require Admin role.
+Admin-only router: activity logs, user activity, platform reports, alert history.
+All endpoints require Admin role. Report queries still go through the farm
+clauses so they stay correct if a non-admin role is ever let in.
 """
 from fastapi import APIRouter, Depends, Query
 from typing import Optional
 from database import fetchall, fetchone
 from rbac import require_admin
+from tenancy import cow_clause, farm_clause
 
 router = APIRouter(prefix="/api/admin", tags=["admin"])
 
@@ -28,18 +30,20 @@ def _safe(row: dict) -> dict:
 @router.get("/activity-logs")
 async def activity_logs(
     limit: int = 100,
-    _=Depends(require_admin()),
+    user=Depends(require_admin()),
 ):
-    """System control logs — device actions, triggers, timestamps."""
+    """System control logs: device actions, triggers, timestamps."""
+    where, args = farm_clause(user)
     rows = await fetchall(
-        """
+        f"""
         SELECT log_id, device_type, device_id, action,
-               value, trigger_reason, recorded_at
+               value, trigger_reason, recorded_at, farm_id
         FROM SystemControlLogs
+        WHERE {where}
         ORDER BY recorded_at DESC
         LIMIT %s
         """,
-        (limit,),
+        (*args, limit),
     )
     return [_safe(r) for r in rows]
 
@@ -61,60 +65,71 @@ async def user_activity(_=Depends(require_admin())):
 
 
 @router.get("/platform-report")
-async def platform_report(_=Depends(require_admin())):
-    """Comprehensive platform stats — all from DB, zero hardcoded values."""
+async def platform_report(user=Depends(require_admin())):
+    """Comprehensive platform stats: all from DB, zero hardcoded values."""
+    fw, fa = farm_clause(user)
+    cw, ca = cow_clause(user)
+
     # Herd
     herd = await fetchone(
-        """
+        f"""
         SELECT COUNT(*) AS total_cows,
                SUM(CASE WHEN health_status='Healthy' THEN 1 ELSE 0 END) AS healthy_cows,
                SUM(CASE WHEN health_status='Warning'  THEN 1 ELSE 0 END) AS warning_cows,
                SUM(CASE WHEN health_status='Critical' THEN 1 ELSE 0 END) AS critical_cows,
                SUM(CASE WHEN lactating=1 THEN 1 ELSE 0 END) AS lactating_cows
-        FROM Cows WHERE is_active=1
-        """
+        FROM Cows WHERE is_active=1 AND {fw}
+        """,
+        fa,
     )
 
     # Milk 30d
     milk30 = await fetchone(
-        """
+        f"""
         SELECT COALESCE(SUM(milk_amount_liters), 0) AS total_liters_30d,
                COALESCE(AVG(milk_amount_liters), 0) AS avg_liters_per_session,
                COUNT(*) AS total_sessions
         FROM MilkProductionRecords
-        WHERE recorded_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)
-        """
+        WHERE recorded_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) AND {cw}
+        """,
+        ca,
     )
 
     # Alerts
     alerts_total = await fetchone(
-        "SELECT COUNT(*) AS total FROM Alerts WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)"
+        f"SELECT COUNT(*) AS total FROM Alerts WHERE created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) AND {fw}",
+        fa,
     )
     alerts_resolved = await fetchone(
-        "SELECT COUNT(*) AS resolved FROM Alerts WHERE is_resolved=TRUE AND created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY)"
+        f"SELECT COUNT(*) AS resolved FROM Alerts WHERE is_resolved=TRUE AND created_at >= DATE_SUB(NOW(), INTERVAL 30 DAY) AND {fw}",
+        fa,
     )
     alerts_active = await fetchone(
-        "SELECT COUNT(*) AS active FROM Alerts WHERE is_resolved=FALSE"
+        f"SELECT COUNT(*) AS active FROM Alerts WHERE is_resolved=FALSE AND {fw}",
+        fa,
     )
 
     # Users
-    users_total = await fetchone("SELECT COUNT(*) AS total FROM Users")
-    users_active = await fetchone("SELECT COUNT(*) AS active FROM Users WHERE is_active=TRUE")
+    users_total = await fetchone(f"SELECT COUNT(*) AS total FROM Users WHERE {fw}", fa)
+    users_active = await fetchone(f"SELECT COUNT(*) AS active FROM Users WHERE is_active=TRUE AND {fw}", fa)
     recent_logins = await fetchone(
-        "SELECT COUNT(*) AS cnt FROM Users WHERE last_login >= DATE_SUB(NOW(), INTERVAL 7 DAY)"
+        f"SELECT COUNT(*) AS cnt FROM Users WHERE last_login >= DATE_SUB(NOW(), INTERVAL 7 DAY) AND {fw}",
+        fa,
     )
 
     # Components
-    components_total = await fetchone("SELECT COUNT(*) AS total FROM Components")
+    components_total = await fetchone(f"SELECT COUNT(*) AS total FROM Components WHERE {fw}", fa)
     components_operational = await fetchone(
-        "SELECT COUNT(*) AS operational FROM Components WHERE status='Operational'"
+        f"SELECT COUNT(*) AS operational FROM Components WHERE status='Operational' AND {fw}",
+        fa,
     )
     total_cost = await fetchone(
-        "SELECT COALESCE(SUM(total_cost_rwf), 0) AS total_cost_rwf FROM Components"
+        f"SELECT COALESCE(SUM(total_cost_rwf), 0) AS total_cost_rwf FROM Components WHERE {fw}",
+        fa,
     )
 
-    # Farm info
-    farm = await fetchone("SELECT * FROM Farm LIMIT 1")
+    # Farm info: an Admin gets the first farm
+    farm = await fetchone(f"SELECT * FROM Farm WHERE {fw} ORDER BY farm_id LIMIT 1", fa)
 
     total = int(alerts_total["total"]) if alerts_total else 0
     resolved = int(alerts_resolved["resolved"]) if alerts_resolved else 0
@@ -158,11 +173,12 @@ async def alert_history(
     days: int = 30,
     alert_type: Optional[str] = None,
     severity: Optional[str] = None,
-    _=Depends(require_admin()),
+    user=Depends(require_admin()),
 ):
     """All alerts with cow names; supports date-range and type/severity filters."""
-    conditions = ["a.created_at >= DATE_SUB(NOW(), INTERVAL %s DAY)"]
-    params = [days]
+    farm_where, farm_args = farm_clause(user, "a.farm_id")
+    conditions = ["a.created_at >= DATE_SUB(NOW(), INTERVAL %s DAY)", farm_where]
+    params = [days, *farm_args]
 
     if alert_type:
         conditions.append("a.alert_type = %s")
@@ -175,7 +191,7 @@ async def alert_history(
     rows = await fetchall(
         f"""
         SELECT a.alert_id, a.alert_type, a.severity, a.message,
-               a.is_resolved, a.resolved_at, a.created_at,
+               a.is_resolved, a.resolved_at, a.created_at, a.farm_id,
                c.cow_name, c.breed
         FROM Alerts a
         LEFT JOIN Cows c ON a.cow_id = c.cow_id

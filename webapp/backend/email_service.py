@@ -11,17 +11,17 @@ logger = logging.getLogger(__name__)
 
 
 async def send_password_reset_email(to_email: str, name: str, reset_url: str) -> None:
-    subject = "Reset your MooMe password"
+    subject = "Reset your FarmCare password"
     plain = (
         f"Hello {name},\n\n"
-        f"We received a request to reset your MooMe password.\n"
+        f"We received a request to reset your FarmCare password.\n"
         f"Open this link to choose a new password (expires in {settings.RESET_TOKEN_EXPIRE_MINUTES} minutes):\n\n"
         f"{reset_url}\n\n"
         f"If you did not request this, you can ignore this email.\n"
     )
     html = f"""\
 <html><body style="font-family:sans-serif;color:#1a1a2e">
-  <h2 style="color:#1E4D7B">MooMe — Password Reset</h2>
+  <h2 style="color:#1E4D7B">FarmCare: Password Reset</h2>
   <p>Hello {name},</p>
   <p>We received a request to reset your password. Click the button below to choose a new one.
      This link expires in <strong>{settings.RESET_TOKEN_EXPIRE_MINUTES} minutes</strong>.</p>
@@ -38,7 +38,7 @@ async def send_password_reset_email(to_email: str, name: str, reset_url: str) ->
 </body></html>"""
 
     if not settings.SMTP_HOST:
-        logger.warning("SMTP not configured — password reset link for %s: %s", to_email, reset_url)
+        logger.warning("SMTP not configured: password reset link for %s: %s", to_email, reset_url)
         print(f"\n[PASSWORD RESET] Link for {to_email}: {reset_url}\n")
         return
 
@@ -65,13 +65,13 @@ async def send_password_reset_email(to_email: str, name: str, reset_url: str) ->
 
 async def send_contact_message(name: str, email: str, phone: str, subject: str, message: str) -> None:
     """Forward a public Contact Us submission to the configured inbox."""
-    mail_subject = f"[MooMe Contact] {subject or 'New message'} — {name}"
+    mail_subject = f"[FarmCare Contact] {subject or 'New message'}: {name}"
     plain = (
         f"New contact form submission\n\n"
         f"Name: {name}\n"
         f"Email: {email}\n"
-        f"Phone: {phone or '—'}\n"
-        f"Subject: {subject or '—'}\n\n"
+        f"Phone: {phone or '-'}\n"
+        f"Subject: {subject or '-'}\n\n"
         f"Message:\n{message}\n"
     )
     html = f"""\
@@ -79,13 +79,13 @@ async def send_contact_message(name: str, email: str, phone: str, subject: str, 
   <h2 style="color:#1E4D7B">New Contact Form Submission</h2>
   <p><strong>Name:</strong> {name}<br>
      <strong>Email:</strong> {email}<br>
-     <strong>Phone:</strong> {phone or '—'}<br>
-     <strong>Subject:</strong> {subject or '—'}</p>
+     <strong>Phone:</strong> {phone or '-'}<br>
+     <strong>Subject:</strong> {subject or '-'}</p>
   <p style="white-space:pre-wrap;border-left:3px solid #4CAF50;padding-left:12px">{message}</p>
 </body></html>"""
 
     if not settings.SMTP_HOST:
-        logger.warning("SMTP not configured — contact message from %s <%s> logged only", name, email)
+        logger.warning("SMTP not configured: contact message from %s <%s> logged only", name, email)
         print(f"\n[CONTACT MESSAGE] From {name} <{email}>:\n{message}\n")
         return
 

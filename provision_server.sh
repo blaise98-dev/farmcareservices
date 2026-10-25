@@ -2,7 +2,7 @@
 # Full server provisioning script for farmcareservices.com (159.198.46.65)
 # Run as root on the new server after first login via Namecheap panel/VNC.
 #
-# SECRETS: this script must never hardcode DB_PASS or SECRET_KEY again — an
+# SECRETS: this script must never hardcode DB_PASS or SECRET_KEY again: an
 # earlier version did, and those values were committed to a public repo. Both
 # are read from the environment; if unset, strong random values are generated
 # for you and printed once at the end. Save them somewhere safe (password
@@ -174,7 +174,7 @@ echo "  FastAPI service started."
 echo "[10/12] Building frontend..."
 FRONTEND_DIR="${APP_DIR}/webapp/frontend"
 
-# Production .env — leave API URLs empty so Nginx proxies /api on same domain
+# Production .env: leave API URLs empty so Nginx proxies /api on same domain
 sudo -u "${APP_USER}" tee "${FRONTEND_DIR}/.env" > /dev/null << EOF
 VITE_API_URL=
 VITE_WS_URL=
@@ -229,7 +229,7 @@ echo "  Nginx configured."
 
 # ── 12. SSL certificate ───────────────────────────────────────────────────────
 echo "[12/12] Obtaining SSL certificate..."
-echo "  (Skipping auto-cert — run manually after DNS propagates:)"
+echo "  (Skipping auto-cert: run manually after DNS propagates:)"
 echo "  certbot --nginx -d farmcareservices.com -d www.farmcareservices.com"
 echo ""
 
@@ -255,7 +255,7 @@ echo "  VPS_USER = farmcareservices_user"
 echo "  VPS_SSH_KEY = <paste private key from ~/.ssh/id_rsa or the github-actions key>"
 echo ""
 echo "=============================="
-echo " SAVE THESE NOW — shown once, not stored anywhere in this repo:"
+echo " SAVE THESE NOW: shown once, not stored anywhere in this repo:"
 echo "  DB_PASS    = ${DB_PASS}"
 echo "  SECRET_KEY = ${SECRET_KEY}"
 echo "=============================="

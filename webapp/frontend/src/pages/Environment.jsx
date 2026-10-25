@@ -49,16 +49,16 @@ export default function Environment() {
   }));
 
   const GAUGES = [
-    { label: 'Temperature', icon: Thermometer, val: Number(env.temperature_celsius || 0).toFixed(1) + '°C', pct: Math.min(100, (Number(env.temperature_celsius || 0) / 45) * 100), color: '#FF9800', warn: env.temperature_celsius > 32, warnMsg: '> 32°C — High' },
+    { label: 'Temperature', icon: Thermometer, val: Number(env.temperature_celsius || 0).toFixed(1) + '°C', pct: Math.min(100, (Number(env.temperature_celsius || 0) / 45) * 100), color: '#FF9800', warn: env.temperature_celsius > 32, warnMsg: '> 32°C: High' },
     { label: 'Humidity', icon: Droplets, val: Number(env.humidity_percent || 0).toFixed(0) + '%', pct: Number(env.humidity_percent || 0), color: '#00BCD4', warn: env.humidity_percent < 50 || env.humidity_percent > 80, warnMsg: 'Out of 50–80% range' },
-    { label: 'Air Quality', icon: Wind, val: Number(env.air_quality_ppm || 0).toFixed(0) + ' ppm', pct: Math.min(100, (Number(env.air_quality_ppm || 0) / 1000) * 100), color: env.air_quality_ppm > 600 ? '#F44336' : env.air_quality_ppm > 450 ? '#FF9800' : '#4CAF50', warn: env.air_quality_ppm > 600, warnMsg: '> 600 ppm — Ventilate' },
-    { label: 'Oxygen Level', icon: Activity, val: Number(env.oxygen_percent || 0).toFixed(2) + '%', pct: Math.min(100, (Number(env.oxygen_percent || 0) / 25) * 100), color: '#9C27B0', warn: env.oxygen_percent < 19.5, warnMsg: '< 19.5% — Low O₂' },
-  ];
+    { label: 'Air Quality', icon: Wind, val: Number(env.air_quality_ppm || 0).toFixed(0) + ' ppm', pct: Math.min(100, (Number(env.air_quality_ppm || 0) / 1000) * 100), color: env.air_quality_ppm > 600 ? '#F44336' : env.air_quality_ppm > 450 ? '#FF9800' : '#4CAF50', warn: env.air_quality_ppm > 600, warnMsg: '> 600 ppm: Ventilate' },
+    env.oxygen_percent != null && { label: 'Oxygen Level', icon: Activity, val: Number(env.oxygen_percent || 0).toFixed(2) + '%', pct: Math.min(100, (Number(env.oxygen_percent || 0) / 25) * 100), color: '#9C27B0', warn: env.oxygen_percent < 19.5, warnMsg: '< 19.5%: Low O₂' },
+  ].filter(Boolean);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
 
-      {/* Add reading button — Admin & Technician */}
+      {/* Add reading button: Admin & Technician */}
       {p.canAddEnvReading && (
         <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
           <button className="btn btn-primary" onClick={() => { setShowAdd(true); setAddErr(''); }}
@@ -106,17 +106,17 @@ export default function Environment() {
             <div className="gauge-bar-fill" style={{ width: `${Math.min(100, ((Number(wq.tds_ppm || 0)) / 2000) * 100)}%`, background: '#00838F' }} />
           </div>
           {wq.tds_ppm >= 2000
-            ? <span style={{ fontSize: 11, color: '#F44336', fontWeight: 700 }}>⚠ Critical — TDS ≥ 2000 ppm</span>
+            ? <span style={{ fontSize: 11, color: '#F44336', fontWeight: 700 }}>⚠ Critical: TDS ≥ 2000 ppm</span>
             : wq.tds_ppm >= 1000
-              ? <span style={{ fontSize: 11, color: '#FF9800', fontWeight: 700 }}>⚠ Elevated — TDS ≥ 1000 ppm</span>
+              ? <span style={{ fontSize: 11, color: '#FF9800', fontWeight: 700 }}>⚠ Elevated: TDS ≥ 1000 ppm</span>
               : <span style={{ fontSize: 11, color: '#4CAF50' }}>✓ Normal range</span>
           }
           <div style={{ display: 'flex', alignItems: 'center', gap: 4, marginTop: 6 }}>
             <span className="live-dot" style={{ background: '#00838F' }} />
-            <span style={{ fontSize: 10, color: 'var(--text-secondary)' }}>Collar sensor {wq.device_id ? `— ${wq.device_id}` : ''}</span>
+            <span style={{ fontSize: 10, color: 'var(--text-secondary)' }}>Collar sensor {wq.device_id ? `· ${wq.device_id}` : ''}</span>
           </div>
         </div>
-        <ChartCard title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Waves size={14} /> Water Quality Trend</span>} sub="TDS ppm — Warn ≥1000 / Critical ≥2000"
+        <ChartCard title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Waves size={14} /> Water Quality Trend</span>} sub="TDS ppm: Warn ≥1000 / Critical ≥2000"
           isLoading={wqLoading} isError={wqError} height={200}>
           <ELine data={wqChart} xKey="time"
             series={[{ key: 'tds', name: 'TDS (ppm)', color: '#00838F' }]}
@@ -151,7 +151,7 @@ export default function Environment() {
 
       {/* Air quality */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
-        <ChartCard title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Wind size={14} /> Air Quality Trend</span>} sub="ppm — Alert ≥600 / Warn ≥450"
+        <ChartCard title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Wind size={14} /> Air Quality Trend</span>} sub="ppm: Alert ≥600 / Warn ≥450"
           isLoading={histLoading} isError={histError} height={200}>
           <ELine data={histChart} xKey="time"
             series={[{ key: 'aq', name: 'Air Quality (ppm)', color: '#9C27B0' }]}
@@ -165,7 +165,7 @@ export default function Environment() {
           <div className="section-header"><h2 style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Thermometer size={16} /> Cow Body Temps</h2></div>
           <div style={{ overflowY: 'auto', flex: 1 }}>
             {cowTemps.map(c => (
-              <div key={c.cow_id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0', borderBottom: '1px solid #f0f0f0' }}>
+              <div key={c.cow_id} style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '7px 0', borderBottom: '1px solid var(--border)' }}>
                 <span style={{ fontWeight: 600, fontSize: 13, minWidth: 80 }}>{c.cow_name}</span>
                 <div style={{ flex: 1 }}>
                   <div className="gauge-bar">
@@ -192,7 +192,7 @@ export default function Environment() {
       {/* Add Reading Modal */}
       {showAdd && p.canAddEnvReading && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 999, background: 'rgba(0,0,0,.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
-          <div style={{ background: '#fff', borderRadius: 16, width: '100%', maxWidth: 440, boxShadow: '0 20px 60px rgba(0,0,0,.25)' }}>
+          <div style={{ background: 'var(--card)', borderRadius: 16, width: '100%', maxWidth: 440, boxShadow: '0 20px 60px rgba(0,0,0,.25)' }}>
             <div style={{ padding: '18px 24px', background: 'linear-gradient(135deg,#E65100,#FF9800)', color: '#fff', borderRadius: '16px 16px 0 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <h2 style={{ fontSize: 17, fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}><Radio size={17} /> Log Manual Sensor Reading</h2>
               <button onClick={() => setShowAdd(false)} style={{ background: 'rgba(255,255,255,.2)', border: 'none', color: '#fff', borderRadius: 8, padding: '5px 8px', cursor: 'pointer' }}><X size={16} /></button>
@@ -214,7 +214,7 @@ export default function Environment() {
                   </div>
                 ))}
               </div>
-              {addErr && <div style={{ color: '#c62828', fontSize: 13, padding: '8px 12px', background: '#fde8e8', borderRadius: 8 }}>⚠ {addErr}</div>}
+              {addErr && <div style={{ color: '#c62828', fontSize: 13, padding: '8px 12px', background: 'var(--tint-red)', borderRadius: 8 }}>⚠ {addErr}</div>}
               <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
                 <button type="button" onClick={() => setShowAdd(false)} className="btn" style={{ padding: '9px 18px', fontSize: 13 }}>Cancel</button>
                 <button type="submit" className="btn btn-primary" disabled={addMut.isPending} style={{ padding: '9px 22px', fontSize: 13, background: '#E65100', border: 'none' }}>

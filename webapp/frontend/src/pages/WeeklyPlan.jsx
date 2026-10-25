@@ -9,7 +9,7 @@ import {
 import { format } from 'date-fns';
 
 const LABEL = { display: 'block', fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: .5, marginBottom: 5 };
-const INPUT = { width: '100%', padding: '8px 12px', borderRadius: 8, border: '2px solid var(--border)', fontSize: 13, outline: 'none', fontFamily: 'inherit', background: '#fff', boxSizing: 'border-box' };
+const INPUT = { width: '100%', padding: '8px 12px', borderRadius: 8, border: '2px solid var(--border)', fontSize: 13, outline: 'none', fontFamily: 'inherit', background: 'var(--card)', boxSizing: 'border-box' };
 
 const PRIORITY_COLOR = { Low: '#4CAF50', Medium: '#FF9800', High: '#F44336', Urgent: '#b71c1c' };
 const STATUS_COLOR   = { Pending: '#FF9800', InProgress: '#00BCD4', Completed: '#4CAF50', Cancelled: '#9E9E9E' };
@@ -78,7 +78,7 @@ export default function WeeklyPlan() {
           <div style={{ fontSize: 18, fontWeight: 800, display: 'flex', alignItems: 'center', gap: 8 }}><Calendar size={18} /> Weekly Plan</div>
           <div style={{ fontSize: 12, opacity: .8, marginTop: 4 }}>Schedule and track farm tasks</div>
         </div>
-        <button className="btn" onClick={() => { setShowModal(true); setErr(''); }} style={{ background: '#fff', color: '#E65100', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px' }}>
+        <button className="btn" onClick={() => { setShowModal(true); setErr(''); }} style={{ background: 'var(--card)', color: '#E65100', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px' }}>
           <Plus size={14} /> New Task
         </button>
       </div>
@@ -89,7 +89,7 @@ export default function WeeklyPlan() {
           { label: 'Pending / In Progress', val: pending, color: '#FF9800' },
           { label: 'Completed',             val: done,    color: '#4CAF50' },
           { label: 'High Priority',         val: urgent,  color: '#F44336' },
-          { label: 'Total Tasks',           val: tasks.length, color: '#1E4D7B' },
+          { label: 'Total Tasks',           val: tasks.length, color: 'var(--navy-ink)' },
         ].map(({ label, val, color }) => (
           <div key={label} className="stat-card" style={{ borderLeftColor: color }}>
             <span className="label">{label}</span>
@@ -169,7 +169,7 @@ export default function WeeklyPlan() {
       {/* Create Modal */}
       {showModal && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 999, background: 'rgba(0,0,0,.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
-          <div style={{ background: '#fff', borderRadius: 16, width: '100%', maxWidth: 520, maxHeight: '90vh', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(0,0,0,.25)' }}>
+          <div style={{ background: 'var(--card)', borderRadius: 16, width: '100%', maxWidth: 520, maxHeight: '90vh', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(0,0,0,.25)' }}>
             <div style={{ padding: '18px 24px', background: 'linear-gradient(135deg,#E65100,#FF9800)', color: '#fff', borderRadius: '16px 16px 0 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
               <h2 style={{ fontSize: 17, fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}><Calendar size={16} /> Create Task</h2>
               <button onClick={() => setShowModal(false)} style={{ background: 'rgba(255,255,255,.2)', border: 'none', color: '#fff', borderRadius: 8, padding: '5px 8px', cursor: 'pointer' }}><X size={16} /></button>
@@ -208,7 +208,7 @@ export default function WeeklyPlan() {
                 </div>
                 <div style={{ gridColumn: '1/-1' }}><label style={LABEL}>Description</label><textarea style={{ ...INPUT, height: 70 }} value={form.description} onChange={e => setForm(f => ({ ...f, description: e.target.value }))} /></div>
               </div>
-              {err && <div style={{ color: '#c62828', fontSize: 13, padding: '8px 12px', background: '#fde8e8', borderRadius: 8 }}>⚠ {err}</div>}
+              {err && <div style={{ color: '#c62828', fontSize: 13, padding: '8px 12px', background: 'var(--tint-red)', borderRadius: 8 }}>⚠ {err}</div>}
               <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
                 <button type="button" onClick={() => setShowModal(false)} className="btn" style={{ padding: '9px 18px', fontSize: 13 }}>Cancel</button>
                 <button type="submit" className="btn btn-primary" style={{ padding: '9px 22px', fontSize: 13, background: '#E65100', border: 'none' }} disabled={createMut.isPending}>Create Task</button>

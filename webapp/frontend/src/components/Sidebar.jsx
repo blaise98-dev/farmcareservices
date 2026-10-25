@@ -8,6 +8,7 @@ import {
   Settings, LogOut, User, ShieldCheck, Users, FileText,
   Stethoscope, Baby, Warehouse,
   CalendarDays, MessageSquare, Waves, Cpu, HelpCircle, Phone,
+  HeartPulse, Milk as MilkIcon, Home,
 } from 'lucide-react';
 
 const ROLE_COLOR    = { Admin: '#FFD700', Farmer: '#81C784', Veterinarian: '#CE93D8', Technician: '#FFCC80' };
@@ -31,7 +32,10 @@ function buildNav(p, role) {
       { to: '/app',                icon: LayoutDashboard, label: 'Dashboard',       show: true },
       { to: '/app/herd',           icon: Beef,            label: 'My Cows',         show: true },
       { to: '/app/groups',         icon: Users,           label: 'Groups',          show: true },
+      { to: '/app/cow-health',     icon: HeartPulse,      label: 'Cow Health',      show: true },
+      { to: '/app/milking',        icon: MilkIcon,        label: 'Milking',         show: true },
       { to: '/app/milk',           icon: Droplets,        label: 'Milk Production', show: true },
+      { to: '/app/barn',           icon: Home,            label: 'Barn Monitor',    show: true },
       { to: '/app/feed',           icon: Leaf,            label: 'Feed & Fodder',   show: true },
       { to: '/app/feed-inventory', icon: Warehouse,       label: 'Feed Inventory',  show: true },
       { to: '/app/weekly-plan',    icon: CalendarDays,    label: 'Weekly Plan',     show: true },
@@ -49,6 +53,9 @@ function buildNav(p, role) {
     return [
       { to: '/app',                icon: LayoutDashboard, label: 'Dashboard',        show: true },
       { to: '/app/herd',           icon: Stethoscope,     label: 'Herd Health',      show: true },
+      { to: '/app/cow-health',     icon: HeartPulse,      label: 'Cow Health',       show: true },
+      { to: '/app/milking',        icon: MilkIcon,        label: 'Milking',          show: true },
+      { to: '/app/barn',           icon: Home,            label: 'Barn Monitor',     show: true },
       { to: '/app/reproduction',   icon: Baby,            label: 'Reproduction',     show: true },
       { to: '/app/milk',           icon: Droplets,        label: 'Milk Monitoring',  show: true },
       { to: '/app/feed',           icon: Leaf,            label: 'Nutrition & Feed', show: true },
@@ -70,7 +77,10 @@ function buildNav(p, role) {
       { to: '/app/herd',           icon: Beef,            label: 'Herd',             show: true },
       { to: '/app/groups',         icon: Users,           label: 'Groups',           show: true },
       { to: '/app/reproduction',   icon: Baby,            label: 'Reproduction',     show: true },
+      { to: '/app/cow-health',     icon: HeartPulse,      label: 'Cow Health',       show: true },
+      { to: '/app/milking',        icon: MilkIcon,        label: 'Milking',          show: true },
       { to: '/app/milk',           icon: Droplets,        label: 'Milk',             show: true },
+      { to: '/app/barn',           icon: Home,            label: 'Barn Monitor',     show: true },
       { to: '/app/feed',           icon: Leaf,            label: 'Feed',             show: true },
       { to: '/app/feed-inventory', icon: Warehouse,       label: 'Feed Inventory',   show: true },
       { to: '/app/environment',    icon: Wind,            label: 'Environment',      show: true },
@@ -93,6 +103,9 @@ function buildNav(p, role) {
   // Technician
   return [
     { to: '/app',                icon: LayoutDashboard, label: 'Dashboard',   show: true },
+    { to: '/app/barn',           icon: Home,            label: 'Barn Monitor', show: true },
+    { to: '/app/milking',        icon: MilkIcon,        label: 'Milking',      show: true },
+    { to: '/app/cow-health',     icon: HeartPulse,      label: 'Cow Health',   show: true },
     { to: '/app/environment',    icon: Wind,            label: 'Environment', show: true },
     { to: '/app/tanks',          icon: Waves,           label: 'Tanks',       show: true },
     { to: '/app/iot-control',    icon: Cpu,             label: 'IoT Control', show: true },
@@ -150,12 +163,12 @@ export default function Sidebar({ open, onClose }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{
               width: 36, height: 36, borderRadius: '50%',
-              background: '#4CAF50',
+              background: '#4CAF50', overflow: 'hidden',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               fontWeight: 900, fontSize: 20,
-            }}>🐄</div>
+            }}><img src="/images/farmcare-logo.svg" alt="FarmCare" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%', display: 'block' }} /></div>
             <div>
-              <div style={{ fontWeight: 800, fontSize: 18, letterSpacing: .5 }}>MooMe</div>
+              <div style={{ fontWeight: 800, fontSize: 18, letterSpacing: .5 }}>FarmCare</div>
               <div style={{ fontSize: 10, opacity: .6, letterSpacing: 1 }}>SMART FARM</div>
             </div>
           </div>
@@ -262,7 +275,7 @@ export default function Sidebar({ open, onClose }) {
           fontSize: 12, color: connected ? '#81C784' : '#ef9a9a', flexShrink: 0,
         }}>
           {connected
-            ? <><Wifi size={14} /> <span>Live — Realtime</span> <span className="live-dot" style={{ marginLeft: 'auto' }} /></>
+            ? <><Wifi size={14} /> <span>Live: Realtime</span> <span className="live-dot" style={{ marginLeft: 'auto' }} /></>
             : <><WifiOff size={14} /> <span>Reconnecting…</span></>
           }
         </div>

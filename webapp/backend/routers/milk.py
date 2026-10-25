@@ -6,6 +6,7 @@ from typing import Optional
 from database import fetchall, fetchone, execute
 from ws_manager import manager
 from rbac import require_any, require_can_log_milk
+from tenancy import farm_clause, cow_clause, ensure_cow_access
 
 router = APIRouter(prefix="/api/milk", tags=["milk"])
 
@@ -38,24 +39,26 @@ class MilkEntry(BaseModel):
 
 
 @router.get("/")
-async def list_milk(days: int = 7, _=Depends(require_any())):
+async def list_milk(days: int = 7, user=Depends(require_any())):
+    where, args = farm_clause(user, "c.farm_id")
     rows = await fetchall(
-        """
+        f"""
         SELECT m.*, c.cow_name, c.breed
         FROM MilkProductionRecords m
         JOIN Cows c ON m.cow_id = c.cow_id
-        WHERE m.recorded_at >= DATE_SUB(NOW(), INTERVAL %s DAY)
+        WHERE m.recorded_at >= DATE_SUB(NOW(), INTERVAL %s DAY) AND {where}
         ORDER BY m.recorded_at DESC
         """,
-        (days,),
+        (days, *args),
     )
     return [_safe(r) for r in rows]
 
 
 @router.get("/daily-summary")
-async def daily_summary(days: int = 7, _=Depends(require_any())):
+async def daily_summary(days: int = 7, user=Depends(require_any())):
+    where, args = farm_clause(user, "c.farm_id")
     rows = await fetchall(
-        """
+        f"""
         SELECT c.cow_id, c.cow_name,
                CAST(m.recorded_at AS DATE) AS milk_date,
                SUM(CASE WHEN m.milking_session='Morning' THEN m.milk_amount_liters ELSE 0 END) AS morning_milk,
@@ -64,46 +67,50 @@ async def daily_summary(days: int = 7, _=Depends(require_any())):
                SUM(m.milk_amount_liters) AS total_daily_milk
         FROM Cows c
         JOIN MilkProductionRecords m ON c.cow_id = m.cow_id
-        WHERE CAST(m.recorded_at AS DATE) >= DATE_SUB(CURDATE(), INTERVAL %s DAY)
+        WHERE CAST(m.recorded_at AS DATE) >= DATE_SUB(CURDATE(), INTERVAL %s DAY) AND {where}
         GROUP BY c.cow_id, c.cow_name, CAST(m.recorded_at AS DATE)
         ORDER BY milk_date DESC, c.cow_id
         """,
-        (days,),
+        (days, *args),
     )
     return [_safe(r) for r in rows]
 
 
 @router.get("/top-producers")
-async def top_producers(_=Depends(require_any())):
+async def top_producers(user=Depends(require_any())):
+    where, args = farm_clause(user, "c.farm_id")
     rows = await fetchall(
-        """
+        f"""
         SELECT c.cow_id, c.cow_name, c.breed,
                SUM(m.milk_amount_liters) AS total_weekly_milk,
                AVG(m.milk_amount_liters) AS avg_session_milk,
                COUNT(m.milk_id) AS sessions
         FROM Cows c
         JOIN MilkProductionRecords m ON c.cow_id = m.cow_id
-        WHERE m.recorded_at >= DATE_SUB(NOW(), INTERVAL 7 DAY)
+        WHERE m.recorded_at >= DATE_SUB(NOW(), INTERVAL 7 DAY) AND {where}
         GROUP BY c.cow_id, c.cow_name, c.breed
         ORDER BY total_weekly_milk DESC
         LIMIT 5
-        """
+        """,
+        args,
     )
     return [_safe(r) for r in rows]
 
 
 @router.get("/sessions/today")
-async def today_sessions(_=Depends(require_any())):
+async def today_sessions(user=Depends(require_any())):
+    where, args = cow_clause(user, "m.cow_id")
     rows = await fetchall(
-        """
+        f"""
         SELECT m.milking_session,
                SUM(m.milk_amount_liters) AS total_liters,
                COUNT(DISTINCT m.cow_id) AS cows_milked,
                AVG(m.milk_amount_liters) AS avg_liters
         FROM MilkProductionRecords m
-        WHERE DATE(m.recorded_at) = CURDATE()
+        WHERE DATE(m.recorded_at) = CURDATE() AND {where}
         GROUP BY m.milking_session
-        """
+        """,
+        args,
     )
     return [_safe(r) for r in rows]
 
@@ -119,9 +126,7 @@ async def add_milk_record(
     set to that day at the current time), so it lands on the right day in the
     daily table and charts, which group by recorded_at.
     """
-    cow = await fetchone("SELECT cow_id, cow_name FROM Cows WHERE cow_id=%s", (entry.cow_id,))
-    if not cow:
-        raise HTTPException(404, "Cow not found")
+    cow = await ensure_cow_access(current_user, entry.cow_id)
     if entry.milk_amount_liters <= 0:
         raise HTTPException(400, "Enter the litres milked (more than 0)")
     day = None
@@ -161,6 +166,6 @@ async def add_milk_record(
         "liters": entry.milk_amount_liters,
         "session": entry.milking_session,
         "logged_by": current_user["username"],
-    })
+    }, farm_id=cow["farm_id"])
     return {"id": rid, "cow_name": cow["cow_name"], "liters": entry.milk_amount_liters,
             "date": (day.isoformat() if day else None)}

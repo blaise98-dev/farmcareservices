@@ -5,7 +5,7 @@ import { Plus, X, Trash2, ToggleLeft, ToggleRight, MessageSquare, Phone } from '
 import { format } from 'date-fns';
 
 const LABEL = { display: 'block', fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: .5, marginBottom: 5 };
-const INPUT = { width: '100%', padding: '8px 12px', borderRadius: 8, border: '2px solid var(--border)', fontSize: 13, outline: 'none', fontFamily: 'inherit', background: '#fff', boxSizing: 'border-box' };
+const INPUT = { width: '100%', padding: '8px 12px', borderRadius: 8, border: '2px solid var(--border)', fontSize: 13, outline: 'none', fontFamily: 'inherit', background: 'var(--card)', boxSizing: 'border-box' };
 
 const SEV_COLOR = { Info: '#1565c0', Warning: '#e65100', Critical: '#c62828', Emergency: '#b71c1c' };
 const STATUS_COLOR = { Sent: '#4CAF50', Delivered: '#2E7D32', Pending: '#FF9800', Failed: '#F44336' };
@@ -73,7 +73,7 @@ export default function SmsConfig() {
       {/* Stats */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(180px,1fr))', gap: 14 }}>
         {[
-          { label: 'Total Subscribers', val: subscribers.length, color: '#1E4D7B' },
+          { label: 'Total Subscribers', val: subscribers.length, color: 'var(--navy-ink)' },
           { label: 'Active',            val: activeCount,        color: '#4CAF50' },
           { label: 'Inactive',          val: subscribers.length - activeCount, color: '#9E9E9E' },
         ].map(({ label, val, color }) => (
@@ -106,7 +106,7 @@ export default function SmsConfig() {
               {subscribers.map(s => (
                 <tr key={s.subscriber_id}>
                   <td style={{ fontFamily: 'monospace', fontWeight: 600 }}>{s.phone_number}</td>
-                  <td>{s.full_name || '—'}</td>
+                  <td>{s.full_name || '-'}</td>
                   <td>
                     <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 20, background: `${SEV_COLOR[s.min_severity] || '#999'}22`, color: SEV_COLOR[s.min_severity] || '#333', fontWeight: 700 }}>
                       {s.min_severity}+
@@ -155,14 +155,14 @@ export default function SmsConfig() {
                   <tr key={h.sms_id}>
                     <td style={{ fontFamily: 'monospace', fontSize: 12 }}>{h.recipient_phone}</td>
                     <td style={{ fontSize: 12, maxWidth: 280, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{h.message_content}</td>
-                    <td style={{ fontSize: 12 }}>{h.alert_type || '—'}</td>
+                    <td style={{ fontSize: 12 }}>{h.alert_type || '-'}</td>
                     <td>
                       {h.severity && <span style={{ fontSize: 11, padding: '2px 7px', borderRadius: 20, background: `${SEV_COLOR[h.severity] || '#999'}22`, color: SEV_COLOR[h.severity] || '#333', fontWeight: 700 }}>{h.severity}</span>}
                     </td>
                     <td>
                       <span style={{ fontSize: 11, padding: '2px 8px', borderRadius: 20, background: `${STATUS_COLOR[h.status] || '#999'}22`, color: STATUS_COLOR[h.status] || '#333', fontWeight: 700 }}>{h.status}</span>
                     </td>
-                    <td style={{ fontSize: 11, color: 'var(--text-secondary)' }}>{h.created_at ? format(new Date(h.created_at), 'MMM d HH:mm') : '—'}</td>
+                    <td style={{ fontSize: 11, color: 'var(--text-secondary)' }}>{h.created_at ? format(new Date(h.created_at), 'MMM d HH:mm') : '-'}</td>
                   </tr>
                 ))}
               </tbody>
@@ -175,7 +175,7 @@ export default function SmsConfig() {
       {/* Add Subscriber Modal */}
       {showModal && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 999, background: 'rgba(0,0,0,.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
-          <div style={{ background: '#fff', borderRadius: 16, width: '100%', maxWidth: 480, maxHeight: '90vh', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(0,0,0,.25)' }}>
+          <div style={{ background: 'var(--card)', borderRadius: 16, width: '100%', maxWidth: 480, maxHeight: '90vh', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(0,0,0,.25)' }}>
             <div style={{ padding: '18px 24px', background: 'linear-gradient(135deg,#1E4D7B,#2e6fa3)', color: '#fff', borderRadius: '16px 16px 0 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
               <h2 style={{ fontSize: 17, fontWeight: 800, margin: 0 }}>📱 Add SMS Subscriber</h2>
               <button onClick={() => setShowModal(false)} style={{ background: 'rgba(255,255,255,.2)', border: 'none', color: '#fff', borderRadius: 8, padding: '5px 8px', cursor: 'pointer' }}><X size={16} /></button>
@@ -203,7 +203,7 @@ export default function SmsConfig() {
                   <label style={{ ...LABEL, marginBottom: 10 }}>Active</label>
                   <label style={{ display: 'flex', alignItems: 'center', gap: 10, cursor: 'pointer', fontSize: 14 }}>
                     <input type="checkbox" checked={form.is_active} onChange={e => setForm(f => ({ ...f, is_active: e.target.checked }))} style={{ width: 18, height: 18, accentColor: '#4CAF50' }} />
-                    <span style={{ fontWeight: 600, color: form.is_active ? '#4CAF50' : '#999' }}>{form.is_active ? 'Yes — enabled' : 'No — disabled'}</span>
+                    <span style={{ fontWeight: 600, color: form.is_active ? '#4CAF50' : '#999' }}>{form.is_active ? 'Yes: enabled' : 'No: disabled'}</span>
                   </label>
                 </div>
               </div>
@@ -218,7 +218,7 @@ export default function SmsConfig() {
                   ))}
                 </div>
               </div>
-              {err && <div style={{ color: '#c62828', fontSize: 13, padding: '8px 12px', background: '#fde8e8', borderRadius: 8 }}>⚠ {err}</div>}
+              {err && <div style={{ color: '#c62828', fontSize: 13, padding: '8px 12px', background: 'var(--tint-red)', borderRadius: 8 }}>⚠ {err}</div>}
               <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
                 <button type="button" onClick={() => setShowModal(false)} className="btn" style={{ padding: '9px 18px', fontSize: 13 }}>Cancel</button>
                 <button type="submit" className="btn btn-primary" disabled={addMut.isPending} style={{ padding: '9px 22px', fontSize: 13 }}>

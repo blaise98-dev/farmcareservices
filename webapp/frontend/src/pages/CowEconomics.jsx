@@ -27,8 +27,8 @@ const REV_COLOR = {
   'Milk Sale': '#4CAF50', 'Offspring Sale': '#2196F3', 'Manure Sale': '#8BC34A',
   'Live Animal Sale': '#FF9800', Insurance: '#9C27B0', Subsidy: '#00BCD4', Other: '#607D8B',
 };
-const fmt = (n) => n != null ? Number(n).toLocaleString('en-RW') : '—';
-const fmtK = (n) => n != null ? `${(Number(n) / 1000).toFixed(1)}K` : '—';
+const fmt = (n) => n != null ? Number(n).toLocaleString('en-RW') : '-';
+const fmtK = (n) => n != null ? `${(Number(n) / 1000).toFixed(1)}K` : '-';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function KPI({ label, value, sub, color = '#1E4D7B', icon: Icon }) {
@@ -90,7 +90,7 @@ function FleetDashboard({ fleet, filteredSummary }) {
           sub={netProfit >= 0 ? 'In profit' : 'Running at loss'} />
         <KPI label="ROI" value={`${roi}%`} color={Number(roi) >= 0 ? '#1E4D7B' : '#c62828'} sub="return on investment" />
         <KPI label="Cows Tracked" value={filteredSummary.length} color="#9C27B0" sub="with economic data" />
-        <KPI label="Avg Profit/Cow" value={filteredSummary.length ? `${fmtK(netProfit / filteredSummary.length)} RWF` : '—'}
+        <KPI label="Avg Profit/Cow" value={filteredSummary.length ? `${fmtK(netProfit / filteredSummary.length)} RWF` : '-'}
           color={netProfit >= 0 ? '#00BCD4' : '#FF9800'} sub="per animal" />
       </div>
 
@@ -101,7 +101,7 @@ function FleetDashboard({ fleet, filteredSummary }) {
             series={[
               { key: 'Revenues', name: 'Revenues (RWF)', color: '#4CAF50' },
               { key: 'Costs',    name: 'Costs (RWF)',    color: '#F44336' },
-              { key: 'Net',      name: 'Net Profit',     color: '#1E4D7B' },
+              { key: 'Net',      name: 'Net Profit',     color: 'var(--navy-ink)' },
             ]}
             area smooth height={260}
             markLine={[{ yAxis: 0, label: { formatter: () => 'Break-even', position: 'end' } }]}
@@ -151,7 +151,7 @@ function FleetDashboard({ fleet, filteredSummary }) {
                   <tr key={c.cow_id}>
                     <td style={{ fontWeight: 700 }}>{c.cow_name}</td>
                     <td style={{ fontSize: 12 }}>{c.breed}</td>
-                    <td style={{ fontSize: 12 }}>{c.cow_stage || '—'}</td>
+                    <td style={{ fontSize: 12 }}>{c.cow_stage || '-'}</td>
                     <td style={{ color: '#F44336', fontWeight: 600 }}>{fmt(c.total_costs_rwf)} RWF</td>
                     <td style={{ color: '#4CAF50', fontWeight: 600 }}>{fmt(c.total_revenues_rwf)} RWF</td>
                     <td style={{ fontSize: 12 }}>{fmt(c.feed_cost_rwf)}</td>
@@ -218,12 +218,12 @@ function CowDrillDown({ cowId, onClose, p }) {
 
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(0,0,0,.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 16 }}>
-      <div style={{ background: '#fff', borderRadius: 16, width: '100%', maxWidth: 900, boxShadow: '0 20px 60px rgba(0,0,0,.25)', display: 'flex', flexDirection: 'column', maxHeight: '94vh', overflow: 'hidden' }}>
+      <div style={{ background: 'var(--card)', borderRadius: 16, width: '100%', maxWidth: 900, boxShadow: '0 20px 60px rgba(0,0,0,.25)', display: 'flex', flexDirection: 'column', maxHeight: '94vh', overflow: 'hidden' }}>
 
         {/* Header */}
         <div style={{ padding: '18px 24px', background: 'linear-gradient(135deg,#1E4D7B,#2e6fa3)', color: '#fff', borderRadius: '16px 16px 0 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
           <div>
-            <h2 style={{ fontSize: 18, fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}><Beef size={18} /> {cow.cow_name} — Lifetime Economics</h2>
+            <h2 style={{ fontSize: 18, fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}><Beef size={18} /> {cow.cow_name}: Lifetime Economics</h2>
             <p style={{ margin: '3px 0 0', fontSize: 12, opacity: .8 }}>{cow.rfid_tag} · {cow.breed} · {cow.cow_stage} · {cow.age_months} months old</p>
           </div>
           <button onClick={onClose} style={{ background: 'rgba(255,255,255,.2)', border: 'none', color: '#fff', borderRadius: 8, padding: '6px 8px', cursor: 'pointer' }}><X size={18} /></button>
@@ -246,7 +246,7 @@ function CowDrillDown({ cowId, onClose, p }) {
         </div>
 
         {/* Tabs */}
-        <div style={{ display: 'flex', borderBottom: '1px solid var(--border)', background: '#f7f9fc' }}>
+        <div style={{ display: 'flex', borderBottom: '1px solid var(--border)', background: 'var(--surface-2)' }}>
           {['overview', 'costs', 'revenues', 'timeline'].map(t => {
             const TabIcon = t === 'overview' ? BarChart2 : t === 'costs' ? TrendingDown : t === 'revenues' ? DollarSign : Calendar;
             return (
@@ -294,7 +294,7 @@ function CowDrillDown({ cowId, onClose, p }) {
                     <Plus size={14} /> Record Cost
                   </button>
                   {showCostForm && (
-                    <div style={{ background: '#f7f9fc', borderRadius: 10, padding: 16, marginBottom: 12, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 10, alignItems: 'end' }}>
+                    <div style={{ background: 'var(--surface-2)', borderRadius: 10, padding: 16, marginBottom: 12, display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 10, alignItems: 'end' }}>
                       <div>
                         <label style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: 3, textTransform: 'uppercase' }}>Date</label>
                         <input type="date" value={costForm.cost_date} onChange={e => setCostForm(f => ({ ...f, cost_date: e.target.value }))} style={INPUT} />
@@ -330,9 +330,9 @@ function CowDrillDown({ cowId, onClose, p }) {
                 <tbody>
                   {costs.map(r => (
                     <tr key={r.cost_id}>
-                      <td style={{ fontSize: 12 }}>{r.cost_date ? format(new Date(r.cost_date), 'MMM d, yyyy') : '—'}</td>
+                      <td style={{ fontSize: 12 }}>{r.cost_date ? format(new Date(r.cost_date), 'MMM d, yyyy') : '-'}</td>
                       <td><span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 10, background: `${COST_COLOR[r.cost_category] || '#999'}20`, color: COST_COLOR[r.cost_category] || '#666' }}>{r.cost_category}</span></td>
-                      <td style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{r.description || '—'}</td>
+                      <td style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{r.description || '-'}</td>
                       <td style={{ fontWeight: 700, color: '#F44336' }}>{fmt(r.amount_rwf)}</td>
                       <td><EntryMeta by={r.recorded_by} size={11} /></td>
                       <td><button onClick={() => { if (window.confirm('Delete?')) delCostMut.mutate(r.cost_id); }}
@@ -356,7 +356,7 @@ function CowDrillDown({ cowId, onClose, p }) {
                     <Plus size={14} /> Record Revenue
                   </button>
                   {showRevForm && (
-                    <div style={{ background: '#f7f9fc', borderRadius: 10, padding: 16, marginBottom: 12, display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 10, alignItems: 'end' }}>
+                    <div style={{ background: 'var(--surface-2)', borderRadius: 10, padding: 16, marginBottom: 12, display: 'grid', gridTemplateColumns: 'repeat(4,1fr)', gap: 10, alignItems: 'end' }}>
                       <div>
                         <label style={{ fontSize: 10, fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: 3, textTransform: 'uppercase' }}>Date</label>
                         <input type="date" value={revForm.revenue_date} onChange={e => setRevForm(f => ({ ...f, revenue_date: e.target.value }))} style={INPUT} />
@@ -392,9 +392,9 @@ function CowDrillDown({ cowId, onClose, p }) {
                 <tbody>
                   {revenues.map(r => (
                     <tr key={r.revenue_id}>
-                      <td style={{ fontSize: 12 }}>{r.revenue_date ? format(new Date(r.revenue_date), 'MMM d, yyyy') : '—'}</td>
+                      <td style={{ fontSize: 12 }}>{r.revenue_date ? format(new Date(r.revenue_date), 'MMM d, yyyy') : '-'}</td>
                       <td><span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 10, background: `${REV_COLOR[r.revenue_category] || '#999'}20`, color: REV_COLOR[r.revenue_category] || '#666' }}>{r.revenue_category}</span></td>
-                      <td style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{r.description || '—'}</td>
+                      <td style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{r.description || '-'}</td>
                       <td style={{ fontWeight: 700, color: '#4CAF50' }}>{fmt(r.amount_rwf)}</td>
                       <td><EntryMeta by={r.recorded_by} size={11} /></td>
                       <td><button onClick={() => { if (window.confirm('Delete?')) delRevMut.mutate(r.revenue_id); }}
@@ -480,7 +480,7 @@ export default function CowEconomics() {
           <p style={{ margin: '4px 0 0', fontSize: 13, opacity: .8 }}>
             {p.isVet
               ? 'Medicine costs, procedures & veterinary revenues per cow'
-              : 'Lifetime costs, revenues & profitability per cow — from registration to sale/death'}
+              : 'Lifetime costs, revenues & profitability per cow: from registration to sale/death'}
           </p>
         </div>
         <button onClick={() => refetch()} style={{ display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px', background: 'rgba(255,255,255,.2)', border: 'none', color: '#fff', borderRadius: 8, cursor: 'pointer', fontWeight: 600, fontSize: 13 }}>
@@ -504,7 +504,7 @@ export default function CowEconomics() {
             <div key={label}>
               <div style={{ fontSize: 9, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: 3 }}>{label}</div>
               <select value={value} onChange={e => set(e.target.value)}
-                style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid var(--border)', fontSize: 12, background: '#fff' }}>
+                style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid var(--border)', fontSize: 12, background: 'var(--card)' }}>
                 {opts.map(o => <option key={o}>{o}</option>)}
               </select>
             </div>
@@ -512,7 +512,7 @@ export default function CowEconomics() {
           <div>
             <div style={{ fontSize: 9, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', marginBottom: 3 }}>Sort by</div>
             <select value={sortBy} onChange={e => setSortBy(e.target.value)}
-              style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid var(--border)', fontSize: 12, background: '#fff' }}>
+              style={{ padding: '6px 10px', borderRadius: 8, border: '1px solid var(--border)', fontSize: 12, background: 'var(--card)' }}>
               <option value="net_desc">Net Profit ↓</option>
               <option value="net_asc">Net Profit ↑</option>
               <option value="cost_desc">Highest Cost</option>
@@ -525,7 +525,7 @@ export default function CowEconomics() {
       {/* Fleet executive dashboard */}
       <FleetDashboard fleet={fleet} filteredSummary={filteredSummary} />
 
-      {/* Cow cards grid — click to drill down */}
+      {/* Cow cards grid: click to drill down */}
       <div>
         <h2 style={{ fontSize: 15, fontWeight: 800, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}><Beef size={15} /> Click a cow to view its full P&L breakdown</h2>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(240px,1fr))', gap: 12 }}>

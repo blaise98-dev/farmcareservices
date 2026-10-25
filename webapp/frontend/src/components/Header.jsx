@@ -4,8 +4,11 @@ import {
   LayoutDashboard, Beef, Droplets, Leaf, Warehouse, Baby, Users,
   Wind, Waves, TrendingUp, CalendarDays, Cpu, FileText, Phone,
   MessageSquare, HelpCircle, Settings as SettingsIcon,
-  Thermometer, AlertTriangle,
+  Thermometer, AlertTriangle, HeartPulse, Milk as MilkIcon, Home,
 } from 'lucide-react';
+import DeviceStatusChips from './DeviceStatusChips';
+import FarmPicker from './FarmPicker';
+import ThemeToggle from './ThemeToggle';
 import { useRealtime } from '../hooks/useRealtime';
 import { useAuth } from '../hooks/useAuth';
 import { useLocation, useNavigate } from 'react-router-dom';
@@ -13,11 +16,14 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getNotifications, getUnreadCount, markNotifRead, markAllNotifRead } from '../lib/api';
 import { formatDistanceToNow } from 'date-fns';
 
-// ── Global search data — icons match the same routes' icons in Sidebar.jsx ──
+// ── Global search data: icons match the same routes' icons in Sidebar.jsx ──
 const SEARCH_PAGES = [
   { label: 'Dashboard',        path: '/app',                icon: LayoutDashboard, tags: ['home', 'overview', 'dashboard'] },
   { label: 'Herd Management',  path: '/app/herd',           icon: Beef,            tags: ['cows', 'herd', 'animals', 'cattle'] },
+  { label: 'Cow Health',       path: '/app/cow-health',     icon: HeartPulse,      tags: ['collar', 'vitals', 'risk', 'gps', 'location', 'heart rate', 'spo2', 'boundary'] },
+  { label: 'Milking',          path: '/app/milking',        icon: MilkIcon,        tags: ['milking', 'rfid', 'container', 'record milk', 'session'] },
   { label: 'Milk Production',  path: '/app/milk',           icon: Droplets,        tags: ['milk', 'litres', 'production', 'milking'] },
+  { label: 'Barn Monitor',     path: '/app/barn',           icon: Home,            tags: ['barn', 'feed weight', 'water tank', 'gas', 'mq5', 'mq135', 'pump', 'fan', 'spray', 'buzzer'] },
   { label: 'Feed & Fodder',    path: '/app/feed',           icon: Leaf,            tags: ['feed', 'fodder', 'nutrition', 'silage'] },
   { label: 'Feed Inventory',   path: '/app/feed-inventory', icon: Warehouse,       tags: ['inventory', 'stock', 'dry matter', 'hay'] },
   { label: 'Reproduction',     path: '/app/reproduction',   icon: Baby,            tags: ['calving', 'pregnancy', 'vaccination', 'treatment', 'bcs'] },
@@ -83,6 +89,10 @@ const TITLES = {
   '/app':                'Dashboard',
   '/app/herd':           'Herd Management',
   '/app/milk':           'Milk Production',
+  '/app/milking':        'Milking',
+  '/app/iot-control':    'IoT Device Control',
+  '/app/barn':           'Barn / House Monitor',
+  '/app/cow-health':     'Cow Health & Tracking',
   '/app/feed':           'Feed & Fodder',
   '/app/feed-inventory': 'Feed Inventory',
   '/app/environment':    'Environment Monitoring',
@@ -116,7 +126,7 @@ export default function Header({ onMenuClick }) {
 
   const title = Object.entries(TITLES)
     .filter(([path]) => pathname === path || (path !== '/app' && pathname.startsWith(path)))
-    .sort((a, b) => b[0].length - a[0].length)[0]?.[1] || 'MooMe';
+    .sort((a, b) => b[0].length - a[0].length)[0]?.[1] || 'FarmCare';
 
   const { data: notifications = [] } = useQuery({ queryKey: ['notifications'], queryFn: getNotifications, refetchInterval: 30000 });
   const { data: unreadData }         = useQuery({ queryKey: ['notif-unread'],   queryFn: getUnreadCount,    refetchInterval: 30000 });
@@ -151,6 +161,11 @@ export default function Header({ onMenuClick }) {
         {title}
       </h1>
 
+      {user?.role === 'Admin' && <FarmPicker />}
+
+      {/* Field device status (Milking · Barn · Health Collar) */}
+      <div className="header-chips" style={{ flexShrink: 0 }}><DeviceStatusChips variant="dark" /></div>
+
       {/* Live env readout */}
       {env && (
         <div style={{ display: 'flex', gap: 12, fontSize: 12, opacity: .95, background: 'rgba(0,0,0,.15)', borderRadius: 20, padding: '5px 14px', flexShrink: 0 }}>
@@ -171,18 +186,20 @@ export default function Header({ onMenuClick }) {
           <Search size={18} />
         </button>
         {showSearch && (
-          <div style={{ position: 'absolute', top: 'calc(100% + 12px)', right: 0, width: 320, background: '#fff', borderRadius: 12, boxShadow: '0 12px 40px rgba(0,0,0,.2)', zIndex: 500, overflow: 'hidden' }}>
+          <div style={{ position: 'absolute', top: 'calc(100% + 12px)', right: 0, width: 320, background: 'var(--card)', borderRadius: 12, boxShadow: '0 12px 40px rgba(0,0,0,.2)', zIndex: 500, overflow: 'hidden' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '12px 16px', borderBottom: '1px solid var(--border)' }}>
               <Search size={15} color="var(--text-secondary)" />
               <input id="header-search" value={searchQuery} onChange={e => setSearchQuery(e.target.value)}
                 placeholder="Search cows, pages, features…"
                 style={{ flex: 1, border: 'none', outline: 'none', fontSize: 13, fontFamily: 'inherit', background: 'transparent' }} />
-              {searchQuery && <button onClick={() => setSearchQuery('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#aaa' }}><X size={14} /></button>}
+              {searchQuery && <button onClick={() => setSearchQuery('')} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-faint)' }}><X size={14} /></button>}
             </div>
             <SearchResults query={searchQuery} navigate={navigate} onSelect={() => { setShowSearch(false); setSearchQuery(''); }} />
           </div>
         )}
       </div>
+
+      <ThemeToggle color="#fff" />
 
       {/* Connection indicator */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 5, fontSize: 11, opacity: .9, flexShrink: 0 }}>
@@ -207,49 +224,49 @@ export default function Header({ onMenuClick }) {
         {showNotifs && (
           <div style={{
             position: 'absolute', top: 'calc(100% + 12px)', right: 0,
-            width: 360, maxHeight: 480, background: '#fff', borderRadius: 14,
+            width: 360, maxHeight: 480, background: 'var(--card)', borderRadius: 14,
             boxShadow: '0 12px 40px rgba(0,0,0,.2)', overflow: 'hidden',
             display: 'flex', flexDirection: 'column', zIndex: 500,
           }}>
             {/* Panel header */}
-            <div style={{ padding: '14px 18px', borderBottom: '1px solid #f0f0f0', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
-              <span style={{ fontWeight: 700, fontSize: 14, color: '#1E4D7B', display: 'inline-flex', alignItems: 'center', gap: 6 }}><Bell size={15} /> Notifications {unread > 0 && <span style={{ background: '#F44336', color: '#fff', borderRadius: 10, padding: '1px 6px', fontSize: 11 }}>{unread}</span>}</span>
+            <div style={{ padding: '14px 18px', borderBottom: '1px solid var(--border)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexShrink: 0 }}>
+              <span style={{ fontWeight: 700, fontSize: 14, color: 'var(--navy-ink)', display: 'inline-flex', alignItems: 'center', gap: 6 }}><Bell size={15} /> Notifications {unread > 0 && <span style={{ background: '#F44336', color: '#fff', borderRadius: 10, padding: '1px 6px', fontSize: 11 }}>{unread}</span>}</span>
               <div style={{ display: 'flex', gap: 8 }}>
                 {unread > 0 && (
                   <button onClick={() => readAllMut.mutate()} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 11, color: '#4CAF50', fontWeight: 600, display: 'flex', alignItems: 'center', gap: 4 }}>
                     <CheckCheck size={12} /> Mark all read
                   </button>
                 )}
-                <button onClick={() => setShowNotifs(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: '#aaa' }}><X size={16} /></button>
+                <button onClick={() => setShowNotifs(false)} style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-faint)' }}><X size={16} /></button>
               </div>
             </div>
 
             {/* Notification list */}
             <div style={{ overflowY: 'auto', flex: 1 }}>
               {notifications.length === 0
-                ? <div style={{ padding: 24, textAlign: 'center', color: '#aaa', fontSize: 13 }}>No notifications</div>
+                ? <div style={{ padding: 24, textAlign: 'center', color: 'var(--text-faint)', fontSize: 13 }}>No notifications</div>
                 : notifications.map(n => (
                   <div key={n.notif_id}
                     onClick={() => { if (!n.is_read) readMut.mutate(n.notif_id); }}
                     style={{
-                      padding: '12px 18px', borderBottom: '1px solid #f5f5f5', cursor: 'pointer',
+                      padding: '12px 18px', borderBottom: '1px solid var(--border)', cursor: 'pointer',
                       background: n.is_read ? '#fff' : `${TYPE_COLOR[n.notif_type] || '#1E4D7B'}08`,
                       borderLeft: n.is_read ? 'none' : `3px solid ${TYPE_COLOR[n.notif_type] || '#1E4D7B'}`,
                       transition: 'background .2s',
                     }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                      <span style={{ fontWeight: n.is_read ? 500 : 700, fontSize: 13, color: '#222' }}>{n.title}</span>
-                      <span style={{ fontSize: 10, color: '#aaa', flexShrink: 0, marginLeft: 8 }}>{n.created_at ? formatDistanceToNow(new Date(n.created_at), { addSuffix: true }) : ''}</span>
+                      <span style={{ fontWeight: n.is_read ? 500 : 700, fontSize: 13, color: 'var(--text)' }}>{n.title}</span>
+                      <span style={{ fontSize: 10, color: 'var(--text-faint)', flexShrink: 0, marginLeft: 8 }}>{n.created_at ? formatDistanceToNow(new Date(n.created_at), { addSuffix: true }) : ''}</span>
                     </div>
-                    <div style={{ fontSize: 12, color: '#666', lineHeight: 1.4 }}>{n.message}</div>
+                    <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.4 }}>{n.message}</div>
                   </div>
                 ))
               }
             </div>
 
-            <div style={{ padding: '10px 18px', borderTop: '1px solid #f0f0f0', flexShrink: 0 }}>
+            <div style={{ padding: '10px 18px', borderTop: '1px solid var(--border)', flexShrink: 0 }}>
               <button onClick={() => { navigate('/app/alerts'); setShowNotifs(false); }}
-                style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: '#1E4D7B', fontWeight: 600, width: '100%', textAlign: 'center' }}>
+                style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, color: 'var(--navy-ink)', fontWeight: 600, width: '100%', textAlign: 'center' }}>
                 View all alerts →
               </button>
             </div>

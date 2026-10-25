@@ -8,7 +8,7 @@ import { format } from 'date-fns';
 import { HBarChart, ChartCard } from '../components/ChartKit';
 
 const LABEL = { display: 'block', fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', letterSpacing: .5, marginBottom: 5 };
-const INPUT = { width: '100%', padding: '8px 12px', borderRadius: 8, border: '2px solid var(--border)', fontSize: 13, outline: 'none', fontFamily: 'inherit', background: '#fff', boxSizing: 'border-box' };
+const INPUT = { width: '100%', padding: '8px 12px', borderRadius: 8, border: '2px solid var(--border)', fontSize: 13, outline: 'none', fontFamily: 'inherit', background: 'var(--card)', boxSizing: 'border-box' };
 
 const CAT_COLOR = { Hay: '#FF9800', Silage: '#4CAF50', Concentrate: '#1E4D7B', 'Mixed Feed': '#00BCD4', Grass: '#8BC34A', Minerals: '#9C27B0', Other: '#9E9E9E' };
 const CATS = ['Hay', 'Silage', 'Concentrate', 'Mixed Feed', 'Grass', 'Minerals', 'Other'];
@@ -78,7 +78,7 @@ export default function FeedInventory() {
           <div style={{ fontSize: 12, opacity: .8, marginTop: 4 }}>Stock levels, dry matter & crude protein totals</div>
         </div>
         {canWrite && (
-          <button className="btn" onClick={openAdd} style={{ background: '#fff', color: '#388E3C', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px' }}>
+          <button className="btn" onClick={openAdd} style={{ background: 'var(--card)', color: '#388E3C', fontWeight: 700, display: 'flex', alignItems: 'center', gap: 6, padding: '8px 16px' }}>
             <Plus size={14} /> New Recording
           </button>
         )}
@@ -90,7 +90,7 @@ export default function FeedInventory() {
           { label: 'Total Stock',       val: `${fmt(summary?.total_kg, 0)} kg`,            color: '#4CAF50' },
           { label: 'Dry Matter',        val: `${fmt(summary?.total_dry_matter_kg, 0)} kg`,  color: '#FF9800' },
           { label: 'Crude Protein',     val: `${fmt(summary?.total_crude_protein_kg, 0)} kg`, color: '#9C27B0' },
-          { label: 'Stock Value',       val: `${((summary?.total_value_rwf || 0) / 1000).toFixed(0)}K RWF`, color: '#1E4D7B' },
+          { label: 'Stock Value',       val: `${((summary?.total_value_rwf || 0) / 1000).toFixed(0)}K RWF`, color: 'var(--navy-ink)' },
           { label: 'Item Types',        val: summary?.item_count ?? '--',                   color: '#00BCD4' },
         ].map(({ label, val, color }) => (
           <div key={label} className="stat-card" style={{ borderLeftColor: color }}>
@@ -136,8 +136,8 @@ export default function FeedInventory() {
                   <td>{fmt(item.dry_matter_pct)}%</td>
                   <td>{fmt(item.crude_protein_pct)}%</td>
                   <td style={{ fontFamily: 'monospace' }}>{Number(item.unit_cost_rwf).toLocaleString()} RWF</td>
-                  <td style={{ fontSize: 12 }}>{item.supplier || '—'}</td>
-                  <td style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{item.purchase_date ? format(new Date(item.purchase_date), 'MMM d, yyyy') : '—'}</td>
+                  <td style={{ fontSize: 12 }}>{item.supplier || '-'}</td>
+                  <td style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{item.purchase_date ? format(new Date(item.purchase_date), 'MMM d, yyyy') : '-'}</td>
                   <td><EntryMeta by={item.recorded_by} /></td>
                   {canWrite && (
                     <td>
@@ -161,7 +161,7 @@ export default function FeedInventory() {
       {/* ── Modal ── */}
       {showModal && canWrite && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 999, background: 'rgba(0,0,0,.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
-          <div style={{ background: '#fff', borderRadius: 16, width: '100%', maxWidth: 520, maxHeight: '90vh', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(0,0,0,.25)' }}>
+          <div style={{ background: 'var(--card)', borderRadius: 16, width: '100%', maxWidth: 520, maxHeight: '90vh', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 60px rgba(0,0,0,.25)' }}>
             <div style={{ padding: '18px 24px', background: 'linear-gradient(135deg,#388E3C,#4CAF50)', color: '#fff', borderRadius: '16px 16px 0 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <h2 style={{ fontSize: 17, fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>{editItem ? <><Edit2 size={16} /> Update Item</> : <><Leaf size={16} /> New Feed Inventory Entry</>}</h2>
               <button onClick={closeModal} style={{ background: 'rgba(255,255,255,.2)', border: 'none', color: '#fff', borderRadius: 8, padding: '5px 8px', cursor: 'pointer' }}><X size={16} /></button>
@@ -183,7 +183,7 @@ export default function FeedInventory() {
                 <div><label style={LABEL}>Purchase Date</label><input type="date" style={INPUT} value={form.purchase_date} onChange={e => setForm(f => ({ ...f, purchase_date: e.target.value }))} /></div>
                 <div style={{ gridColumn: '1/-1' }}><label style={LABEL}>Notes</label><textarea style={{ ...INPUT, height: 60 }} value={form.notes} onChange={e => setForm(f => ({ ...f, notes: e.target.value }))} /></div>
               </div>
-              {err && <div style={{ color: '#c62828', fontSize: 13, padding: '8px 12px', background: '#fde8e8', borderRadius: 8 }}>⚠ {err}</div>}
+              {err && <div style={{ color: '#c62828', fontSize: 13, padding: '8px 12px', background: 'var(--tint-red)', borderRadius: 8 }}>⚠ {err}</div>}
               <div style={{ display: 'flex', gap: 10, justifyContent: 'flex-end' }}>
                 <button type="button" onClick={closeModal} className="btn" style={{ padding: '9px 18px', fontSize: 13 }}>Cancel</button>
                 <button type="submit" className="btn btn-primary" style={{ padding: '9px 22px', fontSize: 13 }} disabled={addMut.isPending || updateMut.isPending}>

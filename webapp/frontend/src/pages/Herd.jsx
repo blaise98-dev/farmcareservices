@@ -20,7 +20,7 @@ const COW_STAGES = [
   { value: 'Bull Calf',     label: 'Bull Calf',       sex: 'Male',   ageRange: 'Birth to ~1 year',              emoji: '🐂', color: '#78909C' },
   { value: 'Heifer',        label: 'Heifer',          sex: 'Female', ageRange: '~1 year until first calving',   emoji: '🐄', color: '#E91E63' },
   { value: 'Steer',         label: 'Steer',           sex: 'Male',   ageRange: 'Usually 1–3 years',             emoji: '🐂', color: '#5C6BC0' },
-  { value: 'Bull',          label: 'Bull',            sex: 'Male',   ageRange: '~2 years and older',            emoji: '🐃', color: '#1E4D7B' },
+  { value: 'Bull',          label: 'Bull',            sex: 'Male',   ageRange: '~2 years and older',            emoji: '🐃', color: 'var(--navy-ink)' },
   { value: 'Cow',           label: 'Cow',             sex: 'Female', ageRange: 'After first calving, 2+ years', emoji: '🐄', color: '#4CAF50' },
   { value: 'Dry Cow',       label: 'Dry Cow',         sex: 'Female', ageRange: 'Adult (dry period)',            emoji: '🐄', color: '#9C27B0' },
   { value: 'Lactating Cow', label: 'Lactating Cow',   sex: 'Female', ageRange: 'Adult (lactating)',             emoji: '🐄', color: '#2196F3' },
@@ -33,7 +33,7 @@ const CAT_CONFIG = {
   Production: { color: '#4CAF50', emoji: '🐄' }, Heifers: { color: '#E91E63', emoji: '🐮' },
   Heifer: { color: '#E91E63', emoji: '🐮' },     Dry:     { color: '#9C27B0', emoji: '🐄' },
   Calves: { color: '#00BCD4', emoji: '🐣' },     Calf:    { color: '#00BCD4', emoji: '🐣' },
-  Sick:   { color: '#F44336', emoji: '🤒' },     Fattening:{ color: '#1E4D7B', emoji: '🐂' },
+  Sick:   { color: '#F44336', emoji: '🤒' },     Fattening:{ color: 'var(--navy-ink)', emoji: '🐂' },
   Sold:   { color: '#FF9800', emoji: '💰' },     Lost:    { color: '#607D8B', emoji: '💀' },
 };
 
@@ -82,7 +82,7 @@ const IS = {
   width: '100%', padding: '9px 12px',
   borderRadius: 8, border: '2px solid var(--border)',
   fontSize: 13, outline: 'none', fontFamily: 'inherit',
-  background: '#fff', boxSizing: 'border-box',
+  background: 'var(--card)', boxSizing: 'border-box',
 };
 const focus = e => e.target.style.borderColor = '#4CAF50';
 const blur  = e => e.target.style.borderColor = 'var(--border)';
@@ -154,7 +154,7 @@ function CowForm({ form, location, cows, onFormChange, onLocationChange, rfidLoa
         </div>
       </div>
 
-      {/* Stage — filtered by sex, auto-detected */}
+      {/* Stage: filtered by sex, auto-detected */}
       <div>
         <label style={{ ...LS, display: 'flex', alignItems: 'center', gap: 6 }}>
           Stage / Age Level
@@ -168,7 +168,7 @@ function CowForm({ form, location, cows, onFormChange, onLocationChange, rfidLoa
         </label>
         <select name="cow_stage" value={form.cow_stage} onChange={onFormChange} style={IS} onFocus={focus} onBlur={blur}>
           {COW_STAGES.filter(s => s.sex === 'Both' || s.sex === form.sex).map(s => (
-            <option key={s.value} value={s.value}>{s.emoji} {s.label} — {s.ageRange}</option>
+            <option key={s.value} value={s.value}>{s.emoji} {s.label}: {s.ageRange}</option>
           ))}
         </select>
         {stageInfo && (
@@ -183,7 +183,7 @@ function CowForm({ form, location, cows, onFormChange, onLocationChange, rfidLoa
       <div>
         <label style={LS}>Mother Cow (if offspring)</label>
         <select name="mother_id" value={form.mother_id || ''} onChange={onFormChange} style={IS} onFocus={focus} onBlur={blur}>
-          <option value="">— none / unknown —</option>
+          <option value="">None / unknown</option>
           {cows.map(c => <option key={c.cow_id} value={c.cow_id}>{c.cow_name} ({c.rfid_tag})</option>)}
         </select>
       </div>
@@ -213,7 +213,7 @@ function CowForm({ form, location, cows, onFormChange, onLocationChange, rfidLoa
           <input type="checkbox" name="lactating" checked={form.lactating} onChange={onFormChange}
             style={{ width: 18, height: 18, accentColor: '#4CAF50', cursor: 'pointer' }} />
           <span style={{ fontWeight: 600, color: form.lactating ? '#4CAF50' : 'var(--text-secondary)' }}>
-            {form.lactating ? 'Yes — Lactating' : 'No — Dry'}
+            {form.lactating ? 'Yes: Lactating' : 'No: Dry'}
           </span>
         </label>
       </div>
@@ -305,13 +305,13 @@ function ChartPanel({ cows, counts, activeCharts, setActiveCharts }) {
           })}
           {activeCharts.length > 0 && (
             <button onClick={() => setActiveCharts([])}
-              style={{ marginLeft: 'auto', fontSize: 11, padding: '4px 10px', borderRadius: 8, border: '1px solid #e0e0e0', background: '#fff', color: '#999', cursor: 'pointer' }}>
+              style={{ marginLeft: 'auto', fontSize: 11, padding: '4px 10px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--card)', color: 'var(--text-faint)', cursor: 'pointer' }}>
               Hide all
             </button>
           )}
           {activeCharts.length === 0 && (
             <button onClick={() => setActiveCharts(['health', 'breed'])}
-              style={{ marginLeft: 'auto', fontSize: 11, padding: '4px 10px', borderRadius: 8, border: '1px solid #1E4D7B', background: '#fff', color: '#1E4D7B', cursor: 'pointer' }}>
+              style={{ marginLeft: 'auto', fontSize: 11, padding: '4px 10px', borderRadius: 8, border: '1px solid #1E4D7B', background: 'var(--card)', color: 'var(--navy-ink)', cursor: 'pointer' }}>
               Show default
             </button>
           )}
@@ -512,7 +512,7 @@ export default function Herd() {
       {/* Stat banner */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
         {[
-          { label: 'Present Herd', count: cows.length,           color: '#1E4D7B' },
+          { label: 'Present Herd', count: cows.length,           color: 'var(--navy-ink)' },
           { label: 'Sold',         count: catCounts.Sold  || 0,  color: '#FF9800' },
           { label: 'Lost/Dead',    count: catCounts.Lost  || 0,  color: '#607D8B' },
         ].map(({ label, count, color }) => (
@@ -567,15 +567,15 @@ export default function Herd() {
 
           {activeFilterCount > 0 && (
             <button onClick={() => { setFilterHealth('All'); setFilterSex('All'); setFilterStage('All'); setFilterBreed('All'); }}
-              style={{ fontSize: 11, padding: '5px 10px', borderRadius: 8, border: '1px solid #e0e0e0', background: '#fff8e1', color: '#c62828', cursor: 'pointer' }}>
+              style={{ fontSize: 11, padding: '5px 10px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--tint-amber)', color: '#c62828', cursor: 'pointer' }}>
               Clear filters
             </button>
           )}
         </div>
 
-        {/* Filter panel — collapsible */}
+        {/* Filter panel: collapsible */}
         {showFilters && (
-          <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--border)', background: '#f7f9fc', display: 'flex', flexWrap: 'wrap', gap: 20 }}>
+          <div style={{ padding: '14px 20px', borderBottom: '1px solid var(--border)', background: 'var(--surface-2)', display: 'flex', flexWrap: 'wrap', gap: 20 }}>
             {[
               {
                 label: 'Health Status',
@@ -657,11 +657,11 @@ export default function Herd() {
                       <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 10,
                         background: `${STAGE_COLOR[c.cow_stage] || '#999'}20`,
                         color: STAGE_COLOR[c.cow_stage] || '#333' }}>
-                        {c.cow_stage || '—'}
+                        {c.cow_stage || '-'}
                       </span>
                     </td>
-                    <td style={{ fontSize: 12 }}>{c.age_months != null ? `${c.age_months} mo` : '—'}</td>
-                    <td style={{ fontSize: 12 }}>{c.weight_kg ? `${c.weight_kg} kg` : '—'}</td>
+                    <td style={{ fontSize: 12 }}>{c.age_months != null ? `${c.age_months} mo` : '-'}</td>
+                    <td style={{ fontSize: 12 }}>{c.weight_kg ? `${c.weight_kg} kg` : '-'}</td>
                     <td>
                       <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 10,
                         background: `${HEALTH_COLOR[c.health_status] || '#999'}22`,
@@ -674,14 +674,14 @@ export default function Herd() {
                         ? <span style={{ color: c.latest_temp > 40 ? '#F44336' : c.latest_temp > 39.5 ? '#FF9800' : '#4CAF50', fontWeight: 600, fontSize: 12 }}>
                             {Number(c.latest_temp).toFixed(1)}°C
                           </span>
-                        : '—'}
+                        : '-'}
                     </td>
-                    <td style={{ fontSize: 12 }}>{c.today_milk != null ? `${Number(c.today_milk).toFixed(1)} L` : '—'}</td>
+                    <td style={{ fontSize: 12 }}>{c.today_milk != null ? `${Number(c.today_milk).toFixed(1)} L` : '-'}</td>
                     <td>
                       <div style={{ display: 'flex', gap: 4 }}>
                         {p.canEditCow && (
                           <button onClick={() => openEdit(c)} className="btn btn-ghost"
-                            style={{ padding: '4px 8px', fontSize: 11, display: 'flex', alignItems: 'center', gap: 3, color: '#1E4D7B' }}>
+                            style={{ padding: '4px 8px', fontSize: 11, display: 'flex', alignItems: 'center', gap: 3, color: 'var(--navy-ink)' }}>
                             <Edit2 size={12} /> Edit
                           </button>
                         )}
@@ -705,7 +705,7 @@ export default function Herd() {
       {showModal && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 999, background: 'rgba(0,0,0,.5)',
           display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
-          <div style={{ background: '#fff', borderRadius: 16, width: '100%', maxWidth: 540,
+          <div style={{ background: 'var(--card)', borderRadius: 16, width: '100%', maxWidth: 540,
             boxShadow: '0 20px 60px rgba(0,0,0,.25)', display: 'flex', flexDirection: 'column', maxHeight: '92vh', overflow: 'hidden' }}>
 
             {/* Header */}
@@ -714,7 +714,7 @@ export default function Herd() {
               background: 'linear-gradient(135deg,#1E4D7B,#2e6fa3)', color: '#fff', borderRadius: '16px 16px 0 0' }}>
               <div>
                 <h2 style={{ fontSize: 17, fontWeight: 800, margin: 0, display: 'flex', alignItems: 'center', gap: 8 }}>
-                  {editCow ? <><Edit2 size={16} /> Edit — {editCow.cow_name}</> : <><Beef size={16} /> Register New Cow</>}
+                  {editCow ? <><Edit2 size={16} /> Edit: {editCow.cow_name}</> : <><Beef size={16} /> Register New Cow</>}
                 </h2>
                 <p style={{ fontSize: 11, opacity: .8, marginTop: 3, marginBottom: 0 }}>
                   {editCow ? `${editCow.rfid_tag} · Update cow details` : 'Add a new cow to the herd roster'}
@@ -735,7 +735,7 @@ export default function Herd() {
               />
 
               {formErr && (
-                <div style={{ color: '#c62828', fontSize: 13, padding: '10px 14px', background: '#fde8e8', borderRadius: 8 }}>
+                <div style={{ color: '#c62828', fontSize: 13, padding: '10px 14px', background: 'var(--tint-red)', borderRadius: 8 }}>
                   ⚠ {formErr}
                 </div>
               )}

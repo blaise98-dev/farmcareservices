@@ -3,10 +3,10 @@ import { Cpu, Landmark, Users2, ScrollText, Handshake } from 'lucide-react';
 
 const PARTNERS = [
   {
-    icon: Cpu, color: '#1E4D7B',
+    icon: Cpu, color: 'var(--navy-ink)',
     name: 'ACTION FAMILY TECH LTD',
     role: 'Technology Partner',
-    desc: 'Registered with the Rwanda Development Board (RDB), ACTION FAMILY TECH LTD leads the design, development, and deployment of the MooMe web application, IoT infrastructure, and AI-powered systems.',
+    desc: 'Registered with the Rwanda Development Board (RDB), ACTION FAMILY TECH LTD leads the design, development, and deployment of the FarmCare web application, IoT infrastructure, and AI-powered systems.',
   },
   {
     icon: Handshake, color: '#4CAF50',
@@ -30,7 +30,7 @@ const PARTNERS = [
     icon: Users2, color: '#00838F',
     name: 'Food and Agriculture Organization (FAO)',
     role: 'Funding Partner',
-    desc: 'The FAO\'s mandate on climate-smart agriculture and sustainable livestock systems aligns directly with MooMe\'s objectives for smallholder dairy farmers.',
+    desc: 'The FAO\'s mandate on climate-smart agriculture and sustainable livestock systems aligns directly with FarmCare\'s objectives for smallholder dairy farmers.',
   },
 ];
 
@@ -46,7 +46,7 @@ export default function Partners() {
           A multi-stakeholder partnership for lasting impact
         </h1>
         <p style={{ fontSize: 15, opacity: .8, marginTop: 12, maxWidth: 640, marginLeft: 'auto', marginRight: 'auto', lineHeight: 1.6 }}>
-          MooMe combines technology innovation, government authority, and international support to deliver
+          FarmCare combines technology innovation, government authority, and international support to deliver
           measurable, lasting impact for Rwanda's dairy farmers.
         </p>
       </section>
@@ -61,7 +61,7 @@ export default function Partners() {
               }}>
                 <p.icon size={22} color={p.color} />
               </div>
-              <h3 style={{ fontSize: 16, fontWeight: 800, color: '#1a1a2e' }}>{p.name}</h3>
+              <h3 style={{ fontSize: 16, fontWeight: 800, color: 'var(--text)' }}>{p.name}</h3>
               <span style={{ fontSize: 11, fontWeight: 700, color: p.color, textTransform: 'uppercase', letterSpacing: .5 }}>{p.role}</span>
               <p style={{ fontSize: 13, color: 'var(--text-secondary)', marginTop: 10, lineHeight: 1.65 }}>{p.desc}</p>
             </div>
@@ -69,20 +69,20 @@ export default function Partners() {
         </div>
       </section>
 
-      <section style={{ background: '#f7faf7', marginTop: 56, padding: '64px 24px' }}>
+      <section style={{ background: 'var(--surface-2)', marginTop: 56, padding: '64px 24px' }}>
         <div style={{ maxWidth: 760, margin: '0 auto', textAlign: 'center' }}>
-          <h2 style={{ fontSize: 22, fontWeight: 800, color: '#1a1a2e' }}>Anchored in national policy</h2>
+          <h2 style={{ fontSize: 22, fontWeight: 800, color: 'var(--text)' }}>Anchored in national policy</h2>
           <p style={{ fontSize: 14, color: 'var(--text-secondary)', lineHeight: 1.8, marginTop: 14 }}>
             This partnership is anchored in Rwanda's National Agricultural Policy, the National Strategy for
             Transformation (NST2, 2024–2029), and Rwanda's Nationally Determined Contributions (NDCs) under the
-            Paris Agreement — mandating a transition to digital, climate-smart, and productivity-enhancing
+            Paris Agreement, mandating a transition to digital, climate-smart, and productivity-enhancing
             agricultural practices across the country.
           </p>
         </div>
       </section>
 
       <section style={{ maxWidth: 700, margin: '0 auto', padding: '64px 24px 100px', textAlign: 'center' }}>
-        <h2 style={{ fontSize: 20, fontWeight: 800, color: '#1a1a2e' }}>Interested in partnering with us?</h2>
+        <h2 style={{ fontSize: 20, fontWeight: 800, color: 'var(--text)' }}>Interested in partnering with us?</h2>
         <p style={{ fontSize: 14, color: 'var(--text-secondary)', marginTop: 10 }}>
           We're always open to collaborating with organizations working toward the same goal.
         </p>

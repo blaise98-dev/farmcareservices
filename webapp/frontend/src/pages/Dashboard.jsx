@@ -53,19 +53,19 @@ function AlertList({ alerts }) {
           : alerts.map(a => (
             <div key={a.alert_id} style={{
               display: 'flex', gap: 10, padding: '10px 0',
-              borderBottom: '1px solid #f0f0f0', alignItems: 'flex-start',
+              borderBottom: '1px solid var(--border)', alignItems: 'flex-start',
             }}>
               <AlertTriangle size={16} color={SEV_COLOR[a.severity] || '#999'} style={{ flexShrink: 0, marginTop: 2 }} />
               <div style={{ flex: 1, minWidth: 0 }}>
                 <div style={{ fontSize: 13, fontWeight: 600, color: SEV_COLOR[a.severity] }}>
-                  {a.severity} — {a.alert_type}
-                  {a.cow_name && <span style={{ color: '#1E4D7B', marginLeft: 6 }}>[{a.cow_name}]</span>}
+                  {a.severity}: {a.alert_type}
+                  {a.cow_name && <span style={{ color: 'var(--navy-ink)', marginLeft: 6 }}>[{a.cow_name}]</span>}
                 </div>
                 <div style={{ fontSize: 12, color: 'var(--text-secondary)', marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                   {a.message}
                 </div>
               </div>
-              <span style={{ fontSize: 10, color: '#aaa', flexShrink: 0 }}>
+              <span style={{ fontSize: 10, color: 'var(--text-faint)', flexShrink: 0 }}>
                 {a.created_at ? format(new Date(a.created_at), 'HH:mm') : ''}
               </span>
             </div>
@@ -81,7 +81,7 @@ function MilkChart({ milkTrend, isLoading, isError }) {
     liters: Number(r.total_liters).toFixed(1),
   }));
   return (
-    <ChartCard title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Droplets size={14} /> Milk Production — 7 Days</span>} action={<span className="live-dot teal" />}
+    <ChartCard title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Droplets size={14} /> Milk Production: 7 Days</span>} action={<span className="live-dot teal" />}
       isLoading={isLoading} isError={isError} height={220}>
       <ELine data={data} xKey="date"
         series={[{ key: 'liters', name: 'Milk (L)', color: '#00BCD4' }]}
@@ -97,7 +97,7 @@ function EnvChart({ envTrend, isLoading, isError }) {
     humidity: Number(r.avg_hum).toFixed(1),
   }));
   return (
-    <ChartCard title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Thermometer size={14} /> Environment — 24 Hours</span>} action={<span className="live-dot" />}
+    <ChartCard title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Thermometer size={14} /> Environment: 24 Hours</span>} action={<span className="live-dot" />}
       isLoading={isLoading} isError={isError} height={220}>
       <ELine data={data} xKey="time"
         series={[{ key: 'temp', name: 'Temp °C', color: '#FF9800' }, { key: 'humidity', name: 'Humidity %', color: '#00BCD4' }]}
@@ -134,7 +134,7 @@ function LiveSensors({ liveEnv }) {
           label="Temperature" color="#FF9800"
           value={Number(liveEnv.temperature_celsius || 0)} max={45}
           displayVal={fmt(liveEnv.temperature_celsius) + '°C'}
-          warn={liveEnv.temperature_celsius > 32} warnMsg="> 32°C — High"
+          warn={liveEnv.temperature_celsius > 32} warnMsg="> 32°C: High"
         />
         <SensorGauge
           label="Humidity" color="#00BCD4"
@@ -149,12 +149,14 @@ function LiveSensors({ liveEnv }) {
           displayVal={fmt(liveEnv.air_quality_ppm, 0) + ' ppm'}
           warn={liveEnv.air_quality_ppm > 600} warnMsg="> 600 ppm"
         />
-        <SensorGauge
-          label="Oxygen" color="#9C27B0"
-          value={Number(liveEnv.oxygen_percent || 0)} max={25}
-          displayVal={fmt(liveEnv.oxygen_percent) + '%'}
-          warn={liveEnv.oxygen_percent < 19.5} warnMsg="< 19.5% — Low O₂"
-        />
+        {liveEnv.oxygen_percent != null && (
+          <SensorGauge
+            label="Oxygen" color="#9C27B0"
+            value={Number(liveEnv.oxygen_percent)} max={25}
+            displayVal={fmt(liveEnv.oxygen_percent) + '%'}
+            warn={liveEnv.oxygen_percent < 19.5} warnMsg="< 19.5%: Low O₂"
+          />
+        )}
       </div>
     </div>
   );
@@ -174,9 +176,9 @@ function SysLogsTable({ sysLogs }) {
               <tr key={l.log_id}>
                 <td><strong>{l.device_type}</strong> {l.device_id ? `#${l.device_id}` : ''}</td>
                 <td><span className={`badge badge-${l.action === 'ON' ? 'healthy' : l.action === 'OFF' ? 'normal' : 'warning'}`}>{l.action}</span></td>
-                <td style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12 }}>{l.value != null ? l.value : '—'}</td>
+                <td style={{ fontFamily: 'JetBrains Mono, monospace', fontSize: 12 }}>{l.value != null ? l.value : '-'}</td>
                 <td style={{ fontSize: 11, color: 'var(--text-secondary)', maxWidth: 160, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{l.trigger_reason}</td>
-                <td style={{ fontSize: 11, color: '#aaa' }}>{l.recorded_at ? format(new Date(l.recorded_at), 'HH:mm') : ''}</td>
+                <td style={{ fontSize: 11, color: 'var(--text-faint)' }}>{l.recorded_at ? format(new Date(l.recorded_at), 'HH:mm') : ''}</td>
               </tr>
             ))}
           </tbody>
@@ -233,7 +235,7 @@ function FarmerDashboard({ summary, alerts, milkTrend, envTrend, liveEnv, alerts
   const { data: counts }    = useQuery({ queryKey: ['herd-counts'],       queryFn: getHerdCounts });
 
   const STATS = [
-    { label: 'My Cows',        value: herd.total_cows ?? '--',         icon: Beef,          color: '#1E4D7B', sub: `${herd.lactating_cows ?? 0} lactating` },
+    { label: 'My Cows',        value: herd.total_cows ?? '--',         icon: Beef,          color: 'var(--navy-ink)', sub: `${herd.lactating_cows ?? 0} lactating` },
     { label: 'Healthy',        value: herd.healthy_cows ?? '--',       icon: CheckCircle,   color: '#4CAF50', sub: `${herd.warning_cows ?? 0} warning` },
     { label: 'Milk Today (L)', value: fmt(milkToday.total_liters, 1),  icon: Droplets,      color: '#00BCD4', sub: `${milkToday.sessions ?? 0} sessions` },
     { label: 'Active Alerts',  value: alertsCount,                     icon: AlertTriangle, color: alertsCount > 0 ? '#F44336' : '#4CAF50', sub: 'unresolved' },
@@ -297,7 +299,7 @@ function VetDashboard({ summary, alerts }) {
   const healthAlerts = alerts.filter(a => a.alert_type === 'Health' || a.alert_type === 'Temperature');
 
   const STATS = [
-    { label: 'Total Cows',      value: herd.total_cows ?? '--',     icon: Beef,          color: '#1E4D7B', sub: `${herd.lactating_cows ?? 0} lactating` },
+    { label: 'Total Cows',      value: herd.total_cows ?? '--',     icon: Beef,          color: 'var(--navy-ink)', sub: `${herd.lactating_cows ?? 0} lactating` },
     { label: 'Healthy',         value: herd.healthy_cows ?? '--',   icon: CheckCircle,   color: '#4CAF50', sub: `${herd.warning_cows ?? 0} warning` },
     { label: 'Under Treatment', value: herd.treatment_cows ?? '--', icon: HeartPulse,    color: '#9C27B0', sub: 'active treatment' },
     { label: 'Critical',        value: herd.critical_cows ?? '--',  icon: AlertTriangle, color: '#F44336', sub: 'needs urgent care' },
@@ -305,7 +307,7 @@ function VetDashboard({ summary, alerts }) {
     { label: 'Health Risks',    value: healthRisks.length,          icon: Activity,      color: '#FF9800', sub: 'AI predicted risks' },
   ];
 
-  // Body temp bar chart — top 12 cows by temp
+  // Body temp bar chart: top 12 cows by temp
   const tempChart = cowTemps
     .filter(c => c.body_temp_celsius != null)
     .slice(0, 12)
@@ -326,7 +328,7 @@ function VetDashboard({ summary, alerts }) {
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
       <div style={{ background: 'linear-gradient(135deg,#9C27B0,#ba68c8)', borderRadius: 12, padding: '14px 20px', color: '#fff' }}>
         <div style={{ fontSize: 18, fontWeight: 800, display: 'flex', alignItems: 'center', gap: 8 }}><Stethoscope size={18} /> Veterinarian Dashboard</div>
-        <div style={{ fontSize: 12, opacity: .8, marginTop: 4 }}>Herd health monitoring — body temps, treatments, health risks</div>
+        <div style={{ fontSize: 12, opacity: .8, marginTop: 4 }}>Herd health monitoring: body temps, treatments, health risks</div>
       </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(200px,1fr))', gap: 16 }}>
@@ -378,12 +380,12 @@ function VetDashboard({ summary, alerts }) {
             {healthAlerts.length === 0
               ? <div className="empty-state"><CheckCircle size={36} /><span>No health alerts</span></div>
               : healthAlerts.map(a => (
-                <div key={a.alert_id} style={{ display: 'flex', gap: 10, padding: '10px 0', borderBottom: '1px solid #f0f0f0', alignItems: 'flex-start' }}>
+                <div key={a.alert_id} style={{ display: 'flex', gap: 10, padding: '10px 0', borderBottom: '1px solid var(--border)', alignItems: 'flex-start' }}>
                   <AlertTriangle size={16} color={SEV_COLOR[a.severity] || '#999'} style={{ flexShrink: 0, marginTop: 2 }} />
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 13, fontWeight: 600, color: SEV_COLOR[a.severity] }}>
-                      {a.severity} — {a.alert_type}
-                      {a.cow_name && <span style={{ color: '#1E4D7B', marginLeft: 6 }}>[{a.cow_name}]</span>}
+                      {a.severity}: {a.alert_type}
+                      {a.cow_name && <span style={{ color: 'var(--navy-ink)', marginLeft: 6 }}>[{a.cow_name}]</span>}
                     </div>
                     <div style={{ fontSize: 12, color: 'var(--text-secondary)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{a.message}</div>
                   </div>
@@ -395,22 +397,22 @@ function VetDashboard({ summary, alerts }) {
 
       <EnvChart envTrend={envTrend} isLoading={envLoading} isError={envError} />
 
-      {/* Activity sensor per cow */}
-      {cowActivity.length > 0 && (
+      {/* Activity per cow: share of the last 24 h each collar reported the cow moving */}
+      {cowActivity.some(c => c.motion_readings) && (
         <div className="card">
           <div className="section-header"><h2 style={{ display: 'flex', alignItems: 'center', gap: 8 }}><Activity size={16} /> Activity Rate per Cow</h2><span className="live-dot" style={{ background: '#9C27B0' }} /></div>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(180px,1fr))', gap: 10 }}>
-            {cowActivity.map(c => {
+            {cowActivity.filter(c => c.motion_readings).map(c => {
               const actColor = c.activity_level === 'Low' ? '#F44336' : c.activity_level === 'High' ? '#FF9800' : '#4CAF50';
               return (
                 <div key={c.cow_id} style={{ padding: '10px 14px', borderRadius: 10, border: `1px solid ${actColor}33`, background: `${actColor}08` }}>
                   <div style={{ fontWeight: 700, fontSize: 13 }}>{c.cow_name}</div>
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: 6 }}>
-                    <span style={{ fontSize: 18, fontWeight: 900, color: actColor }}>{c.activity_steps}</span>
+                    <span style={{ fontSize: 18, fontWeight: 900, color: actColor }}>{c.moving_pct}%<span style={{ fontSize: 11, fontWeight: 600, color: 'var(--text-secondary)' }}> moving</span></span>
                     <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 7px', borderRadius: 20, background: `${actColor}22`, color: actColor }}>{c.activity_level}</span>
                   </div>
                   <div className="gauge-bar" style={{ marginTop: 6 }}>
-                    <div className="gauge-bar-fill" style={{ width: `${Math.min(100, (c.activity_steps / 80) * 100)}%`, background: actColor }} />
+                    <div className="gauge-bar-fill" style={{ width: `${Math.min(100, Number(c.moving_pct) || 0)}%`, background: actColor }} />
                   </div>
                 </div>
               );
@@ -435,13 +437,13 @@ function AdminDashboard({ summary, alerts, milkTrend, envTrend, liveEnv, alertsC
   const recentUsers = userActivity.filter(u => u.activity_status === 'Recent').length;
 
   const STATS = [
-    { label: 'Total Cows',     value: herd.total_cows ?? '--',      icon: Beef,          color: '#1E4D7B', sub: `${herd.lactating_cows ?? 0} lactating` },
+    { label: 'Total Cows',     value: herd.total_cows ?? '--',      icon: Beef,          color: 'var(--navy-ink)', sub: `${herd.lactating_cows ?? 0} lactating` },
     { label: 'Healthy Cows',   value: herd.healthy_cows ?? '--',    icon: CheckCircle,   color: '#4CAF50', sub: `${herd.warning_cows ?? 0} warning` },
     { label: 'Milk Today (L)', value: fmt(milkToday.total_liters, 1), icon: Droplets,   color: '#00BCD4', sub: `${milkToday.sessions ?? 0} sessions` },
     { label: 'Active Alerts',  value: alertsCount,                  icon: AlertTriangle, color: alertsCount > 0 ? '#F44336' : '#4CAF50', sub: 'unresolved' },
     { label: 'Active Users',   value: activeUsers,                  icon: Users,         color: '#9C27B0', sub: `${recentUsers} logged in 7d` },
     { label: 'Barn Temp',      value: fmt(liveEnv.temperature_celsius) + '°C', icon: Thermometer, color: '#FF9800', sub: `${fmt(liveEnv.humidity_percent)}% humidity` },
-    { label: '30d Revenue',    value: `${((economics?.milk_30d_liters || 0) * 400 / 1000).toFixed(1)}K RWF`, icon: TrendingUp, color: '#1E4D7B', sub: '@ 400 RWF/L' },
+    { label: '30d Revenue',    value: `${((economics?.milk_30d_liters || 0) * 400 / 1000).toFixed(1)}K RWF`, icon: TrendingUp, color: 'var(--navy-ink)', sub: '@ 400 RWF/L' },
     { label: 'Components',     value: `${economics?.operational_components ?? '--'}/${economics?.component_count ?? '--'}`, icon: Cpu, color: '#607D8B', sub: 'operational' },
   ];
 
@@ -465,7 +467,7 @@ function AdminDashboard({ summary, alerts, milkTrend, envTrend, liveEnv, alertsC
       {farm.farm_name && (
         <div style={{ background: 'linear-gradient(135deg,#1E4D7B,#2e6fa3)', borderRadius: 12, padding: '14px 20px', color: '#fff', display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 18, fontWeight: 800, letterSpacing: .3, display: 'flex', alignItems: 'center', gap: 8 }}><ShieldCheck size={18} /> {farm.farm_name} — Admin Dashboard</div>
+            <div style={{ fontSize: 18, fontWeight: 800, letterSpacing: .3, display: 'flex', alignItems: 'center', gap: 8 }}><ShieldCheck size={18} /> {farm.farm_name}: Admin Dashboard</div>
             <div style={{ fontSize: 12, opacity: .8, marginTop: 2 }}>{farm.location} · Est. {farm.established_year} · {farm.total_area_hectares} ha</div>
           </div>
           {summary?.avg_body_temp && (
@@ -513,10 +515,10 @@ function TechnicianDashboard({ liveEnv, sysLogs, envTrend, envLoading, envError 
 
   const STATS = [
     { label: 'Barn Temp',   value: fmt(liveEnv.temperature_celsius) + '°C',  icon: Thermometer, color: '#FF9800', sub: `${fmt(liveEnv.humidity_percent)}% humidity` },
-    { label: 'Air Quality', value: fmt(liveEnv.air_quality_ppm, 0) + ' ppm', icon: Wind,        color: liveEnv.air_quality_ppm > 600 ? '#F44336' : '#4CAF50', sub: liveEnv.air_quality_ppm > 600 ? 'ALERT — elevated' : 'Normal range' },
-    { label: 'Oxygen',      value: fmt(liveEnv.oxygen_percent) + '%',          icon: Activity,    color: liveEnv.oxygen_percent < 19.5 ? '#F44336' : '#4CAF50', sub: liveEnv.oxygen_percent < 19.5 ? 'Low oxygen!' : 'Acceptable' },
-    { label: 'Components',  value: `${economics?.operational_components ?? '--'}/${economics?.component_count ?? '--'}`, icon: Cpu, color: '#1E4D7B', sub: 'operational' },
-  ];
+    { label: 'Air Quality', value: fmt(liveEnv.air_quality_ppm, 0) + ' ppm', icon: Wind,        color: liveEnv.air_quality_ppm > 600 ? '#F44336' : '#4CAF50', sub: liveEnv.air_quality_ppm > 600 ? 'ALERT: elevated' : 'Normal range' },
+    liveEnv.oxygen_percent != null && { label: 'Oxygen',      value: fmt(liveEnv.oxygen_percent) + '%',          icon: Activity,    color: liveEnv.oxygen_percent < 19.5 ? '#F44336' : '#4CAF50', sub: liveEnv.oxygen_percent < 19.5 ? 'Low oxygen!' : 'Acceptable' },
+    { label: 'Components',  value: `${economics?.operational_components ?? '--'}/${economics?.component_count ?? '--'}`, icon: Cpu, color: 'var(--navy-ink)', sub: 'operational' },
+  ].filter(Boolean);
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>

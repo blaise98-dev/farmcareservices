@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { getUsers, createUser, updateUser, deleteUser, adminResetPassword, getCows, getMilk, getFeed, getPendingUsers, approveUser, rejectUser } from '../lib/api';
+import { getUsers, createUser, updateUser, deleteUser, adminResetPassword, getCows, getMilk, getFeed, getPendingUsers, approveUser, rejectUser, getFarms } from '../lib/api';
+import FarmsCard from '../components/FarmsCard';
 import { Users, Plus, X, ShieldCheck, ToggleLeft, ToggleRight, Edit2, Trash2, Key, Eye, UserCheck, UserX, Clock } from 'lucide-react';
 import { format } from 'date-fns';
 import RwandaLocationFields from '../components/RwandaLocationFields';
@@ -12,13 +13,13 @@ const ROLE_COLOR = {
   Admin: '#FFD700', Farmer: '#4CAF50', Veterinarian: '#9C27B0', Technician: '#FF9800',
 };
 const ROLE_BG = {
-  Admin: '#fffde7', Farmer: '#e8f5e9', Veterinarian: '#f3e5f5', Technician: '#fff8e1',
+  Admin: 'var(--tint-amber)', Farmer: 'var(--tint-green)', Veterinarian: 'var(--tint-purple)', Technician: 'var(--tint-orange)',
 };
 const ROLE_DESC = {
-  Admin:        'Full system access — all pages and actions',
-  Farmer:       'Farm operations — herd, milk, feed, alerts, economics',
-  Veterinarian: 'Health & medical — health status, predictions, feed prescriptions',
-  Technician:   'IoT operations — dashboard, environment, economics (read-only)',
+  Admin:        'Full system access: all pages and actions',
+  Farmer:       'Farm operations: herd, milk, feed, alerts, economics',
+  Veterinarian: 'Health & medical: health status, predictions, feed prescriptions',
+  Technician:   'IoT operations: dashboard, environment, economics (read-only)',
 };
 
 const EMPTY_LOCATION = { province: '', district: '', sector: '', cell: '', village: '' };
@@ -39,7 +40,7 @@ function UserActivityPanel({ user, onClose }) {
 
   return (
     <div style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(0,0,0,.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
-      <div style={{ background: '#fff', borderRadius: 16, width: '100%', maxWidth: 760, boxShadow: '0 20px 60px rgba(0,0,0,.25)', display: 'flex', flexDirection: 'column', maxHeight: '90vh', overflow: 'hidden' }}>
+      <div style={{ background: 'var(--card)', borderRadius: 16, width: '100%', maxWidth: 760, boxShadow: '0 20px 60px rgba(0,0,0,.25)', display: 'flex', flexDirection: 'column', maxHeight: '90vh', overflow: 'hidden' }}>
 
         {/* Header */}
         <div style={{ padding: '18px 24px', background: 'linear-gradient(135deg,#1E4D7B,#2e6fa3)', color: '#fff', borderRadius: '16px 16px 0 0', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
@@ -57,7 +58,7 @@ function UserActivityPanel({ user, onClose }) {
         {/* Summary strip */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 0, borderBottom: '1px solid var(--border)' }}>
           {[
-            { label: 'Total Cows', value: allCows.length, color: '#1E4D7B' },
+            { label: 'Total Cows', value: allCows.length, color: 'var(--navy-ink)' },
             { label: 'Milk (7d)',  value: `${totalMilk.toFixed(1)} L`, color: '#00BCD4' },
             { label: 'Feed (7d)',  value: `${totalFeed.toFixed(1)} kg`, color: '#4CAF50' },
           ].map(({ label, value, color }) => (
@@ -69,7 +70,7 @@ function UserActivityPanel({ user, onClose }) {
         </div>
 
         {/* Tabs */}
-        <div style={{ display: 'flex', gap: 0, borderBottom: '1px solid var(--border)', background: '#f7f9fc' }}>
+        <div style={{ display: 'flex', gap: 0, borderBottom: '1px solid var(--border)', background: 'var(--surface-2)' }}>
           {tabs.map(t => (
             <button key={t} onClick={() => setTab(t)}
               style={{ padding: '10px 20px', fontSize: 13, fontWeight: tab === t ? 700 : 500, border: 'none', background: 'none', borderBottom: tab === t ? '2px solid #1E4D7B' : '2px solid transparent', color: tab === t ? '#1E4D7B' : 'var(--text-secondary)', cursor: 'pointer' }}>
@@ -89,11 +90,11 @@ function UserActivityPanel({ user, onClose }) {
                     <td style={{ fontFamily: 'monospace', fontSize: 11 }}>{c.rfid_tag}</td>
                     <td style={{ fontWeight: 600 }}>{c.cow_name}</td>
                     <td>{c.breed}</td>
-                    <td>{c.cow_stage || '—'}</td>
-                    <td>{c.cow_category || '—'}</td>
+                    <td>{c.cow_stage || '-'}</td>
+                    <td>{c.cow_category || '-'}</td>
                     <td><span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 12, background: `${HEALTH_COLOR[c.health_status] || '#999'}22`, color: HEALTH_COLOR[c.health_status] || '#333' }}>{c.health_status}</span></td>
-                    <td>{c.age_months != null ? `${c.age_months} mo` : '—'}</td>
-                    <td>{c.weight_kg ? `${c.weight_kg} kg` : '—'}</td>
+                    <td>{c.age_months != null ? `${c.age_months} mo` : '-'}</td>
+                    <td>{c.weight_kg ? `${c.weight_kg} kg` : '-'}</td>
                   </tr>
                 ))}
                 {allCows.length === 0 && <tr><td colSpan={8} style={{ textAlign: 'center', color: 'var(--text-secondary)', padding: 24 }}>No cows registered</td></tr>}
@@ -108,7 +109,7 @@ function UserActivityPanel({ user, onClose }) {
                 {milkRecs.map((r, i) => (
                   <tr key={i}>
                     <td style={{ fontWeight: 600 }}>{r.cow_name || r.cow_id}</td>
-                    <td style={{ color: 'var(--text-secondary)', fontSize: 12 }}>{r.recorded_at ? format(new Date(r.recorded_at), 'MMM d') : '—'}</td>
+                    <td style={{ color: 'var(--text-secondary)', fontSize: 12 }}>{r.recorded_at ? format(new Date(r.recorded_at), 'MMM d') : '-'}</td>
                     <td>{r.milking_session}</td>
                     <td style={{ fontWeight: 700, color: '#00BCD4' }}>{Number(r.milk_amount_liters).toFixed(1)}</td>
                     <td>{r.milk_quality}</td>
@@ -126,8 +127,8 @@ function UserActivityPanel({ user, onClose }) {
               <tbody>
                 {feedRecs.map((r, i) => (
                   <tr key={i}>
-                    <td style={{ fontWeight: 600 }}>{r.cow_name || r.cow_id || '—'}</td>
-                    <td style={{ color: 'var(--text-secondary)', fontSize: 12 }}>{r.recorded_at ? format(new Date(r.recorded_at), 'MMM d') : '—'}</td>
+                    <td style={{ fontWeight: 600 }}>{r.cow_name || r.cow_id || '-'}</td>
+                    <td style={{ color: 'var(--text-secondary)', fontSize: 12 }}>{r.recorded_at ? format(new Date(r.recorded_at), 'MMM d') : '-'}</td>
                     <td>{r.feed_type}</td>
                     <td style={{ fontWeight: 700, color: '#4CAF50' }}>{Number(r.feed_amount_kg).toFixed(1)}</td>
                     <td>
@@ -151,7 +152,7 @@ function UserActivityPanel({ user, onClose }) {
 
 const EMPTY_CREATE = {
   username: '', password: '', full_name: '',
-  email: '', phone_number: '', role: 'Farmer', farm_id: 1,
+  email: '', phone_number: '', role: 'Farmer', farm_id: '',
 };
 
 export default function UserManagement() {
@@ -165,7 +166,11 @@ export default function UserManagement() {
   const [resetPw, setResetPw]                   = useState('');
   const [resetMsg, setResetMsg]                 = useState('');
   const [viewUser, setViewUser]                 = useState(null);
+  const [approveFarm, setApproveFarm]           = useState({});   // user_id -> chosen farm_id
   const qc = useQueryClient();
+  const { data: farms = [] } = useQuery({ queryKey: ['farms'], queryFn: getFarms });
+  const farmName = (id) => farms.find(f => f.farm_id === id)?.farm_name;
+  const onlyFarm = farms.length === 1 ? farms[0].farm_id : '';
 
   const { data: users = [], isLoading } = useQuery({
     queryKey: ['users'],
@@ -179,8 +184,8 @@ export default function UserManagement() {
   });
 
   const approveMut = useMutation({
-    mutationFn: approveUser,
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['pending-users'] }); qc.invalidateQueries({ queryKey: ['users'] }); },
+    mutationFn: ({ id, farmId }) => approveUser(id, farmId),
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['pending-users'] }); qc.invalidateQueries({ queryKey: ['users'] }); qc.invalidateQueries({ queryKey: ['farms'] }); },
     onError: (e) => alert(e.response?.data?.detail || 'Approval failed'),
   });
   const rejectMut = useMutation({
@@ -219,7 +224,7 @@ export default function UserManagement() {
 
   const handleCreateChange = (e) => {
     const { name, value } = e.target;
-    setCreateForm(prev => ({ ...prev, [name]: name === 'farm_id' ? Number(value) : value }));
+    setCreateForm(prev => ({ ...prev, [name]: name === 'farm_id' ? (value ? Number(value) : '') : value }));
   };
 
   const handleCreateSubmit = (e) => {
@@ -228,8 +233,10 @@ export default function UserManagement() {
     if (!createForm.username.trim()) { setCreateErr('Username is required'); return; }
     if (createForm.password.length < 10) { setCreateErr('Password must be at least 10 characters'); return; }
     if (!createForm.full_name.trim()) { setCreateErr('Full name is required'); return; }
+    if (!createForm.farm_id && !onlyFarm) { setCreateErr('Choose the farm this user belongs to'); return; }
     createMut.mutate({
       ...createForm,
+      farm_id: createForm.farm_id || onlyFarm,
       province: createLocation.province || undefined,
       district: createLocation.district || undefined,
       sector:   createLocation.sector   || undefined,
@@ -239,7 +246,7 @@ export default function UserManagement() {
   };
 
   const openEdit = (u) => {
-    setEditUser({ user_id: u.user_id, role: u.role, is_active: u.is_active, full_name: u.full_name, email: u.email || '', phone_number: u.phone_number || '' });
+    setEditUser({ user_id: u.user_id, role: u.role, is_active: u.is_active, full_name: u.full_name, email: u.email || '', phone_number: u.phone_number || '', farm_id: u.farm_id ?? '' });
     setEditErr('');
   };
 
@@ -259,6 +266,7 @@ export default function UserManagement() {
     if (fields.full_name !== (original?.full_name || '')) changed.full_name = fields.full_name;
     if (fields.email !== (original?.email || '')) changed.email = fields.email;
     if (fields.phone_number !== (original?.phone_number || '')) changed.phone_number = fields.phone_number;
+    if (fields.farm_id !== '' && fields.farm_id !== original?.farm_id) changed.farm_id = fields.farm_id;
     if (Object.keys(changed).length === 0) { setEditErr('No changes to save'); return; }
     updateMut.mutate({ id: user_id, body: changed });
   };
@@ -277,7 +285,7 @@ export default function UserManagement() {
           <div>
             <h1 style={{ fontSize: 22, fontWeight: 800, margin: 0 }}>User Management</h1>
             <p style={{ margin: '4px 0 0', fontSize: 13, opacity: .8 }}>
-              Manage platform access — create users, assign roles, toggle status
+              Manage platform access: create users, assign roles, toggle status
             </p>
           </div>
         </div>
@@ -293,7 +301,7 @@ export default function UserManagement() {
       {/* Pending approvals */}
       {pendingUsers.length > 0 && (
         <div className="card" style={{ padding: 0, overflow: 'hidden', border: '2px solid #FF9800' }}>
-          <div style={{ padding: '14px 20px', background: '#fff8e1', display: 'flex', alignItems: 'center', gap: 10 }}>
+          <div style={{ padding: '14px 20px', background: 'var(--tint-amber)', display: 'flex', alignItems: 'center', gap: 10 }}>
             <Clock size={18} color="#E65100" />
             <h2 style={{ fontSize: 15, fontWeight: 800, color: '#E65100' }}>Pending Approval</h2>
             <span style={{
@@ -306,15 +314,15 @@ export default function UserManagement() {
           <div style={{ overflowX: 'auto' }}>
             <table className="data-table">
               <thead>
-                <tr><th>Name</th><th>Username</th><th>Email</th><th>Phone</th><th>Requested Role</th><th>Location</th><th>Registered</th><th>Actions</th></tr>
+                <tr><th>Name</th><th>Username</th><th>Email</th><th>Phone</th><th>Requested Role</th><th>Location</th><th>Registered</th><th>Farm</th><th>Actions</th></tr>
               </thead>
               <tbody>
                 {pendingUsers.map(u => (
                   <tr key={u.user_id}>
-                    <td style={{ fontWeight: 600 }}>{u.full_name || '—'}</td>
+                    <td style={{ fontWeight: 600 }}>{u.full_name || '-'}</td>
                     <td style={{ fontFamily: 'monospace', fontSize: 12 }}>@{u.username}</td>
-                    <td style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{u.email || '—'}</td>
-                    <td style={{ fontFamily: 'monospace', fontSize: 12 }}>{u.phone_number || '—'}</td>
+                    <td style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{u.email || '-'}</td>
+                    <td style={{ fontFamily: 'monospace', fontSize: 12 }}>{u.phone_number || '-'}</td>
                     <td>
                       <span style={{
                         fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 20,
@@ -325,16 +333,25 @@ export default function UserManagement() {
                       </span>
                     </td>
                     <td style={{ fontSize: 12, color: 'var(--text-secondary)' }}>
-                      {[u.district, u.province].filter(Boolean).join(', ') || '—'}
+                      {[u.district, u.province].filter(Boolean).join(', ') || '-'}
                     </td>
                     <td style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
-                      {u.created_at ? format(new Date(u.created_at), 'MMM d, yyyy') : '—'}
+                      {u.created_at ? format(new Date(u.created_at), 'MMM d, yyyy') : '-'}
+                    </td>
+                    <td>
+                      <select value={approveFarm[u.user_id] ?? onlyFarm} aria-label={`Farm for ${u.username}`}
+                        onChange={e => setApproveFarm(m => ({ ...m, [u.user_id]: e.target.value ? Number(e.target.value) : '' }))}
+                        style={{ padding: '4px 8px', borderRadius: 6, border: '1px solid var(--border)', fontSize: 12, fontFamily: 'inherit' }}>
+                        <option value="">Choose farm…</option>
+                        {farms.map(f => <option key={f.farm_id} value={f.farm_id}>{f.farm_name}</option>)}
+                      </select>
                     </td>
                     <td>
                       <div style={{ display: 'flex', gap: 6 }}>
                         <button
-                          onClick={() => approveMut.mutate(u.user_id)}
-                          disabled={approveMut.isPending || rejectMut.isPending}
+                          onClick={() => approveMut.mutate({ id: u.user_id, farmId: approveFarm[u.user_id] || onlyFarm })}
+                          disabled={approveMut.isPending || rejectMut.isPending || !(approveFarm[u.user_id] || onlyFarm)}
+                          title={(approveFarm[u.user_id] || onlyFarm) ? 'Approve into the chosen farm' : 'Choose a farm first'}
                           className="btn"
                           style={{ padding: '5px 12px', fontSize: 11, background: '#4CAF50', color: '#fff', border: 'none', display: 'flex', alignItems: 'center', gap: 4 }}>
                           <UserCheck size={12} /> Approve
@@ -355,6 +372,8 @@ export default function UserManagement() {
           </div>
         </div>
       )}
+
+      <FarmsCard />
 
       {/* Role legend */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(220px,1fr))', gap: 12 }}>
@@ -393,16 +412,16 @@ export default function UserManagement() {
                 <thead>
                   <tr>
                     <th>Name</th><th>Username</th><th>Email</th><th>Phone</th>
-                    <th>Role</th><th>Status</th><th>Last Login</th><th>Actions</th>
+                    <th>Role</th><th>Farm</th><th>Status</th><th>Last Login</th><th>Actions</th>
                   </tr>
                 </thead>
                 <tbody>
                   {users.map(u => (
                     <tr key={u.user_id}>
-                      <td style={{ fontWeight: 600 }}>{u.full_name || '—'}</td>
+                      <td style={{ fontWeight: 600 }}>{u.full_name || '-'}</td>
                       <td style={{ fontFamily: 'monospace', fontSize: 12 }}>@{u.username}</td>
-                      <td style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{u.email || '—'}</td>
-                      <td style={{ fontFamily: 'monospace', fontSize: 12 }}>{u.phone_number || '—'}</td>
+                      <td style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{u.email || '-'}</td>
+                      <td style={{ fontFamily: 'monospace', fontSize: 12 }}>{u.phone_number || '-'}</td>
                       <td>
                         <span style={{
                           fontSize: 11, fontWeight: 700, padding: '3px 10px', borderRadius: 20,
@@ -412,6 +431,9 @@ export default function UserManagement() {
                         }}>
                           {u.role}
                         </span>
+                      </td>
+                      <td style={{ fontSize: 12, color: u.farm_id || u.role === 'Admin' ? 'var(--text)' : '#E65100' }}>
+                        {u.role === 'Admin' ? 'All farms' : u.farm_id ? (farmName(u.farm_id) || `Farm ${u.farm_id}`) : 'Unassigned'}
                       </td>
                       <td>
                         <span className={`badge badge-${u.is_active ? 'healthy' : 'critical'}`}>
@@ -424,7 +446,7 @@ export default function UserManagement() {
                       <td>
                         <div style={{ display: 'flex', gap: 4, flexWrap: 'wrap' }}>
                           <button onClick={() => setViewUser(u)} className="btn btn-ghost"
-                            style={{ padding: '4px 10px', fontSize: 11, display: 'flex', alignItems: 'center', gap: 4, color: '#1E4D7B' }}>
+                            style={{ padding: '4px 10px', fontSize: 11, display: 'flex', alignItems: 'center', gap: 4, color: 'var(--navy-ink)' }}>
                             <Eye size={12} /> View
                           </button>
                           <button onClick={() => openEdit(u)} className="btn btn-ghost"
@@ -477,7 +499,7 @@ export default function UserManagement() {
           padding: '20px',
         }}>
           <div style={{
-            background: '#fff', borderRadius: 16, width: '100%', maxWidth: 540,
+            background: 'var(--card)', borderRadius: 16, width: '100%', maxWidth: 540,
             boxShadow: '0 20px 60px rgba(0,0,0,.25)',
             display: 'flex', flexDirection: 'column', maxHeight: '92vh', overflow: 'hidden',
           }}>
@@ -558,6 +580,18 @@ export default function UserManagement() {
                 </p>
               </div>
 
+              {/* Farm */}
+              <div>
+                <label style={LABEL_STYLE}>Farm *</label>
+                <select name="farm_id" value={createForm.farm_id || onlyFarm} onChange={handleCreateChange} style={INPUT_STYLE}>
+                  <option value="">Choose farm…</option>
+                  {farms.map(f => <option key={f.farm_id} value={f.farm_id}>{f.farm_name}</option>)}
+                </select>
+                <p style={{ fontSize: 11, color: 'var(--text-secondary)', marginTop: 6 }}>
+                  The user will only see this farm's data. Admins see every farm.
+                </p>
+              </div>
+
               {/* Location */}
               <div style={{ display: 'grid', gap: 0 }}>
                 <RwandaLocationFields location={createLocation} onChange={setCreateLocation} />
@@ -565,7 +599,7 @@ export default function UserManagement() {
 
               {/* Error */}
               {createErr && (
-                <div style={{ color: '#c62828', fontSize: 13, padding: '10px 14px', background: '#fde8e8', borderRadius: 8 }}>
+                <div style={{ color: '#c62828', fontSize: 13, padding: '10px 14px', background: 'var(--tint-red)', borderRadius: 8 }}>
                   ⚠ {createErr}
                 </div>
               )}
@@ -597,7 +631,7 @@ export default function UserManagement() {
           padding: '20px',
         }}>
           <div style={{
-            background: '#fff', borderRadius: 16, width: '100%', maxWidth: 480,
+            background: 'var(--card)', borderRadius: 16, width: '100%', maxWidth: 480,
             boxShadow: '0 20px 60px rgba(0,0,0,.25)',
             display: 'flex', flexDirection: 'column', maxHeight: '90vh', overflow: 'hidden',
           }}>
@@ -662,6 +696,15 @@ export default function UserManagement() {
                 </p>
               </div>
 
+              {/* Farm */}
+              <div>
+                <label style={LABEL_STYLE}>Farm</label>
+                <select value={editUser.farm_id} onChange={e => setEditUser(p => ({ ...p, farm_id: e.target.value ? Number(e.target.value) : '' }))} style={INPUT_STYLE}>
+                  <option value="">Unassigned</option>
+                  {farms.map(f => <option key={f.farm_id} value={f.farm_id}>{f.farm_name}</option>)}
+                </select>
+              </div>
+
               {/* Active status */}
               <div>
                 <label style={LABEL_STYLE}>Account Status</label>
@@ -673,14 +716,14 @@ export default function UserManagement() {
                     style={{ width: 18, height: 18, accentColor: '#4CAF50', cursor: 'pointer' }}
                   />
                   <span style={{ fontWeight: 600, color: editUser.is_active ? '#4CAF50' : '#c62828' }}>
-                    {editUser.is_active ? 'Active — can log in' : 'Inactive — login disabled'}
+                    {editUser.is_active ? 'Active: can log in' : 'Inactive: login disabled'}
                   </span>
                 </label>
               </div>
 
               {/* Error */}
               {editErr && (
-                <div style={{ color: '#c62828', fontSize: 13, padding: '10px 14px', background: '#fde8e8', borderRadius: 8 }}>
+                <div style={{ color: '#c62828', fontSize: 13, padding: '10px 14px', background: 'var(--tint-red)', borderRadius: 8 }}>
                   ⚠ {editErr}
                 </div>
               )}
@@ -706,7 +749,7 @@ export default function UserManagement() {
       {/* ── Reset Password Modal ── */}
       {resetTarget && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 999, background: 'rgba(0,0,0,.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 20 }}>
-          <div style={{ background: '#fff', borderRadius: 16, width: '100%', maxWidth: 400, boxShadow: '0 20px 60px rgba(0,0,0,.25)' }}>
+          <div style={{ background: 'var(--card)', borderRadius: 16, width: '100%', maxWidth: 400, boxShadow: '0 20px 60px rgba(0,0,0,.25)' }}>
             <div style={{ padding: '18px 24px', background: 'linear-gradient(135deg,#E65100,#FF9800)', color: '#fff', borderRadius: '16px 16px 0 0', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
               <div>
                 <h2 style={{ fontSize: 17, fontWeight: 800, margin: 0 }}>🔑 Reset Password</h2>
@@ -757,5 +800,5 @@ const INPUT_STYLE = {
   width: '100%', padding: '9px 12px',
   borderRadius: 8, border: '2px solid var(--border)',
   fontSize: 13, outline: 'none', fontFamily: 'inherit',
-  background: '#fff', boxSizing: 'border-box',
+  background: 'var(--card)', boxSizing: 'border-box',
 };

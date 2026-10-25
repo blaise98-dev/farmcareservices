@@ -1,6 +1,6 @@
 {
-  "name": "MooMe — Smart Livestock Platform",
-  "short_name": "MooMe",
+  "name": "FarmCare: Smart Livestock Platform",
+  "short_name": "FarmCare",
   "description": "IoT-AI Livestock Intelligence Platform for Rwanda dairy farmers",
   "start_url": "/",
   "display": "standalone",

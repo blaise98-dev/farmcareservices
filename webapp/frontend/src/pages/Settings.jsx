@@ -11,6 +11,7 @@ const LANGUAGES = [
   { code: 'fr', label: 'Français',   flag: '🇫🇷' },
 ];
 import { format } from 'date-fns';
+import { LANG_KEY, readKey, writeKey } from '../lib/storage';
 
 const ROLE_COLOR = {
   Admin: '#1E4D7B', Farmer: '#4CAF50', Veterinarian: '#9C27B0', Technician: '#FF9800'
@@ -19,10 +20,10 @@ const ROLE_BG = {
   Admin: '#e8eef7', Farmer: '#e8f5e9', Veterinarian: '#f3e5f5', Technician: '#fff8e1'
 };
 const ROLE_DESC = {
-  Admin:        'Full system access — herd, milk, feed, environment, alerts, economics, predictions, users, reports',
-  Farmer:       'Farm operations — herd (register cows), milk/feed logging, alerts, economics; no health diagnostics or predictions',
-  Veterinarian: 'Health & medical — herd health, health status updates, alerts, predictions, feed prescriptions; no economics',
-  Technician:   'IoT operations — dashboard, environment calibration, economics; read-only on cows',
+  Admin:        'Full system access: herd, milk, feed, environment, alerts, economics, predictions, users, reports',
+  Farmer:       'Farm operations: herd (register cows), milk/feed logging, alerts, economics; no health diagnostics or predictions',
+  Veterinarian: 'Health & medical: herd health, health status updates, alerts, predictions, feed prescriptions; no economics',
+  Technician:   'IoT operations: dashboard, environment calibration, economics; read-only on cows',
 };
 
 export default function Settings() {
@@ -33,14 +34,14 @@ export default function Settings() {
   const [err, setErr]         = useState('');
   const [saving, setSaving]   = useState(false);
   const [activeTab, setActiveTab] = useState('profile');
-  const [lang, setLang]       = useState(() => localStorage.getItem('moome_lang') || 'en');
+  const [lang, setLang]       = useState(() => readKey(LANG_KEY) || 'en');
   const [avatarMsg, setAvatarMsg] = useState('');
   const fileInputRef          = useRef(null);
 
   const handleAvatarChange = async (e) => {
     const file = e.target.files[0];
     if (!file) return;
-    if (file.size > 500 * 1024) { setAvatarMsg('Image too large — max 500 KB'); return; }
+    if (file.size > 500 * 1024) { setAvatarMsg('Image too large: max 500 KB'); return; }
     const reader = new FileReader();
     reader.onload = async (ev) => {
       try {
@@ -133,8 +134,8 @@ export default function Settings() {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14 }}>
               {[
                 { label: 'Username',   val: user?.username },
-                { label: 'Email',      val: user?.email || '—' },
-                { label: 'Phone',      val: user?.phone_number || '—' },
+                { label: 'Email',      val: user?.email || '-' },
+                { label: 'Phone',      val: user?.phone_number || '-' },
                 { label: 'Last Login', val: user?.last_login ? format(new Date(user.last_login), 'MMM d, yyyy HH:mm') : 'This session' },
               ].map(({ label, val }) => (
                 <div key={label} style={{ padding: '12px', background: 'var(--bg)', borderRadius: 8 }}>
@@ -176,8 +177,8 @@ export default function Settings() {
                   />
                 </div>
               ))}
-              {err && <div style={{ color: '#c62828', fontSize: 13, padding: '8px 12px', background: '#fde8e8', borderRadius: 8 }}>⚠ {err}</div>}
-              {msg && <div style={{ color: '#2E7D32', fontSize: 13, padding: '8px 12px', background: '#e8f5e9', borderRadius: 8, display: 'flex', alignItems: 'center', gap: 6 }}><CheckCircle size={14} /> {msg}</div>}
+              {err && <div style={{ color: '#c62828', fontSize: 13, padding: '8px 12px', background: 'var(--tint-red)', borderRadius: 8 }}>⚠ {err}</div>}
+              {msg && <div style={{ color: 'var(--green-ink)', fontSize: 13, padding: '8px 12px', background: 'var(--tint-green)', borderRadius: 8, display: 'flex', alignItems: 'center', gap: 6 }}><CheckCircle size={14} /> {msg}</div>}
               <button type="submit" disabled={saving} className="btn btn-primary" style={{ alignSelf: 'flex-start' }}>
                 {saving ? 'Saving…' : 'Update Password'}
               </button>
@@ -197,7 +198,7 @@ export default function Settings() {
                   }}>
                     <Users size={18} color="#1E4D7B" />
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontWeight: 700, fontSize: 14, color: '#1E4D7B' }}>User Management</div>
+                      <div style={{ fontWeight: 700, fontSize: 14, color: 'var(--navy-ink)' }}>User Management</div>
                       <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Create users, assign roles, toggle access</div>
                     </div>
                     <ExternalLink size={14} color="#1E4D7B" />
@@ -206,12 +207,12 @@ export default function Settings() {
                 <Link to="/app/reports" style={{ textDecoration: 'none' }}>
                   <div style={{
                     display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px',
-                    background: '#e8f5e9', borderRadius: 10, border: '1px solid #4CAF5022',
+                    background: 'var(--tint-green)', borderRadius: 10, border: '1px solid #4CAF5022',
                     cursor: 'pointer',
                   }}>
                     <FileText size={18} color="#4CAF50" />
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontWeight: 700, fontSize: 14, color: '#2E7D32' }}>Platform Reports</div>
+                      <div style={{ fontWeight: 700, fontSize: 14, color: 'var(--green-ink)' }}>Platform Reports</div>
                       <div style={{ fontSize: 12, color: 'var(--text-secondary)' }}>Activity logs, alert history, analytics</div>
                     </div>
                     <ExternalLink size={14} color="#4CAF50" />
@@ -229,7 +230,7 @@ export default function Settings() {
             <div style={{ display: 'flex', gap: 10 }}>
               {LANGUAGES.map(l => (
                 <button key={l.code}
-                  onClick={() => { setLang(l.code); localStorage.setItem('moome_lang', l.code); }}
+                  onClick={() => { setLang(l.code); writeKey(LANG_KEY, l.code); }}
                   className="btn"
                   style={{ padding: '10px 20px', fontSize: 13, fontWeight: lang === l.code ? 700 : 400, background: lang === l.code ? '#1E4D7B' : 'var(--bg)', color: lang === l.code ? '#fff' : 'var(--text-secondary)', border: `2px solid ${lang === l.code ? '#1E4D7B' : 'var(--border)'}`, borderRadius: 8 }}>
                   {l.flag} {l.label}

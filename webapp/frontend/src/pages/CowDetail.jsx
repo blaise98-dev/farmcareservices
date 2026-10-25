@@ -130,13 +130,13 @@ export default function CowDetail() {
           width: 80, height: 80, borderRadius: '50%',
           background: HEALTH_COLOR[cow.health_status] || '#999',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: 36, flexShrink: 0,
-        }}>🐄</div>
+          padding: 3, flexShrink: 0, overflow: 'hidden',
+        }}><img src="/images/farmcare-cow.jpg" alt={cow.cow_name} style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%', display: 'block' }} /></div>
 
         <div style={{ flex: 1, minWidth: 220 }}>
           <h1 style={{ fontSize: 26, fontWeight: 800, marginBottom: 6 }}>{cow.cow_name}</h1>
           <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
-            <span style={{ fontFamily: 'monospace', fontSize: 12, background: '#f0f0f0', padding: '2px 8px', borderRadius: 6 }}>{cow.rfid_tag}</span>
+            <span style={{ fontFamily: 'monospace', fontSize: 12, background: 'var(--surface-2)', padding: '2px 8px', borderRadius: 6 }}>{cow.rfid_tag}</span>
             <span className="badge" style={{ background: `${HEALTH_COLOR[cow.health_status]}22`, color: HEALTH_COLOR[cow.health_status] }}>{cow.health_status}</span>
             <span className="badge badge-normal">{cow.breed}</span>
             {cow.lactating
@@ -153,9 +153,9 @@ export default function CowDetail() {
         </div>
       </div>
 
-      {/* ── Edit panel — role-gated ── */}
+      {/* ── Edit panel: role-gated ── */}
       {canEdit && (
-        <div className="card" style={{ border: '1px solid #e8f5e9', background: '#f9fff9' }}>
+        <div className="card" style={{ border: '1px solid #e8f5e9', background: 'var(--tint-green)' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 16 }}>
             <Save size={16} color="#4CAF50" />
             <h2 style={{ fontSize: 15, fontWeight: 700 }}>Update Cow Record</h2>
@@ -166,7 +166,7 @@ export default function CowDetail() {
 
           <div style={{ display: 'flex', gap: 16, flexWrap: 'wrap', alignItems: 'flex-end' }}>
 
-            {/* Health status — Admin & Vet only */}
+            {/* Health status: Admin & Vet only */}
             <RoleGuard
               allowed={p.canUpdateHealthStatus}
               fallback={
@@ -174,7 +174,7 @@ export default function CowDetail() {
                   <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: 4 }}>
                     Health Status <Lock size={10} />
                   </label>
-                  <div style={{ padding: '8px 12px', background: '#f0f0f0', borderRadius: 8, fontSize: 13, color: '#999' }}>
+                  <div style={{ padding: '8px 12px', background: 'var(--surface-2)', borderRadius: 8, fontSize: 13, color: 'var(--text-faint)' }}>
                     {cow.health_status} (read-only)
                   </div>
                 </div>
@@ -196,7 +196,7 @@ export default function CowDetail() {
               </div>
             </RoleGuard>
 
-            {/* Weight — Admin, Farmer, Vet */}
+            {/* Weight: Admin, Farmer, Vet */}
             <RoleGuard
               allowed={p.canUpdateWeight}
               fallback={
@@ -204,7 +204,7 @@ export default function CowDetail() {
                   <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', display: 'flex', alignItems: 'center', gap: 4 }}>
                     Weight (kg) <Lock size={10} />
                   </label>
-                  <div style={{ padding: '8px 12px', background: '#f0f0f0', borderRadius: 8, fontSize: 13, color: '#999' }}>{cow.weight_kg || '--'}</div>
+                  <div style={{ padding: '8px 12px', background: 'var(--surface-2)', borderRadius: 8, fontSize: 13, color: 'var(--text-faint)' }}>{cow.weight_kg || '--'}</div>
                 </div>
               }
             >
@@ -225,7 +225,7 @@ export default function CowDetail() {
               </div>
             </RoleGuard>
 
-            {/* Lactating — Admin, Farmer, Vet */}
+            {/* Lactating: Admin, Farmer, Vet */}
             <RoleGuard allowed={p.canUpdateLactation}>
               <div>
                 <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', textTransform: 'uppercase', display: 'block', marginBottom: 6 }}>
@@ -238,8 +238,8 @@ export default function CowDetail() {
                   onFocus={e => e.target.style.borderColor = '#4CAF50'}
                   onBlur={e => e.target.style.borderColor = 'var(--border)'}
                 >
-                  <option value="true">Yes — Lactating</option>
-                  <option value="false">No — Dry</option>
+                  <option value="true">Yes: Lactating</option>
+                  <option value="false">No: Dry</option>
                 </select>
               </div>
             </RoleGuard>
@@ -252,7 +252,7 @@ export default function CowDetail() {
               {saving ? 'Saving…' : 'Save Changes'}
             </button>
 
-            {/* Retire cow — Admin only */}
+            {/* Retire cow: Admin only */}
             <RoleGuard allowed={p.canRetireCow}>
               <button
                 onClick={async () => {
@@ -336,7 +336,7 @@ export default function CowDetail() {
                 <Activity size={18} color="#009688" />
               </div>
               <div style={{ fontSize: 22, fontWeight: 900, color: '#009688' }}>
-                {latestMotion ? (latestMotion.is_moving ? '⚡ Moving' : '— Still') : '--'}
+                {latestMotion ? (latestMotion.is_moving ? '⚡ Moving' : 'Still') : '--'}
               </div>
               {latestMotion?.recorded_at && (
                 <span style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
@@ -404,15 +404,15 @@ export default function CowDetail() {
         <div className="card">
           <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 14, display: 'flex', alignItems: 'center', gap: 8 }}><Baby size={16} /> Reproduction Records</h2>
           {reproRecords.length === 0
-            ? <div className="empty-state"><span>No reproduction records — add via the Reproduction page</span></div>
+            ? <div className="empty-state"><span>No reproduction records: add via the Reproduction page</span></div>
             : reproRecords.map(r => (
-              <div key={r.repro_id} style={{ padding: '12px', background: '#f7f9fc', borderRadius: 8, marginBottom: 10, display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(140px,1fr))', gap: 10 }}>
+              <div key={r.repro_id} style={{ padding: '12px', background: 'var(--surface-2)', borderRadius: 8, marginBottom: 10, display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(140px,1fr))', gap: 10 }}>
                 {[
-                  { label: 'Calving Date',      val: r.calving_date ? format(new Date(r.calving_date), 'MMM d, yyyy') : '—' },
-                  { label: 'Days Lactation',     val: r.days_in_lactation != null ? `${r.days_in_lactation}d` : '—' },
-                  { label: 'Insemination',       val: r.insemination_date ? format(new Date(r.insemination_date), 'MMM d, yyyy') : '—' },
-                  { label: 'Expected Calving',   val: r.expected_calving_date ? format(new Date(r.expected_calving_date), 'MMM d, yyyy') : '—' },
-                  { label: 'Days to Calving',    val: r.days_to_calving != null ? `${r.days_to_calving}d` : '—' },
+                  { label: 'Calving Date',      val: r.calving_date ? format(new Date(r.calving_date), 'MMM d, yyyy') : '-' },
+                  { label: 'Days Lactation',     val: r.days_in_lactation != null ? `${r.days_in_lactation}d` : '-' },
+                  { label: 'Insemination',       val: r.insemination_date ? format(new Date(r.insemination_date), 'MMM d, yyyy') : '-' },
+                  { label: 'Expected Calving',   val: r.expected_calving_date ? format(new Date(r.expected_calving_date), 'MMM d, yyyy') : '-' },
+                  { label: 'Days to Calving',    val: r.days_to_calving != null ? `${r.days_to_calving}d` : '-' },
                   { label: 'Pregnant',           val: r.pregnancy_confirmed ? 'Yes' : 'No' },
                   { label: 'Total Calvings',     val: r.total_calvings },
                 ].map(({ label, val }) => (
@@ -442,12 +442,12 @@ export default function CowDetail() {
                 <tbody>
                   {treatments.map(t => (
                     <tr key={t.treatment_id}>
-                      <td>{t.treatment_date ? format(new Date(t.treatment_date), 'MMM d, yyyy') : '—'}</td>
+                      <td>{t.treatment_date ? format(new Date(t.treatment_date), 'MMM d, yyyy') : '-'}</td>
                       <td style={{ fontWeight: 600 }}>{t.diagnosis}</td>
                       <td style={{ color: '#9C27B0', fontWeight: 600 }}>{t.drug_name}</td>
-                      <td style={{ fontSize: 12 }}>{t.dose || '—'}</td>
+                      <td style={{ fontSize: 12 }}>{t.dose || '-'}</td>
                       <td>{t.duration_days}d</td>
-                      <td style={{ fontSize: 12 }}>{t.follow_up_date ? format(new Date(t.follow_up_date), 'MMM d') : '—'}</td>
+                      <td style={{ fontSize: 12 }}>{t.follow_up_date ? format(new Date(t.follow_up_date), 'MMM d') : '-'}</td>
                       <td><span className={`badge badge-${t.is_completed ? 'healthy' : 'warning'}`}>{t.is_completed ? 'Done' : 'Active'}</span></td>
                     </tr>
                   ))}
@@ -461,10 +461,10 @@ export default function CowDetail() {
         </div>
       )}
 
-      {/* Charts row — only shown on overview tab */}
+      {/* Charts row: only shown on overview tab */}
       {detailTab === 'overview' && <>
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
-        <ChartCard title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Thermometer size={14} /> Body Temperature</span>} sub="Recent readings — Elevated ≥39.5°C · Fever ≥40°C">
+        <ChartCard title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Thermometer size={14} /> Body Temperature</span>} sub="Recent readings: Elevated ≥39.5°C · Fever ≥40°C">
           <ELine data={tempData} xKey="time"
             series={[{ key: 'temp', name: 'Body Temp °C', color: '#FF9800' }]}
             smooth height={200} unit="°C"
@@ -472,7 +472,7 @@ export default function CowDetail() {
           />
         </ChartCard>
 
-        <ChartCard title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Droplets size={14} /> Milk Production</span>} sub="Per-session records — last 14 entries">
+        <ChartCard title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Droplets size={14} /> Milk Production</span>} sub="Per-session records: last 14 entries">
           <EBar data={milkData} xKey="time"
             series={[{ key: 'liters', name: 'Milk (L)', color: '#00BCD4' }]}
             unit=" L" showLabel height={200} />
@@ -481,7 +481,7 @@ export default function CowDetail() {
 
       {/* Feed + Water */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
-        <ChartCard title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Leaf size={14} /> Feed Consumption</span>} sub="kg per feeding event — last 10 records">
+        <ChartCard title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Leaf size={14} /> Feed Consumption</span>} sub="kg per feeding event: last 10 records">
           <EBar data={feedData} xKey="date"
             series={[{ key: 'kg', name: 'Feed (kg)', color: '#4CAF50' }]}
             unit=" kg" height={200} />
@@ -506,14 +506,14 @@ export default function CowDetail() {
 
       {/* Predictions + Alerts */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 20 }}>
-        {/* Predictions — only for roles that can see predictions */}
+        {/* Predictions: only for roles that can see predictions */}
         {p.canViewPredictions ? (
           <div className="card">
             <h2 style={{ fontSize: 15, fontWeight: 700, marginBottom: 12, display: 'flex', alignItems: 'center', gap: 8 }}><Bot size={16} /> AI Predictions</h2>
             {predictions.length === 0
               ? <div className="empty-state"><Activity size={32} /><span>No predictions available</span></div>
               : predictions.map(pred => (
-                <div key={pred.prediction_id} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px', background: '#f7f9fc', borderRadius: 8, marginBottom: 8, fontSize: 13 }}>
+                <div key={pred.prediction_id} style={{ display: 'flex', justifyContent: 'space-between', padding: '10px', background: 'var(--surface-2)', borderRadius: 8, marginBottom: 8, fontSize: 13 }}>
                   <div>
                     <div style={{ fontWeight: 600 }}>{pred.prediction_type}</div>
                     <div style={{ fontSize: 11, color: 'var(--text-secondary)' }}>
@@ -531,7 +531,7 @@ export default function CowDetail() {
         ) : (
           <div className="card" style={{ opacity: .6, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', minHeight: 120 }}>
             <Lock size={28} color="#aaa" />
-            <p style={{ color: '#aaa', fontSize: 13, marginTop: 8 }}>Predictions not available for your role</p>
+            <p style={{ color: 'var(--text-faint)', fontSize: 13, marginTop: 8 }}>Predictions not available for your role</p>
           </div>
         )}
 
@@ -540,7 +540,7 @@ export default function CowDetail() {
           {alerts.length === 0
             ? <div className="empty-state" style={{ padding: 20 }}><span>No alerts for this cow</span></div>
             : alerts.map(a => (
-              <div key={a.alert_id} style={{ padding: '10px', borderLeft: `3px solid ${a.severity === 'Critical' ? '#F44336' : '#FF9800'}`, background: '#f7f9fc', borderRadius: '0 8px 8px 0', marginBottom: 8 }}>
+              <div key={a.alert_id} style={{ padding: '10px', borderLeft: `3px solid ${a.severity === 'Critical' ? '#F44336' : '#FF9800'}`, background: 'var(--surface-2)', borderRadius: '0 8px 8px 0', marginBottom: 8 }}>
                 <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                   <span style={{ fontWeight: 600, fontSize: 13 }}>{a.alert_type}</span>
                   <span className={`badge badge-${(a.severity || '').toLowerCase()}`}>{a.severity}</span>

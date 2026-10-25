@@ -1,5 +1,5 @@
 """
-MooMe IoT-AI Livestock Platform — FastAPI Backend
+FarmCare IoT-AI Livestock Platform: FastAPI Backend
 Real-time farm monitoring with WebSocket broadcasts.
 """
 import asyncio
@@ -31,6 +31,15 @@ from routers.iot_wearable import router as iot_wearable_router
 from routers.contact import router as contact_router
 from routers.sms_config import router as sms_config_router
 from routers.cow_economics import router as cow_economics_router
+from routers.milking import router as milking_router
+from routers.barn import router as barn_router
+from routers.cow_health import router as cow_health_router
+from routers.field_settings import router as field_settings_router
+from farm_config import ensure_field_tables
+from tenancy import FarmHeaderMiddleware, ensure_farm_tenancy, is_admin, user_farm
+from routers.farms import router as farms_router
+from routers.auth import get_current_user
+from ws_manager import ALL_FARMS
 
 
 @asynccontextmanager
@@ -43,6 +52,13 @@ async def lifespan(app: FastAPI):
     await ensure_user_approval_columns()
     await ensure_contact_messages_table()
     await ensure_milk_feed_attribution_columns()
+    # Newer migrations log and carry on if a live database refuses one, so the
+    # API still starts and the older pages keep working.
+    for step in (ensure_field_tables, ensure_farm_tenancy):
+        try:
+            await step()
+        except Exception:  # noqa: BLE001
+            logger.exception("Startup migration %s failed", step.__name__)
     await log_remote_connection()
     task = asyncio.create_task(realtime_poller())
     yield
@@ -52,12 +68,14 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(
-    title="MooMe API",
-    description="IoT-AI Smart Dairy Farm Management Platform — Rwanda",
+    title="FarmCare API",
+    description="IoT-AI Smart Dairy Farm Management Platform: Rwanda",
     version="1.0.0",
     lifespan=lifespan,
 )
 
+# Added first so it runs inside CORS: the Admin farm picker's X-Farm-Id header
+app.add_middleware(FarmHeaderMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins_list,
@@ -90,18 +108,29 @@ app.include_router(iot_wearable_router)
 app.include_router(contact_router)
 app.include_router(sms_config_router)
 app.include_router(cow_economics_router)
+app.include_router(milking_router)
+app.include_router(barn_router)
+app.include_router(cow_health_router)
+app.include_router(field_settings_router)
+app.include_router(farms_router)
 
 
 # ── WebSocket endpoint ────────────────────────────────────────
 @app.websocket("/ws")
 async def websocket_endpoint(ws: WebSocket):
-    await manager.connect(ws)
+    # Browsers cannot set headers on a WebSocket, so the JWT comes as ?token=
+    try:
+        user = await get_current_user(ws.query_params.get("token") or "")
+    except Exception:
+        await ws.close(code=4401)
+        return
+    scope = ALL_FARMS if is_admin(user) else user_farm(user)
+    await manager.connect(ws, scope)
     try:
         # Send an initial snapshot so UI loads instantly
-        snapshot = await build_snapshot()
-        await ws.send_text(json.dumps({"event": "snapshot", "data": snapshot, "ts": datetime.utcnow().isoformat()}))
+        await manager.send_to(ws, "snapshot", await build_snapshot(scope))
         while True:
-            # Keep alive — echo any pings from client
+            # Keep alive: echo any pings from client
             msg = await ws.receive_text()
             if msg == "ping":
                 await ws.send_text(json.dumps({"event": "pong"}))
@@ -109,46 +138,72 @@ async def websocket_endpoint(ws: WebSocket):
         manager.disconnect(ws)
 
 
+def _plain(row) -> dict:
+    return {k: (float(v) if hasattr(v, "__float__") else str(v) if not isinstance(v, (int, str, bool, type(None))) else v)
+            for k, v in (row or {}).items()}
+
+
+def _farm_filter(scope):
+    """WHERE fragment for one farm, or every farm for Admins."""
+    if scope == ALL_FARMS:
+        return "1=1", ()
+    if scope is None:
+        return "1=0", ()
+    return "farm_id = %s", (scope,)
+
+
 # ── Real-time poller (simulates live sensor feed) ─────────────
 async def realtime_poller():
     """
-    Polls the DB every 10 seconds and broadcasts fresh
-    environment + alert snapshots to all connected clients.
-    In production this is replaced by direct MQTT/sensor pushes.
+    Polls the DB every 10 seconds and broadcasts fresh environment and
+    alert-count snapshots, separately for each farm that has a viewer open.
     """
     while True:
         await asyncio.sleep(10)
         try:
-            env = await fetchone(
-                "SELECT * FROM EnvironmentalReadings ORDER BY recorded_at DESC LIMIT 1"
-            )
-            if env:
-                # Convert non-serialisable types
-                payload = {k: (float(v) if hasattr(v, "__float__") else str(v) if not isinstance(v, (int, str, bool, type(None))) else v)
-                           for k, v in env.items()}
-                await manager.broadcast("env_live", payload)
-
-            active = await fetchone(
-                "SELECT COUNT(*) AS cnt FROM Alerts WHERE is_resolved=FALSE"
-            )
-            await manager.broadcast("alerts_count", {"count": active["cnt"] if active else 0})
+            for farm_id in manager.farms_listening():
+                env, count = await _live_values(farm_id)
+                if env:
+                    await manager.broadcast("env_live", env, farm_id=farm_id)
+                await manager.broadcast("alerts_count", {"count": count}, farm_id=farm_id)
+            if manager.admins_listening():
+                # farm_id=None reaches Admins only
+                env, count = await _live_values(ALL_FARMS)
+                if env:
+                    await manager.broadcast("env_live", env)
+                await manager.broadcast("alerts_count", {"count": count})
         except Exception as exc:
             logger.warning("Realtime poller error: %s", exc)
 
 
-async def build_snapshot():
+async def _live_values(scope):
+    where, args = _farm_filter(scope)
+    env = await fetchone(
+        f"SELECT * FROM EnvironmentalReadings WHERE {where} ORDER BY recorded_at DESC LIMIT 1", args
+    )
+    active = await fetchone(
+        f"SELECT COUNT(*) AS cnt FROM Alerts WHERE is_resolved=FALSE AND {where}", args
+    )
+    return (_plain(env) if env else None), (active["cnt"] if active else 0)
+
+
+async def build_snapshot(scope):
     try:
-        env = await fetchone(
-            "SELECT * FROM EnvironmentalReadings ORDER BY recorded_at DESC LIMIT 1"
-        )
-        summary = await fetchone("SELECT * FROM systemhealthsummary")
-        alerts_cnt = await fetchone(
-            "SELECT COUNT(*) AS cnt FROM Alerts WHERE is_resolved=FALSE"
+        where, args = _farm_filter(scope)
+        env, alerts_cnt = await _live_values(scope)
+        summary = await fetchone(
+            f"""
+            SELECT COUNT(*) AS total_cows,
+                   SUM(CASE WHEN health_status = 'Healthy' THEN 1 ELSE 0 END) AS healthy_cows,
+                   SUM(CASE WHEN lactating = 1 THEN 1 ELSE 0 END) AS lactating_cows
+            FROM Cows WHERE is_active = 1 AND {where}
+            """,
+            args,
         )
         return {
-            "environment": {k: (float(v) if hasattr(v, "__float__") else str(v) if not isinstance(v, (int, str, bool, type(None))) else v) for k, v in (env or {}).items()},
-            "farm_summary": {k: (float(v) if hasattr(v, "__float__") else str(v) if not isinstance(v, (int, str, bool, type(None))) else v) for k, v in (summary or {}).items()},
-            "active_alerts": alerts_cnt["cnt"] if alerts_cnt else 0,
+            "environment": env or {},
+            "farm_summary": _plain(summary),
+            "active_alerts": alerts_cnt,
         }
     except Exception as exc:
         logger.warning("Snapshot build error: %s", exc)
@@ -158,4 +213,4 @@ async def build_snapshot():
 # ── Health check ──────────────────────────────────────────────
 @app.get("/health")
 async def health():
-    return {"status": "ok", "service": "MooMe API", "version": "1.0.0"}
+    return {"status": "ok", "service": "FarmCare API", "version": "1.0.0"}

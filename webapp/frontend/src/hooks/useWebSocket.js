@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
+import { TOKEN_KEY, readKey } from '../lib/storage';
 
 // In dev the Vite proxy forwards /ws → backend WS on 8000.
 // In prod, nginx proxies /ws → backend WS on 127.0.0.1:8000 (same origin as the page).
@@ -22,15 +23,25 @@ export function useWebSocket() {
   const connect = useCallback(() => {
     if (ws.current?.readyState === WebSocket.OPEN) return;
 
-    const socket = new WebSocket(WS_URL);
+    // The server only streams a signed-in user's own farm; wait for a login.
+    const token = readKey(TOKEN_KEY);
+    if (!token) {
+      setTimeout(() => connectRef.current?.(), 3000);
+      return;
+    }
+    const socket = new WebSocket(`${WS_URL}?token=${encodeURIComponent(token)}`);
     ws.current = socket;
 
     socket.onopen = () => {
       setConnected(true);
-      // Keep-alive ping every 25s
+      let beat = 0;
       pingTimer.current = setInterval(() => {
-        if (socket.readyState === WebSocket.OPEN) socket.send('ping');
-      }, 25000);
+        // Reconnect as the new user after a logout or a login as someone else
+        if (readKey(TOKEN_KEY) !== token) { socket.close(); return; }
+        // Keep-alive ping every 25s
+        beat += 1;
+        if (beat % 5 === 0 && socket.readyState === WebSocket.OPEN) socket.send('ping');
+      }, 5000);
     };
 
     socket.onmessage = (e) => {

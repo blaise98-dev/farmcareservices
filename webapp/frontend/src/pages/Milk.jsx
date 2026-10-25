@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getMilkDailySummary, getTopProducers, getTodaySessions, addMilkRecord, getCows } from '../lib/api';
 import { usePermissions } from '../hooks/usePermissions';
@@ -26,6 +26,12 @@ export default function Milk() {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(emptyForm);
   const [notice, setNotice] = useState(null);   // { ok, text } after Save
+  // A confirmation fades after 5 s; an error stays until the next try
+  useEffect(() => {
+    if (!notice?.ok) return undefined;
+    const t = setTimeout(() => setNotice(null), 5000);
+    return () => clearTimeout(t);
+  }, [notice]);
   const [showBreakdown, setShowBreakdown] = useState(false);
   const qc = useQueryClient();
 
@@ -109,7 +115,7 @@ export default function Milk() {
           <RoleGuard
             allowed={p.canLogMilk}
             fallback={
-              <span style={{ fontSize: 12, color: '#aaa', display: 'flex', alignItems: 'center', gap: 4 }}>
+              <span style={{ fontSize: 12, color: 'var(--text-faint)', display: 'flex', alignItems: 'center', gap: 4 }}>
                 <Lock size={13} /> Logging restricted to Admin/Farmer
               </span>
             }
@@ -123,19 +129,19 @@ export default function Milk() {
         {notice && (
           <div role={notice.ok ? 'status' : 'alert'} style={{
             margin: '12px 20px 0', padding: '10px 14px', borderRadius: 10, fontSize: 13, fontWeight: 600,
-            background: notice.ok ? '#e8f5e9' : '#fde8e8', color: notice.ok ? '#2E7D32' : '#c62828',
+            background: notice.ok ? 'var(--tint-green)' : 'var(--tint-red)', color: notice.ok ? 'var(--green-ink)' : '#c62828',
           }}>
             {notice.text}
           </div>
         )}
 
-        {/* Form — only shown if allowed */}
+        {/* Form: only shown if allowed */}
         {showForm && p.canLogMilk && (
-          <div style={{ padding: '16px 20px', background: '#f7f9fc', borderBottom: '1px solid var(--border)', display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'flex-end' }}>
+          <div style={{ padding: '16px 20px', background: 'var(--surface-2)', borderBottom: '1px solid var(--border)', display: 'flex', gap: 12, flexWrap: 'wrap', alignItems: 'flex-end' }}>
             <div>
               <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: 4 }}>Cow</label>
               <select value={form.cow_id} onChange={e => setForm(f => ({ ...f, cow_id: e.target.value }))}
-                style={{ padding: '7px 10px', borderRadius: 8, border: '1px solid var(--border)', fontSize: 13, background: '#fff', minWidth: 140 }}>
+                style={{ padding: '7px 10px', borderRadius: 8, border: '1px solid var(--border)', fontSize: 13, background: 'var(--card)', minWidth: 140 }}>
                 <option value="">Select cow…</option>
                 {cows.filter(c => c.lactating).map(c => <option key={c.cow_id} value={c.cow_id}>{c.cow_name}</option>)}
               </select>
@@ -154,14 +160,14 @@ export default function Milk() {
             <div>
               <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: 4 }}>Session</label>
               <select value={form.milking_session} onChange={e => setForm(f => ({ ...f, milking_session: e.target.value }))}
-                style={{ padding: '7px 10px', borderRadius: 8, border: '1px solid var(--border)', fontSize: 13, background: '#fff' }}>
+                style={{ padding: '7px 10px', borderRadius: 8, border: '1px solid var(--border)', fontSize: 13, background: 'var(--card)' }}>
                 <option>Morning</option><option>Midday</option><option>Evening</option>
               </select>
             </div>
             <div>
               <label style={{ fontSize: 11, fontWeight: 700, color: 'var(--text-secondary)', display: 'block', marginBottom: 4 }}>Quality</label>
               <select value={form.milk_quality} onChange={e => setForm(f => ({ ...f, milk_quality: e.target.value }))}
-                style={{ padding: '7px 10px', borderRadius: 8, border: '1px solid var(--border)', fontSize: 13, background: '#fff' }}>
+                style={{ padding: '7px 10px', borderRadius: 8, border: '1px solid var(--border)', fontSize: 13, background: 'var(--card)' }}>
                 <option>Excellent</option><option>Good</option><option>Normal</option><option>Poor</option>
               </select>
             </div>

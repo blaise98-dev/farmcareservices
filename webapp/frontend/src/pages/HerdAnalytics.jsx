@@ -169,7 +169,7 @@ export default function HerdAnalytics() {
     return Object.entries(map).map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value);
   }, [cows]);
 
-  // Milk 30d — top producers
+  // Milk 30d: top producers
   const topMilk = useMemo(() =>
     [...cows].filter(c => c.milk_30d > 0)
       .sort((a, b) => b.milk_30d - a.milk_30d).slice(0, 10)
@@ -234,7 +234,7 @@ export default function HerdAnalytics() {
           <span style={{ fontSize: 13, fontWeight: 700 }}>Filters</span>
           {activeFilters > 0 && (
             <button onClick={() => { setFSex('All'); setFBreed('All'); setFHealth('All'); setFStages([]); setFProvince('All'); setFAgeMin(''); setFAgeMax(''); setFLactating('All'); }}
-              style={{ marginLeft: 'auto', fontSize: 11, padding: '3px 10px', borderRadius: 8, border: '1px solid #e0e0e0', background: '#fff8e1', color: '#c62828', cursor: 'pointer', fontWeight: 700 }}>
+              style={{ marginLeft: 'auto', fontSize: 11, padding: '3px 10px', borderRadius: 8, border: '1px solid var(--border)', background: 'var(--tint-amber)', color: '#c62828', cursor: 'pointer', fontWeight: 700 }}>
               Clear all ({activeFilters})
             </button>
           )}
@@ -308,7 +308,7 @@ export default function HerdAnalytics() {
           <DonutChart data={byHealth.map(d => ({ ...d, color: HEALTH_COLORS[d.name] }))} height={240} />
         </ChartCard>
         <ChartCard title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><CalendarDays size={14} /> Age Distribution</span>} sub="Bucketed by months/years">
-          <EBar data={byAgeGroup} xKey="name" series={[{ key: 'value', name: 'Cows', color: '#1E4D7B' }]} showLabel height={240} />
+          <EBar data={byAgeGroup} xKey="name" series={[{ key: 'value', name: 'Cows', color: 'var(--navy-ink)' }]} showLabel height={240} />
         </ChartCard>
       </div>
 
@@ -345,7 +345,7 @@ export default function HerdAnalytics() {
         <ChartCard title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Radar size={14} /> Stage Diversity Radar</span>} sub="Coverage across top 8 stages">
           <ERadar
             indicators={radarData.map(d => ({ name: d.subject, max: Math.max(...radarData.map(r => r.count), 1) }))}
-            series={[{ name: 'Count', values: radarData.map(d => d.count), color: '#1E4D7B' }]}
+            series={[{ name: 'Count', values: radarData.map(d => d.count), color: 'var(--navy-ink)' }]}
             height={280}
           />
         </ChartCard>
@@ -368,7 +368,7 @@ export default function HerdAnalytics() {
           : <div className="card"><p style={{ color: 'var(--text-secondary)', fontSize: 13, padding: 16 }}>No location data available</p></div>
         }
         {topMilk.length > 0
-          ? <ChartCard title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Droplets size={14} /> Top Milk Producers (30d)</span>} sub="Total litres produced — last 30 days">
+          ? <ChartCard title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Droplets size={14} /> Top Milk Producers (30d)</span>} sub="Total litres produced: last 30 days">
               <HBarChart data={topMilk.map(r => ({ name: r.name, value: Number(r.liters) }))} unit=" L" color="#2196F3" height={Math.max(180, topMilk.length * 42)} />
             </ChartCard>
           : <div className="card"><p style={{ color: 'var(--text-secondary)', fontSize: 13, padding: 16 }}>No milk data in current filter</p></div>
@@ -398,14 +398,14 @@ export default function HerdAnalytics() {
                     color: c.sex === 'Male' ? '#1565c0' : '#c2185b' }}>{c.sex === 'Male' ? '♂' : '♀'} {c.sex}</span></td>
                   <td style={{ fontSize: 12 }}>{c.breed}</td>
                   <td><span style={{ fontSize: 11, fontWeight: 700, padding: '2px 7px', borderRadius: 10,
-                    background: `${STAGE_COLORS[c.cow_stage] || '#999'}20`, color: STAGE_COLORS[c.cow_stage] || '#333' }}>{c.cow_stage || '—'}</span></td>
-                  <td style={{ fontSize: 12 }}>{c.age_months != null ? `${c.age_months} mo` : '—'}</td>
-                  <td style={{ fontSize: 12 }}>{c.weight_kg ? `${c.weight_kg} kg` : '—'}</td>
+                    background: `${STAGE_COLORS[c.cow_stage] || '#999'}20`, color: STAGE_COLORS[c.cow_stage] || '#333' }}>{c.cow_stage || '-'}</span></td>
+                  <td style={{ fontSize: 12 }}>{c.age_months != null ? `${c.age_months} mo` : '-'}</td>
+                  <td style={{ fontSize: 12 }}>{c.weight_kg ? `${c.weight_kg} kg` : '-'}</td>
                   <td><span style={{ fontSize: 11, fontWeight: 700, padding: '2px 7px', borderRadius: 10,
                     background: `${HEALTH_COLORS[c.health_status] || '#999'}22`, color: HEALTH_COLORS[c.health_status] || '#333' }}>{c.health_status}</span></td>
-                  <td style={{ fontSize: 12 }}>{c.lactating ? '✓ Yes' : '—'}</td>
-                  <td style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{c.province || '—'}</td>
-                  <td style={{ fontSize: 12, fontWeight: 700, color: '#2196F3' }}>{c.milk_30d ? `${Number(c.milk_30d).toFixed(1)} L` : '—'}</td>
+                  <td style={{ fontSize: 12 }}>{c.lactating ? '✓ Yes' : '-'}</td>
+                  <td style={{ fontSize: 12, color: 'var(--text-secondary)' }}>{c.province || '-'}</td>
+                  <td style={{ fontSize: 12, fontWeight: 700, color: '#2196F3' }}>{c.milk_30d ? `${Number(c.milk_30d).toFixed(1)} L` : '-'}</td>
                 </tr>
               ))}
             </tbody>

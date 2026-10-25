@@ -9,7 +9,7 @@ _INSECURE_SECRET = "moome-secret-key-change-in-production"
 
 
 class Settings(BaseSettings):
-    # "development" (default) or "production" — set ENV=production in the
+    # "development" (default) or "production": set ENV=production in the
     # deployed .env so an insecure SECRET_KEY refuses to boot instead of
     # just warning.
     ENV: str = "development"
@@ -28,7 +28,7 @@ class Settings(BaseSettings):
     FRONTEND_URL: str = "http://localhost:5173"
     RESET_TOKEN_EXPIRE_MINUTES: int = 60
 
-    # Email (optional — reset links are logged to console when SMTP_HOST is empty)
+    # Email (optional: reset links are logged to console when SMTP_HOST is empty)
     SMTP_HOST: str = ""
     SMTP_PORT: int = 587
     SMTP_USER: str = ""
@@ -36,8 +36,18 @@ class Settings(BaseSettings):
     SMTP_USE_TLS: bool = True
     EMAIL_FROM: str = "noreply@moome.rw"
 
-    # Contact Us — inbox that receives public contact-form submissions
+    # Contact Us: inbox that receives public contact-form submissions
     CONTACT_EMAIL: str = "bnindenkimana2@gmail.com"
+
+    # SMS alerts. Leave SMS_PROVIDER empty to log messages without sending.
+    #   africastalking: SMS_USERNAME + SMS_API_KEY (+ optional SMS_SENDER_ID)
+    #   http:           POSTs JSON {to, message, sender} to SMS_API_URL with
+    #                   "Authorization: Bearer SMS_API_KEY" (fits gateways such as Mista.io)
+    SMS_PROVIDER: str = ""
+    SMS_API_KEY: str = ""
+    SMS_USERNAME: str = ""
+    SMS_SENDER_ID: str = ""
+    SMS_API_URL: str = ""
 
     @property
     def cors_origins_list(self) -> List[str]:
@@ -50,7 +60,7 @@ class Settings(BaseSettings):
 
 settings = Settings()
 
-# Refuse to boot with the shipped default SECRET_KEY once ENV=production —
+# Refuse to boot with the shipped default SECRET_KEY once ENV=production -
 # JWTs signed with a publicly-known key are forgeable. Local dev keeps the
 # soft warning so a fresh checkout still runs without any .env.
 if settings.SECRET_KEY == _INSECURE_SECRET:

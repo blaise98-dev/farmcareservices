@@ -1,5 +1,11 @@
 /*
-  ESP32 Full Sensor Test Sketch
+  FarmCare Milking Station (ESP32)
+  The ultrasonic sensor sits on the rim of the 4 L milk container; the TDS and
+  DS18B20 probes hang in the milk. The server turns distance into litres using
+  the calibration set on the dashboard (IoT Control > Field Settings).
+  Flow: tap the cow's RFID tag -> pour the milk -> press the button to record.
+
+  Originally: ESP32 Full Sensor Test Sketch
   Components: RFID RC522, TDS sensor, DS18B20 waterproof temp, push button,
               buzzer, HC-SR04 ultrasonic
   Purpose: Verify each component works independently via Serial Monitor
@@ -69,7 +75,7 @@ const unsigned long ULTRASONIC_INTERVAL = 500;
 const unsigned long BUTTON_DEBOUNCE = 50;
 
 unsigned long lastServerPost = 0;
-const unsigned long SERVER_POST_INTERVAL = 10000;
+const unsigned long SERVER_POST_INTERVAL = 5000;   // live milk level on the dashboard
 
 // Latest sensor values, updated by the periodic readers, sent on the next POST
 float latestTempC = DEVICE_DISCONNECTED_C;
@@ -103,7 +109,7 @@ void handleBuzzer() {
 void setup() {
   Serial.begin(115200);
   delay(500);
-  Serial.println("\n=== ESP32 Full Sensor Test ===");
+  Serial.println("\n=== FarmCare Milking Station ===");
 
   // RFID
   SPI.begin();
@@ -280,6 +286,44 @@ void sendCollarData() {
   http.end();
 }
 
+// ---------- Record Milk (button) ----------
+// Closes the open milking session on the server and saves the measured litres.
+void sendMilkingRecord() {
+  if (WiFi.status() != WL_CONNECTED) {
+    beep(800);
+    return;
+  }
+  StaticJsonDocument<128> doc;
+  doc["device_id"] = DEVICE_ID;
+  String payload;
+  serializeJson(doc, payload);
+
+  HTTPClient http;
+  http.setTimeout(5000);
+  http.begin(String(SERVER_HOST) + "/milking-record");
+  http.addHeader("Content-Type", "application/json");
+  int code = http.POST(payload);
+  String resp = http.getString();
+  http.end();
+
+  Serial.print("[MILK] Record POST code: ");
+  Serial.println(code);
+  if (code == 200) {
+    StaticJsonDocument<768> respDoc;
+    if (deserializeJson(respDoc, resp) == DeserializationError::Ok) {
+      float litres = respDoc["session"]["milk_liters"] | 0.0f;
+      Serial.printf("[MILK] Saved %.3f L for %s\n", litres, (const char*)(respDoc["session"]["cow_name"] | "cow"));
+    }
+    currentCowId = -1;          // next cow must be scanned
+    currentCowName = "";
+    beep(120);                  // short beep = saved
+  } else {
+    Serial.print("[MILK] Not recorded: ");
+    Serial.println(resp);       // e.g. "Scan the cow's RFID tag first"
+    beep(800);                  // long beep = nothing saved
+  }
+}
+
 // ---------- Button Check (debounced) ----------
 void checkButton() {
   bool reading = digitalRead(BUTTON_PIN);
@@ -292,8 +336,9 @@ void checkButton() {
     if (reading != buttonState) {
       buttonState = reading;
       if (buttonState == LOW) {
-        Serial.println("[BUTTON] Pressed!");
-        beep(100);
+        Serial.println("[BUTTON] Pressed: recording milk");
+        sendCollarData();       // push the latest level first so the litres are current
+        sendMilkingRecord();
       } else {
         Serial.println("[BUTTON] Released.");
       }

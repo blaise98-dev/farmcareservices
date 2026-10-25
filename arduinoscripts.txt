@@ -1,11 +1,16 @@
 // =============================================================================
-//  MooMe IoT Livestock Monitor — ESP32 v2.1  (WDT-safe build)
+//  FarmCare Barn Monitor: ESP32 v2.2  (WDT-safe build)
 //  Fixes applied:
 //    1. esp_task_wdt_init(30,true) + esp_task_wdt_add(NULL) before any delays
 //    2. All bare delay() in setup() replaced with safeDelay()
-//    3. Separate sprayRunning flag — spray_status no longer mirrors fan_status
+//    3. Separate sprayRunning flag: spray_status no longer mirrors fan_status
 //    4. HX711 raw-value sanity check moved after is_ready() guard
 //    5. connectWiFi() feeds WDT on every iteration
+//  v2.2:
+//    6. Thresholds (tank start/stop, fan, buzzer) come from the dashboard's Field
+//       Settings, delivered in the response to every /api/iot/ingest post
+//    7. Remote ON/OFF/AUTO commands for pump, fan, spray and buzzer from IoT
+//       Control. ON/OFF overrides last 30 min, then the node returns to AUTO
 // =============================================================================
 
 #include <Wire.h>
@@ -46,6 +51,8 @@
 #define LCD_PAGE_INTERVAL_MS 3000UL
 #define HTTP_INTERVAL_MS    10000UL
 #define WDT_TIMEOUT_S       30          // watchdog timeout in seconds
+#define OVERRIDE_MS         1800000UL   // a manual ON/OFF from the dashboard lasts 30 min
+#define PUMP_SAFETY_PERCENT 98.0f       // a forced pump still stops here so the tank cannot overflow
 
 // ── Network credentials ───────────────────────────────────────────────────────
 const char* WIFI_SSID  = "Xperia";
@@ -71,6 +78,18 @@ uint8_t           lcdPage        = 0;
 unsigned long     lcdPageTimer   = 0;
 unsigned long     lastHttpSend   = 0;
 int               lastHttpCode   = 0;
+
+// ── Thresholds the dashboard can change (defaults until the first response) ──
+float tankStopPct  = TANK_STOP_PERCENT;
+float tankStartPct = TANK_START_PERCENT;
+float tempFanC     = TEMP_FAN;
+float tempBuzzerC  = TEMP_BUZZER;
+
+// ── Remote overrides from IoT Control ──────────────────────────────────────────
+enum OverrideMode : uint8_t { MODE_AUTO = 0, MODE_ON = 1, MODE_OFF = 2 };
+enum Actuator     : uint8_t { ACT_PUMP = 0, ACT_FAN = 1, ACT_SPRAY = 2, ACT_BUZZER = 3, ACT_COUNT = 4 };
+OverrideMode      modes[ACT_COUNT]         = { MODE_AUTO, MODE_AUTO, MODE_AUTO, MODE_AUTO };
+unsigned long     overrideStart[ACT_COUNT] = { 0, 0, 0, 0 };
 
 // =============================================================================
 //  Watchdog-safe delay
@@ -108,6 +127,58 @@ void sprayOff() {
 }
 
 // =============================================================================
+//  Remote control helpers
+// =============================================================================
+void expireOverrides(unsigned long now) {
+  for (uint8_t i = 0; i < ACT_COUNT; i++) {
+    if (modes[i] != MODE_AUTO && now - overrideStart[i] >= OVERRIDE_MS) {
+      modes[i] = MODE_AUTO;
+      Serial.printf("[CMD] Override %u expired, back to AUTO\n", i);
+    }
+  }
+}
+
+int actuatorIndex(const char* type) {
+  if (!type) return -1;
+  if (strcmp(type, "pump")   == 0) return ACT_PUMP;
+  if (strcmp(type, "fan")    == 0) return ACT_FAN;
+  if (strcmp(type, "spray")  == 0) return ACT_SPRAY;
+  if (strcmp(type, "buzzer") == 0) return ACT_BUZZER;
+  return -1;
+}
+
+// Response to /api/iot/ingest: {"config": {...}, "commands": [{"type": "fan", "value": "ON"}]}
+void applyServerResponse(const String& body) {
+  StaticJsonDocument<1024> resp;
+  if (deserializeJson(resp, body) != DeserializationError::Ok) return;
+
+  JsonObject cfg = resp["config"];
+  if (!cfg.isNull()) {
+    float stopPct  = cfg["tank_stop_pct"]    | tankStopPct;
+    float startPct = cfg["tank_start_pct"]   | tankStartPct;
+    if (startPct > 0 && stopPct <= 100 && startPct < stopPct) {   // ignore nonsense values
+      tankStopPct  = stopPct;
+      tankStartPct = startPct;
+    }
+    tempFanC    = cfg["barn_fan_on_c"]    | tempFanC;
+    tempBuzzerC = cfg["barn_buzzer_on_c"] | tempBuzzerC;
+  }
+
+  JsonArray cmds = resp["commands"];
+  for (JsonObject c : cmds) {
+    int idx = actuatorIndex(c["type"]);
+    const char* value = c["value"];
+    if (idx < 0 || !value) continue;
+    OverrideMode m = MODE_AUTO;
+    if (strcmp(value, "ON")  == 0) m = MODE_ON;
+    if (strcmp(value, "OFF") == 0) m = MODE_OFF;
+    modes[idx]         = m;
+    overrideStart[idx] = millis();
+    Serial.printf("[CMD] %s -> %s\n", (const char*)c["type"], value);
+  }
+}
+
+// =============================================================================
 //  Ultrasonic tank level  (returns 0-100 %, or -1 on timeout)
 // =============================================================================
 float readTankLevel() {
@@ -123,7 +194,7 @@ float readTankLevel() {
 }
 
 // =============================================================================
-//  LCD helper — clears and prints up to 4 rows
+//  LCD helper: clears and prints up to 4 rows
 // =============================================================================
 void lcdShowBig(const char* r0,
                 const char* r1 = "",
@@ -202,6 +273,7 @@ void sendToServer(float temp, float hum, int mq5, int mq135,
   http.addHeader("Content-Type", "application/json");
   esp_task_wdt_reset();
   lastHttpCode = http.POST(payload);
+  if (lastHttpCode == 200) applyServerResponse(http.getString());
   http.end();
 
   Serial.printf("[HTTP] POST %d | Tank:%.0f%% | Temp:%.1f | Feed:%.2fkg\n",
@@ -245,9 +317,9 @@ void setup() {
   // Splash screen
   lcd.init();
   lcd.backlight();
-  lcdShowBig("  ** MooMe IoT **   ",
-             " Livestock Monitor  ",
-             "     ESP32 v2.1     ",   // bumped version
+  lcdShowBig(" ** FarmCare IoT ** ",
+             "    Barn Monitor    ",
+             "     ESP32 v2.2     ",
              "   Initialising...  ");
   safeDelay(2500);                    // FIX: safeDelay keeps WDT fed
   lcd.clear();
@@ -307,7 +379,7 @@ void setup() {
   lcdPageTimer   = millis();
   lastHttpSend   = millis();
 
-  Serial.println("=== MooMe v2.1 System Running ===");
+  Serial.println("=== FarmCare Barn Monitor v2.2 Running ===");
 }
 
 // =============================================================================
@@ -316,6 +388,7 @@ void setup() {
 void loop() {
   esp_task_wdt_reset();
   unsigned long now = millis();
+  expireOverrides(now);
 
   // ── Sensor reads (every loop pass) ─────────────────────────────────────────
   float temperature = dht.readTemperature();
@@ -323,7 +396,8 @@ void loop() {
   int   mq5Pct      = map(analogRead(MQ5_PIN),   0, 4095, 0, 100);
   int   mq135Pct    = map(analogRead(MQ135_PIN), 0, 4095, 0, 100);
   float tankLevel   = readTankLevel();
-  bool  fanOn       = (!isnan(temperature) && temperature > TEMP_FAN);
+  bool  autoFan     = (!isnan(temperature) && temperature > tempFanC);
+  bool  fanOn       = (modes[ACT_FAN] == MODE_AUTO) ? autoFan : (modes[ACT_FAN] == MODE_ON);
 
   // ── 1-second flow + pump logic ──────────────────────────────────────────────
   if (now - previousMillis >= SAMPLE_INTERVAL_MS) {
@@ -338,14 +412,26 @@ void loop() {
     flowRate     = (float)pulses / PULSES_PER_LITRE;
     totalLiters += (float)pulses / (PULSES_PER_LITRE * 60.0f);
 
-    // Pump hysteresis control
-    if (tankLevel >= TANK_STOP_PERCENT && pumpRunning) {
+    // Pump: hysteresis in AUTO, forced by the dashboard otherwise
+    if (modes[ACT_PUMP] == MODE_AUTO) {
+      if (tankLevel >= tankStopPct && pumpRunning) {
+        pumpOff();
+        Serial.printf("*** TANK >= %.0f%%: PUMP OFF ***\n", tankStopPct);
+      }
+      if (tankLevel < tankStartPct && !pumpRunning) {
+        pumpOn();
+        Serial.printf("*** TANK < %.0f%%: PUMP ON ***\n", tankStartPct);
+      }
+    } else if (modes[ACT_PUMP] == MODE_ON) {
+      if (tankLevel >= PUMP_SAFETY_PERCENT) {
+        pumpOff();
+        modes[ACT_PUMP] = MODE_AUTO;          // never overflow the tank on a manual override
+        Serial.println("*** Forced pump stopped: tank full, back to AUTO ***");
+      } else if (!pumpRunning) {
+        pumpOn();
+      }
+    } else if (pumpRunning) {
       pumpOff();
-      Serial.println("*** TANK >= 90% — PUMP OFF ***");
-    }
-    if (tankLevel < TANK_START_PERCENT && !pumpRunning) {
-      pumpOn();
-      Serial.println("*** TANK < 70% — PUMP ON ***");
     }
 
     Serial.printf("[FLOW] %.2f L/min | Total: %.3f L | Tank: %.1f%% | Pump: %s\n",
@@ -361,8 +447,11 @@ void loop() {
     Serial.printf("[FEED]  %.3f kg\n", weight);
   }
 
-  // ── Buzzer logic (beep pattern when temp > TEMP_BUZZER) ────────────────────
-  if (!isnan(temperature) && temperature > TEMP_BUZZER) {
+  // ── Buzzer logic (beep pattern when temp > tempBuzzerC, or forced ON) ──────
+  bool beepWanted = (modes[ACT_BUZZER] == MODE_AUTO)
+                      ? (!isnan(temperature) && temperature > tempBuzzerC)
+                      : (modes[ACT_BUZZER] == MODE_ON);
+  if (beepWanted) {
     if (buzzerState && (now - previousBuzzer >= 1000)) {
       buzzerState    = false;
       previousBuzzer = now;
@@ -377,15 +466,14 @@ void loop() {
     buzzerState = false;
   }
 
-  // ── Fan + spray control ─────────────────────────────────────────────────────
-  if (!isnan(temperature)) {
-    if (fanOn) {
-      digitalWrite(RELAY_FAN_PIN, LOW);
-      sprayOn();
-    } else {
-      digitalWrite(RELAY_FAN_PIN, HIGH);
-      sprayOff();
-    }
+  // ── Fan + spray control (spray follows the fan in AUTO) ────────────────────
+  bool sprayWanted = (modes[ACT_SPRAY] == MODE_AUTO) ? fanOn : (modes[ACT_SPRAY] == MODE_ON);
+  if (!isnan(temperature) || modes[ACT_FAN] != MODE_AUTO) {
+    digitalWrite(RELAY_FAN_PIN, fanOn ? LOW : HIGH);
+  }
+  if (!isnan(temperature) || modes[ACT_SPRAY] != MODE_AUTO) {
+    if (sprayWanted && !sprayRunning)  sprayOn();
+    if (!sprayWanted && sprayRunning)  sprayOff();
   }
 
   // ── LCD pages (rotate every LCD_PAGE_INTERVAL_MS) ──────────────────────────

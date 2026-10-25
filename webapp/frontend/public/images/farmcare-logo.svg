@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="FarmCare">
+  <rect width="64" height="64" rx="16" fill="#2E7D32"/>
+  <path d="M19.5 19.5C14.5 18 12 13.5 13.5 8.5c2 4.5 5 6.8 9.5 7.5z" fill="#E8F5E9"/>
+  <path d="M44.5 19.5C49.5 18 52 13.5 50.5 8.5c-2 4.5-5 6.8-9.5 7.5z" fill="#E8F5E9"/>
+  <ellipse cx="13" cy="25" rx="7.5" ry="3.8" transform="rotate(-22 13 25)" fill="#FFFFFF"/>
+  <ellipse cx="51" cy="25" rx="7.5" ry="3.8" transform="rotate(22 51 25)" fill="#FFFFFF"/>
+  <path d="M21 16.5h22c3.4 0 5.3 2.7 4.8 6.2L45.4 38c-.5 3-2.6 5-5.6 5H24.2c-3 0-5.1-2-5.6-5l-2.4-15.3c-.5-3.5 1.4-6.2 4.8-6.2z" fill="#FFFFFF"/>
+  <path d="M21 16.5h10.5c-.3 5.6-4.6 9.7-12.9 10.1l-.4-3.9c-.5-3.5 1.4-6.2 2.8-6.2z" fill="#1B5E20"/>
+  <circle cx="25.6" cy="29.5" r="2.3" fill="#1B5E20"/>
+  <circle cx="38.4" cy="29.5" r="2.3" fill="#1B5E20"/>
+  <rect x="19.5" y="37" width="25" height="15.5" rx="7.75" fill="#A5D6A7"/>
+  <ellipse cx="27" cy="44.8" rx="2" ry="2.7" fill="#1B5E20"/>
+  <ellipse cx="37" cy="44.8" rx="2" ry="2.7" fill="#1B5E20"/>
+  <path d="M47 50c5-1 8.5-4.5 9.5-10-5.5.6-9 4-9.5 10z" fill="#81C784"/>
+  <path d="M47 50c2.5-3 5-5.8 8-8.5" stroke="#2E7D32" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+</svg>

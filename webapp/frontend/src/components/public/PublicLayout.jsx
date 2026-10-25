@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Menu, X, Mail, Phone, MapPin } from "lucide-react";
+import { CONTACT } from '../../lib/contact';
+import ThemeToggle from '../ThemeToggle';
 
 const NAV = [
   { to: "/", label: "Home" },
@@ -19,7 +21,7 @@ export function PublicHeader() {
         position: "sticky",
         top: 0,
         zIndex: 100,
-        background: "#fff",
+        background: "var(--card)",
         borderBottom: "1px solid var(--border)",
       }}
     >
@@ -48,25 +50,23 @@ export function PublicHeader() {
               width: 40,
               height: 40,
               borderRadius: "50%",
-              background: "#4CAF50",
+              background: "#4CAF50", overflow: "hidden",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
               fontSize: 20,
             }}
-          >
-            🐄
-          </div>
+          ><img src="/images/farmcare-logo.svg" alt="FarmCare" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%', display: 'block' }} /></div>
           <div>
             <div
               style={{
                 fontWeight: 900,
                 fontSize: 19,
-                color: "#1a1a2e",
+                color: "var(--text)",
                 letterSpacing: 0.3,
               }}
             >
-              MooMe
+              FarmCare
             </div>
             <div
               style={{
@@ -97,7 +97,7 @@ export function PublicHeader() {
                 fontSize: 14,
                 fontWeight: 600,
                 textDecoration: "none",
-                color: pathname === n.to ? "#2E7D32" : "#5a6a7e",
+                color: pathname === n.to ? "var(--green-ink)" : "var(--text-secondary)",
                 background:
                   pathname === n.to ? "rgba(76,175,80,.12)" : "transparent",
               }}
@@ -105,6 +105,7 @@ export function PublicHeader() {
               {n.label}
             </Link>
           ))}
+          <ThemeToggle color="var(--text-secondary)" />
           <Link
             to="/login"
             style={{
@@ -114,7 +115,7 @@ export function PublicHeader() {
               fontSize: 14,
               fontWeight: 700,
               textDecoration: "none",
-              color: "#1E4D7B",
+              color: "var(--navy-ink)",
               border: "2px solid #1E4D7B",
             }}
           >
@@ -129,7 +130,7 @@ export function PublicHeader() {
               fontWeight: 700,
               textDecoration: "none",
               color: "#fff",
-              background: "#4CAF50",
+              background: "#4CAF50", overflow: "hidden",
             }}
           >
             Get Started
@@ -146,6 +147,7 @@ export function PublicHeader() {
             border: "none",
             cursor: "pointer",
             padding: 6,
+            color: "var(--text)",
           }}
         >
           {open ? <X size={24} /> : <Menu size={24} />}
@@ -175,7 +177,7 @@ export function PublicHeader() {
                 fontSize: 15,
                 fontWeight: 600,
                 textDecoration: "none",
-                color: pathname === n.to ? "#2E7D32" : "#333",
+                color: pathname === n.to ? "var(--green-ink)" : "var(--text)",
               }}
             >
               {n.label}
@@ -188,7 +190,7 @@ export function PublicHeader() {
               padding: "10px 12px",
               fontSize: 15,
               fontWeight: 700,
-              color: "#1E4D7B",
+              color: "var(--navy-ink)",
               textDecoration: "none",
             }}
           >
@@ -207,6 +209,9 @@ export function PublicHeader() {
           >
             Get Started
           </Link>
+          <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "6px 12px", fontSize: 14, color: "var(--text-secondary)" }}>
+            <ThemeToggle color="var(--text-secondary)" /> Bright / dark theme
+          </div>
         </div>
       )}
 
@@ -254,17 +259,15 @@ export function PublicFooter() {
                 width: 34,
                 height: 34,
                 borderRadius: "50%",
-                background: "#4CAF50",
+                background: "#4CAF50", overflow: "hidden",
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
                 fontSize: 17,
               }}
-            >
-              🐄
-            </div>
+            ><img src="/images/farmcare-logo.svg" alt="FarmCare" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%', display: 'block' }} /></div>
             <span style={{ fontWeight: 900, fontSize: 18, color: "#fff" }}>
-              MooMe
+              FarmCare
             </span>
           </div>
           <p
@@ -370,7 +373,7 @@ export function PublicFooter() {
             }}
           >
             <a
-              href="mailto:info@moome.com"
+              href={`mailto:${CONTACT.email}`}
               style={{
                 color: "inherit",
                 textDecoration: "none",
@@ -379,10 +382,10 @@ export function PublicFooter() {
                 gap: 8,
               }}
             >
-              <Mail size={14} /> info@moome.com
+              <Mail size={14} /> {CONTACT.email}
             </a>
             <a
-              href="tel:+250780000001"
+              href={CONTACT.phoneHref}
               style={{
                 color: "inherit",
                 textDecoration: "none",
@@ -391,10 +394,10 @@ export function PublicFooter() {
                 gap: 8,
               }}
             >
-              <Phone size={14} /> +250 783530924
+              <Phone size={14} /> {CONTACT.phone}
             </a>
             <span style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <MapPin size={14} /> Kigali, Rwanda 🇷🇼
+              <MapPin size={14} /> {CONTACT.location} 🇷🇼
             </span>
           </div>
         </div>
@@ -409,7 +412,7 @@ export function PublicFooter() {
           opacity: 0.5,
         }}
       >
-        © {new Date().getFullYear()} MooMe · FarmCareServices. All rights
+        © {new Date().getFullYear()} FarmCare Services · ACTION FAMILY TECH LTD. All rights
         reserved.
       </div>
     </footer>
@@ -423,7 +426,7 @@ export default function PublicLayout({ children }) {
         minHeight: "100vh",
         display: "flex",
         flexDirection: "column",
-        background: "#fff",
+        background: "var(--card)",
       }}
     >
       <PublicHeader />

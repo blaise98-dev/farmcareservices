@@ -1,5 +1,5 @@
 """
-Role-Based Access Control helpers for MooMe.
+Role-Based Access Control helpers for FarmCare.
 
 Permission Matrix
 ─────────────────────────────────────────────────────────────────────────────
@@ -10,20 +10,20 @@ Herd list / cow detail    ✓       ✓         ✓             ✓
 Update cow weight         ✓       ✓         ✓             ✗
 Update cow health status  ✓       ✗         ✓             ✗
 Deactivate / retire cow   ✓       ✗         ✗             ✗
-Milk — read               ✓       ✓         ✓             ✓
-Milk — log record         ✓       ✓         ✗             ✗
-Feed — read               ✓       ✓         ✓             ✓
-Feed — log record         ✓       ✓         ✗             ✗
-Environment — read        ✓       ✓         ✓             ✓
-Environment — add reading ✓       ✗         ✗             ✓
-Alerts — read             ✓       ✓         ✓             ✓
-Alerts — resolve          ✓       ✓         ✓             ✓
-Alerts — create           ✓       ✓         ✓             ✓
-Alerts — create Health    ✓       ✗         ✓             ✗
-Economics — read          ✓       ✓         ✗             ✓
-Economics — edit          ✓       ✗         ✗             ✗
-Predictions — read        ✓       ✗         ✓             ✗
-Predictions — read health ✓       ✗         ✓             ✗
+Milk: read               ✓       ✓         ✓             ✓
+Milk: log record         ✓       ✓         ✗             ✗
+Feed: read               ✓       ✓         ✓             ✓
+Feed: log record         ✓       ✓         ✗             ✗
+Environment: read        ✓       ✓         ✓             ✓
+Environment: add reading ✓       ✗         ✗             ✓
+Alerts: read             ✓       ✓         ✓             ✓
+Alerts: resolve          ✓       ✓         ✓             ✓
+Alerts: create           ✓       ✓         ✓             ✓
+Alerts: create Health    ✓       ✗         ✓             ✗
+Economics: read          ✓       ✓         ✗             ✓
+Economics: edit          ✓       ✗         ✗             ✗
+Predictions: read        ✓       ✗         ✓             ✗
+Predictions: read health ✓       ✗         ✓             ✗
 User management           ✓       ✗         ✗             ✗
 Settings                  ✓       ✓         ✓             ✓
 ─────────────────────────────────────────────────────────────────────────────
@@ -81,7 +81,7 @@ def require_not_technician():
 
 
 def require_vet_or_admin():
-    """Admin and Veterinarian — health diagnostics, health alerts."""
+    """Admin and Veterinarian: health diagnostics, health alerts."""
     return _require({ADMIN, VETERINARIAN})
 
 
