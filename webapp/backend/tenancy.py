@@ -73,7 +73,7 @@ async def _table_exists(name: str) -> bool:
     return bool(row and row["n"])
 
 
-async def _column_exists(table: str, column: str) -> bool:
+async def column_exists(table: str, column: str) -> bool:
     row = await fetchone(
         "SELECT COUNT(*) AS n FROM information_schema.columns "
         "WHERE table_schema = DATABASE() AND table_name = %s AND column_name = %s",
@@ -97,18 +97,24 @@ async def _ensure_farm_table() -> None:
             """
         )
         return
-    if await _column_exists("Farm", "farm_id"):
-        return
-    # An older Farm table keyed by another column: give it a farm_id too.
-    pk = await fetchone(
-        "SELECT column_name AS col FROM information_schema.key_column_usage "
-        "WHERE table_schema = DATABASE() AND table_name = 'Farm' AND constraint_name = 'PRIMARY'"
-    )
-    if pk:
-        await execute("ALTER TABLE Farm ADD COLUMN farm_id INT NULL UNIQUE FIRST")
-        await execute(f"UPDATE Farm SET farm_id = `{pk['col']}`")
-    else:
-        await execute("ALTER TABLE Farm ADD COLUMN farm_id INT AUTO_INCREMENT PRIMARY KEY FIRST")
+    if not await column_exists("Farm", "farm_id"):
+        # An older Farm table keyed by another column: give it a farm_id too.
+        pk = await fetchone(
+            "SELECT column_name AS col FROM information_schema.key_column_usage "
+            "WHERE table_schema = DATABASE() AND table_name = 'Farm' AND constraint_name = 'PRIMARY'"
+        )
+        if pk:
+            await execute("ALTER TABLE Farm ADD COLUMN farm_id INT NULL UNIQUE FIRST")
+            await execute(f"UPDATE Farm SET farm_id = `{pk['col']}`")
+        else:
+            await execute("ALTER TABLE Farm ADD COLUMN farm_id INT AUTO_INCREMENT PRIMARY KEY FIRST")
+    # Older Farm tables lack the optional details the Farms card edits
+    for name, ddl in (("location", "VARCHAR(255) NULL"), ("established_year", "INT NULL"), ("total_area_hectares", "FLOAT NULL")):
+        if not await column_exists("Farm", name):
+            try:
+                await execute(f"ALTER TABLE Farm ADD COLUMN {name} {ddl}")
+            except Exception:  # noqa: BLE001 - optional detail; the farms API copes without it
+                log.exception("tenancy: could not add Farm.%s", name)
 
 
 async def pilot_farm_id() -> int:
@@ -132,7 +138,7 @@ async def ensure_farm_tenancy() -> None:
     await _ensure_farm_table()
     pilot = await pilot_farm_id()
     for table in FARM_TABLES:
-        if not await _table_exists(table) or await _column_exists(table, "farm_id"):
+        if not await _table_exists(table) or await column_exists(table, "farm_id"):
             continue
         try:
             await execute(f"ALTER TABLE {table} ADD COLUMN farm_id INT NULL, ADD INDEX idx_{table.lower()}_farm (farm_id)")

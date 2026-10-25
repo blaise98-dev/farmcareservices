@@ -257,7 +257,7 @@ function FarmerDashboard({ summary, alerts, milkTrend, envTrend, liveEnv, alerts
         <div style={{ background: 'linear-gradient(135deg,#1E4D7B,#2e6fa3)', borderRadius: 12, padding: '14px 20px', color: '#fff', display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 18, fontWeight: 800, display: 'flex', alignItems: 'center', gap: 8 }}><Leaf size={18} /> {farm.farm_name}</div>
-            <div style={{ fontSize: 12, opacity: .8, marginTop: 2 }}>{farm.location} · Est. {farm.established_year} · {farm.total_area_hectares} ha</div>
+            <div style={{ fontSize: 12, opacity: .8, marginTop: 2 }}>{farmDetails(farm)}</div>
           </div>
         </div>
       )}
@@ -468,7 +468,7 @@ function AdminDashboard({ summary, alerts, milkTrend, envTrend, liveEnv, alertsC
         <div style={{ background: 'linear-gradient(135deg,#1E4D7B,#2e6fa3)', borderRadius: 12, padding: '14px 20px', color: '#fff', display: 'flex', alignItems: 'center', gap: 20, flexWrap: 'wrap' }}>
           <div style={{ flex: 1 }}>
             <div style={{ fontSize: 18, fontWeight: 800, letterSpacing: .3, display: 'flex', alignItems: 'center', gap: 8 }}><ShieldCheck size={18} /> {farm.farm_name}: Admin Dashboard</div>
-            <div style={{ fontSize: 12, opacity: .8, marginTop: 2 }}>{farm.location} · Est. {farm.established_year} · {farm.total_area_hectares} ha</div>
+            <div style={{ fontSize: 12, opacity: .8, marginTop: 2 }}>{farmDetails(farm)}</div>
           </div>
           {summary?.avg_body_temp && (
             <div style={{ textAlign: 'right', fontSize: 13 }}>
@@ -541,6 +541,13 @@ function TechnicianDashboard({ liveEnv, sysLogs, envTrend, envLoading, envError 
 // ─────────────────────────────────────────────────────────────────────────
 //  Main Dashboard (role router)
 // ─────────────────────────────────────────────────────────────────────────
+
+// "Kigali · Est. 2024 · 2.5 ha", skipping details the farm record lacks
+const farmDetails = (farm) => [
+  farm.location,
+  farm.established_year ? `Est. ${farm.established_year}` : null,
+  farm.total_area_hectares ? `${farm.total_area_hectares} ha` : null,
+].filter(Boolean).join(' · ');
 
 export default function Dashboard() {
   const { env, alertsCount } = useRealtime();

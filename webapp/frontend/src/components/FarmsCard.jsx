@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Plus, Tractor, AlertTriangle, Pencil, Check, X } from 'lucide-react';
 import { createFarm, getFarms, getUnassigned, updateFarm } from '../lib/api';
+import { errorText } from '../lib/errors';
 
 /**
  * Admin card on User Management: every farm with its users, cows and devices,
@@ -15,7 +16,7 @@ export default function FarmsCard() {
   const [name, setName] = useState('');
   const [location, setLocation] = useState('');
   const [err, setErr] = useState('');
-  const { data: farms = [] } = useQuery({ queryKey: ['farms'], queryFn: getFarms });
+  const { data: farms = [], isError: farmsError, error: farmsErr } = useQuery({ queryKey: ['farms'], queryFn: getFarms });
   const { data: unassigned } = useQuery({ queryKey: ['farms-unassigned'], queryFn: getUnassigned, refetchInterval: 30000 });
   const add = useMutation({
     mutationFn: createFarm,
@@ -105,6 +106,11 @@ export default function FarmsCard() {
             ))}
           </tbody>
         </table>
+        {farmsError && (
+          <div role="alert" style={{ padding: '10px 20px', fontSize: 12.5, color: '#c62828' }}>
+            Could not load the farms: {errorText(farmsErr, 'Loading')}
+          </div>
+        )}
         {editErr && <div style={{ padding: '8px 20px', fontSize: 12, color: '#c62828' }}>{editErr}</div>}
       </div>
 
