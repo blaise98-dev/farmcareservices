@@ -6,6 +6,8 @@ import { usePermissions } from '../hooks/usePermissions';
 import { LineChart as ELine, ChartCard } from '../components/ChartKit';
 import { Thermometer, Wind, Droplets, Activity, Plus, X, Waves, Radio, TrendingUp, BarChart2 } from 'lucide-react';
 import { format } from 'date-fns';
+import PeriodSelect from '../components/PeriodSelect';
+import { periodDays, periodLabel, timeLabeler } from '../lib/periods';
 
 const TEMP_COLOR = { Normal: '#4CAF50', Elevated: '#FF9800', High: '#FF5722', Fever: '#F44336', Low: '#2196F3' };
 
@@ -27,13 +29,15 @@ export default function Environment() {
   const { data: history = [], isLoading: histLoading, isError: histError } = useQuery({
     queryKey: ['env-history', hours], queryFn: () => getEnvHistory(hours),
   });
-  const { data: dailyAvg = [] } = useQuery({ queryKey: ['env-daily'], queryFn: getEnvDailyAvg });
+  const avgDays = Math.max(periodDays(hours), hours ? 7 : 0);   // a daily table needs at least a week
+  const { data: dailyAvg = [] } = useQuery({ queryKey: ['env-daily', avgDays], queryFn: () => getEnvDailyAvg(avgDays) });
   const { data: cowTemps = [] } = useQuery({ queryKey: ['cow-temps'], queryFn: getCowTemperatures, refetchInterval: 15000 });
   const { data: wqLatest } = useQuery({ queryKey: ['wq-latest'], queryFn: () => getWaterQualityLatest(), refetchInterval: 15000 });
   const { data: wqHistory = [], isLoading: wqLoading, isError: wqError } = useQuery({ queryKey: ['wq-history', hours], queryFn: () => getWaterQualityHistory(hours) });
 
+  const histLabel = timeLabeler(history);
   const histChart = history.map(r => ({
-    time: r.recorded_at ? format(new Date(r.recorded_at), 'HH:mm') : '',
+    time: histLabel(r.recorded_at),
     temp: Number(r.temperature_celsius).toFixed(1),
     hum: Number(r.humidity_percent).toFixed(1),
     aq: Number(r.air_quality_ppm || 0).toFixed(0),
@@ -43,8 +47,9 @@ export default function Environment() {
   const env = liveEnv || (history.length ? history[history.length - 1] : {});
   const wq = liveCollar || wqLatest || {};
 
+  const wqLabel = timeLabeler(wqHistory);
   const wqChart = wqHistory.map(r => ({
-    time: r.recorded_at ? format(new Date(r.recorded_at), 'HH:mm') : '',
+    time: wqLabel(r.recorded_at),
     tds: r.tds_ppm != null ? Number(r.tds_ppm).toFixed(0) : null,
   }));
 
@@ -116,7 +121,7 @@ export default function Environment() {
             <span style={{ fontSize: 10, color: 'var(--text-secondary)' }}>Collar sensor {wq.device_id ? `· ${wq.device_id}` : ''}</span>
           </div>
         </div>
-        <ChartCard title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Waves size={14} /> Water Quality Trend</span>} sub="TDS ppm: Warn ≥1000 / Critical ≥2000"
+        <ChartCard title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><Waves size={14} /> Water Quality Trend</span>} sub={`TDS ppm: Warn ≥1000 / Critical ≥2000 · ${periodLabel(hours)}`}
           isLoading={wqLoading} isError={wqError} height={200}>
           <ELine data={wqChart} xKey="time"
             series={[{ key: 'tds', name: 'TDS (ppm)', color: '#00838F' }]}
@@ -130,17 +135,8 @@ export default function Environment() {
       <ChartCard
         title={<span style={{ display: 'flex', alignItems: 'center', gap: 6 }}><TrendingUp size={14} /> Environment History</span>}
         isLoading={histLoading} isError={histError} height={260}
-        action={
-          <div style={{ display: 'flex', gap: 6 }}>
-            {[6, 12, 24, 48].map(h => (
-              <button key={h} onClick={() => setHours(h)}
-                className="btn"
-                style={{ padding: '4px 10px', fontSize: 11, background: hours === h ? '#1E4D7B' : 'var(--bg)', color: hours === h ? '#fff' : 'var(--text-secondary)', border: '1px solid var(--border)' }}>
-                {h}h
-              </button>
-            ))}
-          </div>
-        }
+        sub={periodLabel(hours)}
+        action={<PeriodSelect value={hours} onChange={setHours} />}
       >
         <ELine data={histChart} xKey="time"
           series={[{ key: 'temp', name: 'Temp °C', color: '#FF9800' }, { key: 'hum', name: 'Humidity %', color: '#00BCD4' }]}
@@ -229,7 +225,7 @@ export default function Environment() {
       {/* 7-day averages table */}
       <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
         <div style={{ padding: '16px 20px', borderBottom: '1px solid var(--border)' }}>
-          <h2 style={{ fontSize: 16, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}><BarChart2 size={16} /> 7-Day Daily Averages</h2>
+          <h2 style={{ fontSize: 16, fontWeight: 700, display: 'flex', alignItems: 'center', gap: 8 }}><BarChart2 size={16} /> Daily Averages: {avgDays ? `last ${avgDays} days` : 'all time'}</h2>
         </div>
         <div style={{ overflowX: 'auto' }}>
           <table className="data-table">
