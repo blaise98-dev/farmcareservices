@@ -14,7 +14,7 @@ from passlib.context import CryptContext
 from form_model import FormModel
 
 from config import settings
-from database import fetchone, execute, fetchall
+from database import close_handled_registration_notices, fetchone, execute, fetchall
 from email_service import send_password_reset_email
 from rate_limit import check_rate_limit, client_ip
 from tenancy import farm_clause, farm_for_write
@@ -405,6 +405,7 @@ async def approve_user(user_id: int, body: Optional[ApproveRequest] = None,
         "INSERT INTO Notifications (user_id, title, message, notif_type) VALUES (%s, %s, %s, 'AccountApproved')",
         (user_id, "Account approved", "Your account has been approved. You can now sign in."),
     )
+    await close_handled_registration_notices(user_id)
     return {"ok": True}
 
 
@@ -424,6 +425,7 @@ async def reject_user(user_id: int, current_user: dict = Depends(get_current_use
         "WHERE user_id=%s",
         (current_user["user_id"], user_id),
     )
+    await close_handled_registration_notices(user_id)
     return {"ok": True}
 
 
@@ -531,6 +533,7 @@ async def delete_user(
     if not target:
         raise HTTPException(404, "User not found")
     await execute("DELETE FROM Users WHERE user_id=%s", (user_id,))
+    await close_handled_registration_notices(user_id)
     return {"ok": True}
 
 

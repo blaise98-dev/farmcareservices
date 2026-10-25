@@ -110,6 +110,14 @@ const TITLES = {
 };
 
 const ROLE_COLOR = { Admin: '#FFD700', Farmer: '#81C784', Veterinarian: '#CE93D8', Technician: '#FFCC80' };
+// Current state of the person behind a "New user pending approval" notice
+const REG_STATUS = {
+  pending:  { text: 'Waiting: open to approve', color: '#E65100' },
+  approved: { text: 'Approved', color: '#2E7D32' },
+  rejected: { text: 'Rejected', color: '#c62828' },
+  null:     { text: 'Account removed', color: '#78909C' },
+};
+
 const TYPE_COLOR = { Alert: '#F44336', Reminder: '#FF9800', System: '#607D8B', Info: '#1E4D7B' };
 
 export default function Header({ onMenuClick }) {
@@ -247,7 +255,13 @@ export default function Header({ onMenuClick }) {
                 ? <div style={{ padding: 24, textAlign: 'center', color: 'var(--text-faint)', fontSize: 13 }}>No notifications</div>
                 : notifications.map(n => (
                   <div key={n.notif_id}
-                    onClick={() => { if (!n.is_read) readMut.mutate(n.notif_id); }}
+                    onClick={() => {
+                      if (!n.is_read) readMut.mutate(n.notif_id);
+                      if (n.notif_type === 'UserRegistration' && n.ref_id) {
+                        navigate(`/app/users?user=${n.ref_id}`);
+                        setShowNotifs(false);
+                      }
+                    }}
                     style={{
                       padding: '12px 18px', borderBottom: '1px solid var(--border)', cursor: 'pointer',
                       background: n.is_read ? '#fff' : `${TYPE_COLOR[n.notif_type] || '#1E4D7B'}08`,
@@ -259,6 +273,10 @@ export default function Header({ onMenuClick }) {
                       <span style={{ fontSize: 10, color: 'var(--text-faint)', flexShrink: 0, marginLeft: 8 }}>{n.created_at ? formatDistanceToNow(new Date(n.created_at), { addSuffix: true }) : ''}</span>
                     </div>
                     <div style={{ fontSize: 12, color: 'var(--text-secondary)', lineHeight: 1.4 }}>{n.message}</div>
+                    {n.notif_type === 'UserRegistration' && (() => {
+                      const st = REG_STATUS[n.ref_status ?? 'null'] || REG_STATUS.null;
+                      return <div style={{ fontSize: 11, fontWeight: 700, color: st.color, marginTop: 4 }}>{st.text}</div>;
+                    })()}
                   </div>
                 ))
               }
