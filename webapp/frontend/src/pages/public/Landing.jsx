@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import PublicLayout from '../../components/public/PublicLayout';
 import {
   Thermometer, Droplets, Wind, HeartPulse, MapPin, Activity,
-  Bell, TrendingUp, ShieldCheck, Smartphone, MessageSquare, ArrowRight,
+  Bell, TrendingUp, ShieldCheck, Smartphone, MessageSquare, ArrowRight, PlayCircle,
 } from 'lucide-react';
 
 const FEATURES = [
@@ -47,15 +47,39 @@ export default function Landing() {
             }}>
               Get Started <ArrowRight size={17} />
             </Link>
-            <Link to="/about" style={{
+            <a href="#demo" style={{
               display: 'flex', alignItems: 'center', gap: 8, padding: '14px 28px', borderRadius: 10,
               background: 'rgba(255,255,255,.1)', color: '#fff', fontWeight: 700, fontSize: 15,
               textDecoration: 'none', border: '2px solid rgba(255,255,255,.3)',
             }}>
-              Learn More
-            </Link>
+              <PlayCircle size={17} /> Watch the Demo
+            </a>
           </div>
         </div>
+      </section>
+
+      {/* Field demo video */}
+      <section id="demo" style={{ maxWidth: 1000, margin: '0 auto', padding: '80px 24px 0', scrollMarginTop: 80 }}>
+        <div style={{ textAlign: 'center', maxWidth: 680, margin: '0 auto 28px' }}>
+          <span style={{ fontSize: 12, fontWeight: 700, color: '#4CAF50', textTransform: 'uppercase', letterSpacing: 1.5 }}>See it working</span>
+          <h2 style={{ fontSize: 'clamp(26px, 3.5vw, 38px)', fontWeight: 900, color: 'var(--text)', marginTop: 10 }}>
+            FarmCare in a real cowshed
+          </h2>
+          <p style={{ fontSize: 15, color: 'var(--text-secondary)', marginTop: 12, lineHeight: 1.6 }}>
+            Recorded at our pilot farm in Kanyinya, Nyarugenge: the health collar, the milk collection
+            container and the barn monitor sending live readings to the FarmCare dashboard.
+          </p>
+        </div>
+        <div style={{ borderRadius: 18, overflow: 'hidden', boxShadow: '0 24px 64px rgba(0,0,0,.18)', background: '#000', aspectRatio: '16 / 9' }}>
+          <video controls preload="metadata" playsInline poster="/videos/farmcare-demo-poster.jpg"
+            style={{ width: '100%', height: '100%', display: 'block' }}>
+            <source src="/videos/farmcare-demo.mp4" type="video/mp4" />
+            Your browser cannot play this video. <a href="/videos/farmcare-demo.mp4">Download the demo (MP4)</a>.
+          </video>
+        </div>
+        <p style={{ fontSize: 12, color: 'var(--text-secondary)', textAlign: 'center', marginTop: 10 }}>
+          6 min 42 s · narration in Kinyarwanda · ACTION FAMILY TECH LTD
+        </p>
       </section>
 
       {/* Features */}

@@ -75,3 +75,6 @@ pnpm-debug.log*
 .agents/
 .claude/skills/
 skills-lock.json
+
+# Original demo footage (too large for git; the web copy is webapp/frontend/public/videos)
+videoDemo/
