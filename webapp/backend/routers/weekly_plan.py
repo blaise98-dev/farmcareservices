@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
+from form_model import FormModel
 from typing import Optional
 from database import fetchall, fetchone, execute
 from rbac import require_any
@@ -22,7 +22,7 @@ def _safe(row: dict) -> dict:
     return out
 
 
-class TaskCreate(BaseModel):
+class TaskCreate(FormModel):
     title: str
     description: Optional[str] = None
     task_type: Optional[str] = "Other"
@@ -35,7 +35,7 @@ class TaskCreate(BaseModel):
     farm_id: Optional[int] = None    # Admin only; others use their own farm
 
 
-class TaskUpdate(BaseModel):
+class TaskUpdate(FormModel):
     title: Optional[str] = None
     description: Optional[str] = None
     assigned_to: Optional[str] = None

@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel, Field
+from pydantic import Field
+from form_model import FormModel
 from typing import Optional
 from database import fetchall, fetchone, execute
 from ws_manager import manager
@@ -23,7 +24,7 @@ def _safe(row: dict) -> dict:
     return out
 
 
-class FeedEntry(BaseModel):
+class FeedEntry(FormModel):
     cow_id: Optional[int] = None
     group_id: Optional[int] = None
     feed_amount_kg: float = Field(..., ge=0, le=10000)

@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel, Field
+from pydantic import Field
+from form_model import FormModel
 from typing import Optional
 from database import fetchall, fetchone, execute
 from rbac import require_any, require_admin_or_farmer
@@ -22,7 +23,7 @@ def _safe(row: dict) -> dict:
     return out
 
 
-class InventoryEntry(BaseModel):
+class InventoryEntry(FormModel):
     item_name: str = Field(..., min_length=1, max_length=200)
     category: Optional[str] = Field("Hay", max_length=100)
     quantity_kg: float = Field(..., ge=0, le=1_000_000)
@@ -36,7 +37,7 @@ class InventoryEntry(BaseModel):
     farm_id: Optional[int] = None    # Admin only; others use their own farm
 
 
-class InventoryUpdate(BaseModel):
+class InventoryUpdate(FormModel):
     quantity_kg: Optional[float] = None
     dry_matter_pct: Optional[float] = None
     crude_protein_pct: Optional[float] = None

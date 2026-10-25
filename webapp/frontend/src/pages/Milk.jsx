@@ -6,6 +6,7 @@ import RoleGuard from '../components/RoleGuard';
 import { BarChart as EBar, HBarChart, ChartCard } from '../components/ChartKit';
 import { Plus, Droplets, Lock, Trophy, ClipboardList } from 'lucide-react';
 import { format } from 'date-fns';
+import { errorText } from '../lib/errors';
 
 const today = () => format(new Date(), 'yyyy-MM-dd');
 const emptyForm = () => ({
@@ -13,13 +14,6 @@ const emptyForm = () => ({
   milk_sold_liters: '', milk_consumed_liters: '', milk_calves_liters: '', milk_lost_liters: '',
   price_per_liter_rwf: 400, entry_date: today(),
 });
-
-// FastAPI sends a string, or a list of field errors for invalid input
-const errorText = (e) => {
-  const d = e.response?.data?.detail;
-  if (Array.isArray(d)) return d.map(x => x.msg).join('; ');
-  return d || (e.response ? `Save failed (server error ${e.response.status})` : 'Save failed: the server could not be reached');
-};
 
 export default function Milk() {
   const p = usePermissions();

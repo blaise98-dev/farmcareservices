@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends
-from pydantic import BaseModel
+from form_model import FormModel
 from typing import Optional
 from database import fetchall, fetchone, execute
 from ws_manager import manager
@@ -23,7 +23,7 @@ def _safe(row: dict) -> dict:
     return out
 
 
-class EnvReading(BaseModel):
+class EnvReading(FormModel):
     temperature_celsius: float
     humidity_percent: float
     air_quality_ppm: Optional[float] = None

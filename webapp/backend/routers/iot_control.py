@@ -4,7 +4,7 @@ Admin and Technician only. Every action is logged to SystemControlLogs, and
 everything is limited to the user's farm (Admins see all farms).
 """
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
+from form_model import FormModel
 from typing import Optional
 from database import fetchall, fetchone, execute
 from rbac import require_admin_or_technician, require_any
@@ -35,7 +35,7 @@ ACTIONS      = {"ON", "OFF", "AUTO", "SPEED_CHANGE", "ERROR"}
 REMOTE_TYPES = {"WaterPump": "pump", "Fan": "fan", "SprayNozzle": "spray", "Buzzer": "buzzer"}
 
 
-class DeviceCommand(BaseModel):
+class DeviceCommand(FormModel):
     device_type: str
     device_id:   Optional[int] = None
     action:      str
@@ -44,7 +44,7 @@ class DeviceCommand(BaseModel):
     farm_id:     Optional[int] = None    # Admin only, when there are several farms
 
 
-class CalibrationEntry(BaseModel):
+class CalibrationEntry(FormModel):
     device_type: str
     device_id:   Optional[int] = None
     notes:       Optional[str] = None

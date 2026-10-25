@@ -4,7 +4,8 @@ Cow-level economics: lifetime costs and revenues per cow.
 - Veterinarian: medicine/procedure costs; veterinary fee revenues (what they charged)
 """
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel, Field
+from pydantic import Field
+from form_model import FormModel
 from typing import Optional
 from database import fetchall, fetchone, execute
 from rbac import require_any, require_admin_or_farmer, require_not_technician
@@ -27,7 +28,7 @@ def _safe(row: dict) -> dict:
     return out
 
 
-class CostEntry(BaseModel):
+class CostEntry(FormModel):
     cow_id: int
     cost_date: str
     cost_category: str = Field(..., max_length=100)
@@ -35,7 +36,7 @@ class CostEntry(BaseModel):
     amount_rwf: float = Field(..., ge=0, le=100_000_000)
 
 
-class RevenueEntry(BaseModel):
+class RevenueEntry(FormModel):
     cow_id: int
     revenue_date: str
     revenue_category: str = Field(..., max_length=100)

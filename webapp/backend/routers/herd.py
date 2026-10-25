@@ -1,5 +1,5 @@
 from fastapi import APIRouter, HTTPException, Depends
-from pydantic import BaseModel
+from form_model import FormModel
 from typing import Optional
 from database import fetchall, fetchone, execute
 from rbac import (
@@ -13,7 +13,7 @@ from tenancy import farm_clause, ensure_cow_access, farm_for_write
 router = APIRouter(prefix="/api/herd", tags=["herd"])
 
 
-class CowUpdate(BaseModel):
+class CowUpdate(FormModel):
     # Identity / profile: editable by Farmer
     cow_name:           Optional[str]   = None
     sex:                Optional[str]   = None
@@ -42,7 +42,7 @@ class CowUpdate(BaseModel):
     death_cause:        Optional[str]   = None
 
 
-class CowCreate(BaseModel):
+class CowCreate(FormModel):
     rfid_tag: str
     cow_name: str
     sex: Optional[str] = "Female"               # Female | Male

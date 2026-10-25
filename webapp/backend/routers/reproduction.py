@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel
+from form_model import FormModel
 from typing import Optional
 from database import fetchall, fetchone, execute
 from rbac import require_any, require_admin_or_vet
@@ -30,7 +30,7 @@ async def _ensure_cow_record(user: dict, table: str, key: str, value) -> None:
         raise HTTPException(404, "Record not found")
 
 
-class ReproEntry(BaseModel):
+class ReproEntry(FormModel):
     cow_id: int
     calving_date: Optional[str] = None
     calf_sex: Optional[str] = None
@@ -42,7 +42,7 @@ class ReproEntry(BaseModel):
     notes: Optional[str] = None
 
 
-class ReproUpdate(BaseModel):
+class ReproUpdate(FormModel):
     calving_date: Optional[str] = None
     calf_sex: Optional[str] = None
     calf_weight_kg: Optional[float] = None
@@ -163,7 +163,7 @@ async def delete_record(
 
 # ── Treatments ────────────────────────────────────────────────────────────────
 
-class TreatmentEntry(BaseModel):
+class TreatmentEntry(FormModel):
     cow_id: int
     treatment_date: str
     diagnosis: str
@@ -236,7 +236,7 @@ async def complete_treatment(
 
 # ── Vaccinations ──────────────────────────────────────────────────────────────
 
-class VaxEntry(BaseModel):
+class VaxEntry(FormModel):
     cow_id: int
     vaccine_name: str
     vaccination_date: str
@@ -301,7 +301,7 @@ async def add_vaccination(
 
 # ── Body Condition Scores ─────────────────────────────────────────────────────
 
-class BCSEntry(BaseModel):
+class BCSEntry(FormModel):
     cow_id:     int
     score:      float        # 1.0–5.0
     notes:      Optional[str] = None

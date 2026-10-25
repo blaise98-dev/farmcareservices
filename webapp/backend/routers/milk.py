@@ -1,7 +1,8 @@
 from datetime import date
 
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel, Field
+from pydantic import Field
+from form_model import FormModel
 from typing import Optional
 from database import fetchall, fetchone, execute
 from ws_manager import manager
@@ -25,7 +26,7 @@ def _safe(row: dict) -> dict:
     return out
 
 
-class MilkEntry(BaseModel):
+class MilkEntry(FormModel):
     cow_id: int
     milk_amount_liters: float = Field(..., ge=0, le=200)
     milking_session: str = Field(..., pattern="^(Morning|Evening|Midday)$")

@@ -7,6 +7,7 @@ import {
 } from '../lib/api';
 import { usePermissions } from '../hooks/usePermissions';
 import EntryMeta from '../components/EntryMeta';
+import { errorText } from '../lib/errors';
 import {
   DonutChart, BarChart as EBar, HBarChart, LineChart as ELine,
   ChartCard,
@@ -184,6 +185,8 @@ function CowDrillDown({ cowId, onClose, p }) {
   const [revForm, setRevForm]     = useState({ revenue_date: '', revenue_category: 'Milk Sale', description: '', amount_rwf: '', quantity: '', unit: '' });
   const [showCostForm, setShowCostForm] = useState(false);
   const [showRevForm,  setShowRevForm]  = useState(false);
+  const [costErr, setCostErr] = useState('');
+  const [revErr, setRevErr]   = useState('');
 
   const { data, isLoading } = useQuery({
     queryKey: ['cow-econ-detail', cowId],
@@ -192,11 +195,13 @@ function CowDrillDown({ cowId, onClose, p }) {
 
   const costMut = useMutation({
     mutationFn: addCowCost,
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['cow-econ-detail', cowId] }); qc.invalidateQueries({ queryKey: ['cow-econ-summary'] }); setShowCostForm(false); setCostForm({ cost_date: '', cost_category: 'Feed', description: '', amount_rwf: '' }); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['cow-econ-detail', cowId] }); qc.invalidateQueries({ queryKey: ['cow-econ-summary'] }); setShowCostForm(false); setCostErr(''); setCostForm({ cost_date: '', cost_category: 'Feed', description: '', amount_rwf: '' }); },
+    onError: (e) => setCostErr(errorText(e)),
   });
   const revMut = useMutation({
     mutationFn: addCowRevenue,
-    onSuccess: () => { qc.invalidateQueries({ queryKey: ['cow-econ-detail', cowId] }); qc.invalidateQueries({ queryKey: ['cow-econ-summary'] }); setShowRevForm(false); setRevForm({ revenue_date: '', revenue_category: 'Milk Sale', description: '', amount_rwf: '', quantity: '', unit: '' }); },
+    onSuccess: () => { qc.invalidateQueries({ queryKey: ['cow-econ-detail', cowId] }); qc.invalidateQueries({ queryKey: ['cow-econ-summary'] }); setShowRevForm(false); setRevErr(''); setRevForm({ revenue_date: '', revenue_category: 'Milk Sale', description: '', amount_rwf: '', quantity: '', unit: '' }); },
+    onError: (e) => setRevErr(errorText(e)),
   });
   const delCostMut = useMutation({ mutationFn: deleteCowCost, onSuccess: () => qc.invalidateQueries({ queryKey: ['cow-econ-detail', cowId] }) });
   const delRevMut  = useMutation({ mutationFn: deleteCowRevenue, onSuccess: () => qc.invalidateQueries({ queryKey: ['cow-econ-detail', cowId] }) });
@@ -314,12 +319,13 @@ function CowDrillDown({ cowId, onClose, p }) {
                         <input value={costForm.description} onChange={e => setCostForm(f => ({ ...f, description: e.target.value }))} placeholder="optional" style={INPUT} />
                       </div>
                       <div style={{ gridColumn: '1/-1', display: 'flex', gap: 8 }}>
-                        <button onClick={() => costMut.mutate({ ...costForm, cow_id: cowId, amount_rwf: Number(costForm.amount_rwf) })}
+                        <button onClick={() => { setCostErr(''); costMut.mutate({ ...costForm, cow_id: cowId, amount_rwf: Number(costForm.amount_rwf) }); }}
                           disabled={!costForm.cost_date || !costForm.amount_rwf || costMut.isPending}
                           className="btn btn-primary" style={{ fontSize: 12 }}>
                           {costMut.isPending ? 'Saving…' : 'Save Cost'}
                         </button>
-                        <button onClick={() => setShowCostForm(false)} className="btn" style={{ fontSize: 12 }}>Cancel</button>
+                        <button onClick={() => { setShowCostForm(false); setCostErr(''); }} className="btn" style={{ fontSize: 12 }}>Cancel</button>
+                        {costErr && <span role="alert" style={{ alignSelf: 'center', fontSize: 12, color: '#c62828' }}>{costErr}</span>}
                       </div>
                     </div>
                   )}
@@ -376,12 +382,13 @@ function CowDrillDown({ cowId, onClose, p }) {
                         <input value={revForm.description} onChange={e => setRevForm(f => ({ ...f, description: e.target.value }))} placeholder="optional" style={INPUT} />
                       </div>
                       <div style={{ gridColumn: '1/-1', display: 'flex', gap: 8 }}>
-                        <button onClick={() => revMut.mutate({ ...revForm, cow_id: cowId, amount_rwf: Number(revForm.amount_rwf) })}
+                        <button onClick={() => { setRevErr(''); revMut.mutate({ ...revForm, cow_id: cowId, amount_rwf: Number(revForm.amount_rwf), quantity: revForm.quantity === '' ? null : Number(revForm.quantity), unit: revForm.unit || null }); }}
                           disabled={!revForm.revenue_date || !revForm.amount_rwf || revMut.isPending}
                           className="btn btn-primary" style={{ fontSize: 12, background: '#4CAF50', border: 'none' }}>
                           {revMut.isPending ? 'Saving…' : 'Save Revenue'}
                         </button>
-                        <button onClick={() => setShowRevForm(false)} className="btn" style={{ fontSize: 12 }}>Cancel</button>
+                        <button onClick={() => { setShowRevForm(false); setRevErr(''); }} className="btn" style={{ fontSize: 12 }}>Cancel</button>
+                        {revErr && <span role="alert" style={{ alignSelf: 'center', fontSize: 12, color: '#c62828' }}>{revErr}</span>}
                       </div>
                     </div>
                   )}
